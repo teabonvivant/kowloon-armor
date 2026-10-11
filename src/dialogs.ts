@@ -4,6 +4,8 @@ import { TANK_CATALOGUE_NOTE, TANK_SOURCES } from './data/tanks';
 import type { Game } from './game';
 import type { Progress } from './persistence';
 import { icon } from './ui-kit';
+import { DEFAULT_BINDINGS, keyLabel } from './key-bindings';
+import type { KeyBindings } from './key-bindings';
 
 export function dialogHeader(eyebrow: string, title: string): string {
   return `<div class="dialog-header"><div><span class="eyebrow">${eyebrow}</span><h2 id="modal-title">${title}</h2></div><button class="icon-button" data-action="close" aria-label="關閉視窗">${icon('close')}</button></div>`;
@@ -13,12 +15,12 @@ export function missionsDialog(progress: Progress, selected: number): string {
     <p class="dialog-intro">由彌敦道出發，逐關完成演習。勝出後自動儲存進度並解鎖下一關。</p>
     <div class="mission-grid">${MISSIONS.map((mission, index) => `<button class="mission-tile ${index === selected ? 'selected' : ''}" data-mission="${index}" ${index > progress.completed ? 'disabled' : ''}>
       <span class="mission-number">0${mission.id}</span><div><small>${mission.area}</small><strong>${mission.name}</strong>
-      <p>${mission.enemies} 輛對手 · ${Math.floor(mission.timeLimit / 60)} 分 ${mission.timeLimit % 60} 秒</p>
+      <p>${mission.objective.kind === 'clear' ? '清場' : mission.objective.kind === 'capture' ? `佔點 ${mission.objective.seconds} 秒` : `守區 ${mission.objective.seconds} 秒`} · ${mission.enemies} 輛對手</p>
       ${progress.bestScores[String(mission.id)] ? `<p>最佳 ${progress.bestScores[String(mission.id)]?.toLocaleString()} 分</p>` : ''}</div>
       <span class="mission-state">${index < progress.completed ? '已完成' : index > progress.completed ? '待解鎖' : '可出擊'}</span></button>`).join('')}</div>
     <p class="fine-print">${MISSION_WORLD_NOTE}</p>`;
 }
-export function guideDialog(): string {
+export function guideDialog(bindings: KeyBindings = DEFAULT_BINDINGS): string {
   return `${dialogHeader('FIELD MANUAL', '駕駛與射擊指南')}
     <div class="guide-columns"><section><h3>USB 飛行搖桿 / HOTAS</h3>
     <ol><li>在 Windows 接上搖桿與油門，按一次每個裝置的按鈕，讓瀏覽器識別。</li>
@@ -27,14 +29,15 @@ export function guideDialog(): string {
     <li>移動軸並查看即時數值，調整軸編號、反向及死區。滑動油門可按住倒車按鈕倒車。</li></ol>
     <button class="btn btn-primary" data-action="controller">${icon('controller')} 開啟搖桿設定</button></section>
     <section><h3>鍵盤與滑鼠</h3><dl class="key-guide">
-    <dt>W / S</dt><dd>前進 / 倒車</dd><dt>A / D</dt><dd>車體轉向（可原地迴轉）</dd>
-    <dt>Q / E、← / →</dt><dd>炮塔左右轉動</dd><dt>↑ / ↓</dt><dd>主炮俯仰</dd>
-    <dt>滑鼠右鍵拖動</dt><dd>移動炮塔和主炮</dd><dt>M</dt><dd>鎖定滑鼠瞄準；Esc 釋放及暫停</dd>
-    <dt>F</dt><dd>炮塔回正至車頭，炮管水平</dd><dt>SPACE / 左鍵</dt><dd>發射主炮</dd>
-    <dt>SHIFT</dt><dd>按住使用瞄準鏡</dd><dt>B</dt><dd>煞車</dd>
-    <dt>V</dt><dd>車外 / 駕駛員 / 炮手視角</dd><dt>ESC / H</dt><dd>暫停 / 搖桿設定</dd></dl></section></div>
+    <dt>${keyLabel(bindings.forward)} / ${keyLabel(bindings.reverse)}</dt><dd>前進 / 倒車</dd><dt>${keyLabel(bindings.left)} / ${keyLabel(bindings.right)}</dt><dd>車體轉向（可原地迴轉）</dd>
+    <dt>${keyLabel(bindings.turretLeft)} / ${keyLabel(bindings.turretRight)}</dt><dd>炮塔左右轉動</dd><dt>${keyLabel(bindings.elevate)} / ${keyLabel(bindings.lower)}</dt><dd>主炮俯仰</dd>
+    <dt>滑鼠右鍵拖動</dt><dd>移動炮塔和主炮</dd><dt>${keyLabel(bindings.pointer)}</dt><dd>鎖定滑鼠瞄準；Esc 釋放及暫停</dd>
+    <dt>${keyLabel(bindings.recentre)}</dt><dd>炮塔回正至車頭，炮管水平</dd><dt>${keyLabel(bindings.fire)} / 左鍵</dt><dd>發射主炮</dd>
+    <dt>${keyLabel(bindings.scope)}</dt><dd>瞄準鏡（按住或切換可在設定選擇）</dd><dt>${keyLabel(bindings.brake)}</dt><dd>煞車</dd>
+    <dt>${keyLabel(bindings.observe)}</dt><dd>按住獨立觀察，炮塔保持方向</dd><dt>${keyLabel(bindings.camera)}</dt><dd>車外 / 駕駛員 / 炮手視角</dd><dt>ESC / ${keyLabel(bindings.controls)}</dt><dd>暫停 / 搖桿設定</dd></dl><button class="btn" data-action="keyboard">更改鍵盤按鍵</button></section></div>
     <div class="training-tip"><strong>裝填時換位，側擊更有效。</strong><br>敵車側面及後方承受較高傷害；建築物會擋住炮彈。瞄準鏡可降低炮塔轉速，方便細調。備用彈藥無限，但每發仍需裝填。準星顯示炮塔方向，遠距離射擊仍須留意俯仰。</div>
-    <div class="training-tip"><strong>無盡防線</strong><br>首波兩輛敵車，逐波增加至最多八輛。清場後有 8 秒轉移位置，下一波開始時修復 20% 車體耐久。敵軍位置及車型每次不同，各難度分開記錄最高分。</div>`;
+    <div class="training-tip"><strong>履帶與任務</strong><br>命中履帶可減慢敵車；自己的履帶受損時，停車累計 6 秒便會修復。佔點須在標示區域內且沒有敵車；守區時敵車闖入會扣防線耐久，降至零即告失敗。</div>
+    <div class="training-tip"><strong>無盡防線</strong><br>首波兩輛敵車，逐波增加至最多八輛。清場後有 8 秒選擇修復 35% 車體及兩側履帶，或四發裝填時間減少 32% 的快裝補給。倒數完畢才套用，預設修復。</div>`;
 }
 export function resultDialog(game: Game, victory: boolean, completed: number, newBest = false): string {
   const health = Math.max(0, game.player.hp / game.player.maxHp);
@@ -42,7 +45,7 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
   const survival = game.mode === 'survival';
   const accuracy = game.shots ? Math.round(game.hits / game.shots * 100) : 0;
   return `${dialogHeader(victory ? 'OPERATION COMPLETE' : 'MISSION DEBRIEF', victory ? '任務完成' : survival ? '防線演習結束' : '演習結束')}
-    <div class="result-medal">${icon(victory ? 'shield' : 'tank', 48)}<span>${victory ? '演習區已清空' : game.player.alive ? '演習時間已結束' : '你的坦克已失去作戰能力'}</span>
+    <div class="result-medal">${icon(victory ? 'shield' : 'tank', 48)}<span>${victory ? game.mode === 'campaign' && game.mission?.objective.kind !== 'clear' ? '指定區域目標已完成' : '演習區已清空' : !game.player.alive ? '你的坦克已失去作戰能力' : game.objective.integrity <= 0 ? '敵車突破防線' : '演習時間已結束'}</span>
     ${survival ? `<p class="result-wave">守至第 ${game.wave} 波</p>` : `<p class="result-stars" aria-label="${stars} 星">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</p>`}
     ${newBest ? '<b class="record-badge">個人新紀錄</b>' : ''}</div>
     <div class="result-stats"><div><small>擊破目標</small><strong>${game.kills} / ${game.totalEnemies}</strong></div>

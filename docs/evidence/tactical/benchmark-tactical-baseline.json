@@ -1,0 +1,51 @@
+{
+  "label": "tactical-baseline",
+  "timestamp": "2026-10-11T05:32:33.160Z",
+  "artifactSha256": "a3967057555409e606092da06bf6f78fcd6a8cfaa4e634495121b72b9f4a49aa",
+  "browser": "141.0.7390.37",
+  "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "viewport": [
+    1280,
+    800
+  ],
+  "dpr": 1,
+  "samples": [
+    {
+      "quality": "medium",
+      "surface": "garage",
+      "frames": 12,
+      "medianMs": 1099.9000000000015,
+      "p95Ms": 1300,
+      "meanCalls": 139,
+      "meanTriangles": 317546
+    },
+    {
+      "quality": "medium",
+      "surface": "drive",
+      "frames": 12,
+      "medianMs": 1683.300000000003,
+      "p95Ms": 2583.2999999999884,
+      "meanCalls": 187,
+      "meanTriangles": 441542
+    },
+    {
+      "quality": "low",
+      "surface": "garage",
+      "frames": 12,
+      "medianMs": 900.1000000000058,
+      "p95Ms": 949.8999999999942,
+      "meanCalls": 87,
+      "meanTriangles": 225302
+    },
+    {
+      "quality": "low",
+      "surface": "drive",
+      "frames": 12,
+      "medianMs": 1600,
+      "p95Ms": 2549.899999999994,
+      "meanCalls": 135,
+      "meanTriangles": 349298
+    }
+  ],
+  "note": "Headless Chromium, software rendering where reported. Includes WebGL shadow submissions. Frame times are environment specific, not a hardware FPS promise."
+}

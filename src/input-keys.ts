@@ -1,17 +1,14 @@
 import { clampInput } from './input-config';
+import { DEFAULT_BINDINGS } from './key-bindings';
+import type { KeyAction, KeyBindings } from './key-bindings';
 
 export type LocalInput = {
   readonly throttle: number; readonly steer: number;
   readonly aimX: number; readonly aimY: number;
   readonly fire: boolean; readonly brake: boolean; readonly scope: boolean;
   readonly toggleCamera: boolean; readonly pause: boolean;
+  readonly pointerX?: number; readonly pointerY?: number; readonly observe?: boolean;
 };
-
-const PLAY_KEYS = new Set([
-  'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'ArrowLeft', 'ArrowRight',
-  'ArrowUp', 'ArrowDown', 'Space', 'KeyV', 'Escape', 'ShiftLeft', 'ShiftRight',
-  'KeyH', 'KeyB', 'KeyM', 'KeyF',
-]);
 
 export class LocalControls {
   private readonly keys = new Set<string>();
@@ -23,6 +20,9 @@ export class LocalControls {
   private mouseY = 0;
   sensitivity = 1;
   invertY = false;
+  bindings: KeyBindings = { ...DEFAULT_BINDINGS };
+  scopeMode: 'hold' | 'toggle' = 'hold';
+  private scopeLatched = false;
 
   constructor(private readonly element: HTMLElement) {
     if (element.tabIndex < 0) element.tabIndex = 0;
@@ -46,15 +46,15 @@ export class LocalControls {
   }
 
   private readonly keyDown = (event: KeyboardEvent): void => {
-    if (!this.acceptsKeyboard(event.target) || !PLAY_KEYS.has(event.code)) return;
+    if (!this.acceptsKeyboard(event.target) || event.ctrlKey || event.metaKey || event.altKey || !this.playKey(event.code)) return;
     event.preventDefault();
     this.keys.add(event.code);
     if (!event.repeat) this.edges.add(event.code);
-    if (event.code === 'KeyH' && !event.repeat) {
+    if (event.code === this.bindings.controls && !event.repeat) {
       this.element.dispatchEvent(new CustomEvent('tank-controls', { bubbles: true }));
     }
-    if (event.code === 'KeyF' && !event.repeat) this.element.dispatchEvent(new CustomEvent('tank-recentre'));
-    if (event.code === 'KeyM' && !event.repeat && document.body.classList.contains('in-battle')) {
+    if (event.code === this.bindings.recentre && !event.repeat) this.element.dispatchEvent(new CustomEvent('tank-recentre'));
+    if (event.code === this.bindings.pointer && !event.repeat && document.body.classList.contains('in-battle')) {
       if (document.pointerLockElement === this.element) document.exitPointerLock();
       else if (this.element.requestPointerLock) {
         Promise.resolve(this.element.requestPointerLock()).catch(() => this.element.dispatchEvent(new CustomEvent('tank-pointer-error')));
@@ -64,8 +64,18 @@ export class LocalControls {
 
   private readonly keyUp = (event: KeyboardEvent): void => {
     this.keys.delete(event.code);
-    if (this.acceptsKeyboard(event.target) && PLAY_KEYS.has(event.code)) event.preventDefault();
+    if (this.acceptsKeyboard(event.target) && this.playKey(event.code)) event.preventDefault();
   };
+
+  private playKey(code: string): boolean {
+    return code === 'Escape' || Object.values(this.bindings).includes(code) || this.alias('turretLeft') === code ||
+      this.alias('turretRight') === code || this.alias('scope') === code;
+  }
+
+  private alias(action: KeyAction): string {
+    const alternate = action === 'turretLeft' ? 'ArrowLeft' : action === 'turretRight' ? 'ArrowRight' : action === 'scope' ? 'ShiftRight' : '';
+    return this.bindings[action] === DEFAULT_BINDINGS[action] && !Object.values(this.bindings).includes(alternate) ? alternate : '';
+  }
 
   private readonly pointerDown = (event: PointerEvent): void => {
     if (event.button !== 0 && event.button !== 2) return;
@@ -88,19 +98,24 @@ export class LocalControls {
 
   private readonly contextMenu = (event: MouseEvent): void => event.preventDefault();
 
-  sample(dt: number): LocalInput {
+  sample(_dt: number): LocalInput {
     if (!this.acceptsKeyboard(document.activeElement)) this.keys.clear();
-    const held = (code: string): number => Number(this.keys.has(code));
-    const pointerScale = this.sensitivity * 0.0015 / Math.max(1 / 120, dt);
+    const held = (action: KeyAction): number => Number(this.keys.has(this.bindings[action]) || this.keys.has(this.alias(action)));
+    const pressed = (action: KeyAction): boolean => this.edges.has(this.bindings[action]) || this.edges.has(this.alias(action));
+    if (this.scopeMode === 'toggle' && pressed('scope')) this.scopeLatched = !this.scopeLatched;
+    const pointerScale = this.sensitivity * .00165;
     const frame: LocalInput = {
-      throttle: held('KeyW') - held('KeyS'),
-      steer: held('KeyD') - held('KeyA'),
-      aimX: clampInput(held('KeyE') + held('ArrowRight') - held('KeyQ') - held('ArrowLeft') + this.mouseX * pointerScale),
-      aimY: clampInput(held('ArrowUp') - held('ArrowDown') + this.mouseY * pointerScale * (this.invertY ? 1 : -1)),
-      fire: this.keys.has('Space') || this.mouseFire,
-      brake: this.keys.has('KeyB'),
-      scope: this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'),
-      toggleCamera: this.edges.has('KeyV'), pause: this.edges.has('Escape'),
+      throttle: held('forward') - held('reverse'),
+      steer: held('right') - held('left'),
+      aimX: clampInput(held('turretRight') - held('turretLeft')),
+      aimY: clampInput(held('elevate') - held('lower')),
+      pointerX: this.mouseX * pointerScale,
+      pointerY: this.mouseY * pointerScale * (this.invertY ? 1 : -1),
+      observe: !!held('observe'),
+      fire: !!held('fire') || this.mouseFire,
+      brake: !!held('brake'),
+      scope: this.scopeMode === 'toggle' ? this.scopeLatched : !!held('scope'),
+      toggleCamera: pressed('camera'), pause: this.edges.has('Escape'),
     };
     this.mouseX = 0;
     this.mouseY = 0;
@@ -111,6 +126,7 @@ export class LocalControls {
   reset(): void {
     this.keys.clear(); this.edges.clear();
     this.mouseFire = false; this.dragging = false; this.mouseX = 0; this.mouseY = 0;
+    this.scopeLatched = false;
   }
 
   dispose(): void { this.abort.abort(); this.reset(); }

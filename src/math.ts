@@ -9,12 +9,12 @@ export function blocked(x: number, z: number, obstacles: readonly Obstacle[], ra
   return obstacles.some(box => Math.abs(x - box.x) < box.halfX + radius && Math.abs(z - box.z) < box.halfZ + radius);
 }
 
-export function wallFraction(x: number, z: number, dx: number, dz: number, obstacles: readonly Obstacle[]): number {
+export function wallFraction(x: number, z: number, dx: number, dz: number, obstacles: readonly Obstacle[], clearance = 0): number {
   let first = 1;
   for (const box of obstacles) {
     let enter = 0;
     let exit = 1;
-    for (const [start, delta, centre, half] of [[x, dx, box.x, box.halfX], [z, dz, box.z, box.halfZ]]) {
+    for (const [start, delta, centre, half] of [[x, dx, box.x, box.halfX + clearance], [z, dz, box.z, box.halfZ + clearance]]) {
       if (start === undefined || delta === undefined || centre === undefined || half === undefined) continue;
       if (Math.abs(delta) < 0.00001) {
         if (start < centre - half || start > centre + half) { exit = -1; break; }

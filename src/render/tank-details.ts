@@ -60,6 +60,39 @@ export function addTankDetails(hull: Group, turret: Group, spec: TankSpec): void
     stowage.box({ position: [0, 1.04, -.05], scale: [.55, .62, .55] }, paint);
     straps.box({ position: [0, 1.09, -.337], scale: [.4, .23, .022] }, 0x2c6970);
   }
+  if (spec.id === 'leopard2a8') {
+    for (const side of [-1, 1]) {
+      stowage.box({ position: [side * 1.42, .42, -.93], scale: [.38, .9, 1.45], rotation: [0, side * -.28, -.08 * side] }, paint);
+      straps.box({ position: [side * 1.68, .93, .65], scale: [.3, .38, .45] }, 0x38443e);
+      markings.box({ position: [side * 1.84, .93, .65], scale: [.025, .2, .27] }, 0x88aaa1);
+    }
+    stowage.cylinder({ position: [.1, 1.05, .1], scale: [.23, .48, .23] }, paint);
+  }
+  if (spec.id === 'abrams') {
+    for (let slat = 0; slat < 9; slat++) equipment.box({ position: [-1.15 + slat * .285, 1.66, 3.48], scale: [.14, .52, .13] }, 0x353a33);
+    straps.box({ position: [0, .57, 1.98], scale: [2.8, .64, .12] }, 0x3c4036);
+    for (let rail = 0; rail < 7; rail++) straps.box({ position: [-1.2 + rail * .4, .64, 2.07], scale: [.05, .78, .08] }, 0x8c8870);
+    stowage.box({ position: [.74, 1.27, .18], scale: [.72, .6, .9] }, paint);
+  }
+  if (spec.id === 't90m') {
+    for (const side of [-1, 1]) {
+      equipment.cylinder({ position: [side * 1.1, 1.62, 3.66], scale: [.42, 1.1, .42], rotation: [0, 0, Math.PI / 2] }, paint);
+      for (let plate = 0; plate < 6; plate++) stowage.box({ position: [side * 1.35, .44, -1.25 + plate * .43],
+        scale: [.42, .38, .33], rotation: [0, side * -.3, side * .2] }, paint.clone().multiplyScalar(.84));
+      straps.box({ position: [side * 1.4, -.36, 1.1], scale: [.13, .64, 1.2] }, 0x444a38);
+    }
+  }
+  if (spec.id === 'merkavabarak') {
+    equipment.box({ position: [0, 1.3, 3.47], scale: [1.15, .9, .16] }, paint.clone().multiplyScalar(.75));
+    equipment.box({ position: [.4, 1.32, 3.57], scale: [.08, .24, .08] }, 0xabb097);
+    for (const side of [-1, 1]) {
+      stowage.box({ position: [side * 1.51, .7, .3], scale: [.48, .38, .55] }, paint);
+    }
+    for (let chain = 0; chain < 7; chain++) {
+      straps.cylinder({ position: [-1.17 + chain * .39, -.1, 1.84], scale: [.015, .6, .015] }, 0x44493e);
+      straps.sphere({ position: [-1.17 + chain * .39, -.43, 1.84], scale: [.065, .065, .065] }, 0x8c8970);
+    }
+  }
   dirt.finish(hull, false); hullMarks.finish(hull, false); equipment.finish(hull); markings.finish(turret, false);
   stowage.finish(turret); straps.finish(turret);
 }

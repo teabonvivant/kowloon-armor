@@ -1,3 +1,5 @@
+import { spatialMix } from './spatial-audio';
+
 export class GameAudio {
   private context: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -5,6 +7,10 @@ export class GameAudio {
   private engineOscillator: OscillatorNode | null = null;
   private volume = 0.35;
   private failureReported = false;
+  private readonly listener = { x: 0, z: 0 };
+  private listenerYaw = 0;
+  private noise: AudioBuffer | null = null;
+  private voices = 0;
 
   unlock(): void {
     if (typeof AudioContext !== 'function') return;
@@ -24,6 +30,9 @@ export class GameAudio {
       oscillator.connect(filter).connect(this.engineGain).connect(this.master);
       oscillator.start();
       this.engineOscillator = oscillator;
+      this.noise = this.context.createBuffer(1, Math.ceil(this.context.sampleRate * .6), this.context.sampleRate);
+      const samples = this.noise.getChannelData(0);
+      for (let index = 0; index < samples.length; index++) samples[index] = (Math.random() * 2 - 1) * Math.exp(-index / (samples.length * .13));
     }
     if (this.context.state === 'suspended') {
       void this.context.resume().catch((error: unknown) => {
@@ -50,30 +59,45 @@ export class GameAudio {
     this.engineGain.gain.setTargetAtTime(0.035 + power * 0.065, now, 0.16);
   }
 
-  fire(): void { this.burst(0.48, 76, 0.7); }
-  hit(): void { this.burst(0.19, 150, 0.32); }
+  listen(position: { readonly x: number; readonly z: number }, yaw: number): void {
+    this.listener.x = position.x; this.listener.z = position.z; this.listenerYaw = yaw;
+  }
+  fire(position = this.listener): void { this.burst(.48, 76, .7, spatialMix(this.listener, this.listenerYaw, position)); }
+  hit(track = false): void { this.burst(.16, track ? 280 : 150, .2); }
+  ready(): void { this.tone(720, .07, .1); this.tone(960, .09, .08, .1); }
 
-  private burst(duration: number, frequency: number, volume: number): void {
-    if (!this.context || !this.master || this.context.state !== 'running') return;
+  private tone(frequency: number, duration: number, volume: number, delay = 0): void {
+    if (!this.context || !this.master || this.context.state !== 'running' || this.voices >= 16) return;
+    const oscillator = this.context.createOscillator(), gain = this.context.createGain();
+    const time = this.context.currentTime + delay;
+    oscillator.frequency.value = frequency; gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(.001, time + duration);
+    oscillator.connect(gain).connect(this.master); this.voices++;
+    oscillator.start(time); oscillator.stop(time + duration);
+    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); this.voices--; };
+  }
+
+  private burst(duration: number, frequency: number, volume: number, mix = { pan: 0, gain: 1, cutoff: 6500 }): void {
+    if (!this.context || !this.master || !this.noise || this.context.state !== 'running' || this.voices >= 14) return;
     const now = this.context.currentTime;
     const oscillator = this.context.createOscillator();
     const boomGain = this.context.createGain();
+    const panner = this.context.createStereoPanner(), filter = this.context.createBiquadFilter();
+    panner.pan.value = mix.pan; filter.type = 'lowpass'; filter.frequency.value = mix.cutoff;
+    filter.connect(panner).connect(this.master);
     oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(frequency, now);
     oscillator.frequency.exponentialRampToValueAtTime(24, now + duration);
-    boomGain.gain.setValueAtTime(volume, now);
+    boomGain.gain.setValueAtTime(volume * mix.gain, now);
     boomGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    oscillator.connect(boomGain).connect(this.master);
+    oscillator.connect(boomGain).connect(filter); this.voices += 2;
     oscillator.start(now); oscillator.stop(now + duration);
-    oscillator.onended = () => { oscillator.disconnect(); boomGain.disconnect(); };
-    const buffer = this.context.createBuffer(1, Math.ceil(this.context.sampleRate * duration), this.context.sampleRate);
-    const samples = buffer.getChannelData(0);
-    for (let index = 0; index < samples.length; index++) samples[index] = (Math.random() * 2 - 1) * Math.exp(-index / (samples.length * 0.11));
+    oscillator.onended = () => { oscillator.disconnect(); boomGain.disconnect(); this.voices--; };
     const crack = this.context.createBufferSource();
     const crackGain = this.context.createGain();
-    crack.buffer = buffer; crackGain.gain.value = volume * 0.45;
-    crack.connect(crackGain).connect(this.master); crack.start(now);
-    crack.onended = () => { crack.disconnect(); crackGain.disconnect(); };
+    crack.buffer = this.noise; crackGain.gain.value = volume * .45 * mix.gain;
+    crack.connect(crackGain).connect(filter); crack.start(now); crack.stop(now + .6);
+    crack.onended = () => { crack.disconnect(); crackGain.disconnect(); filter.disconnect(); panner.disconnect(); this.voices--; };
   }
 
   stop(): void {

@@ -34,6 +34,9 @@ try {
   await page.locator('#sensitivity').evaluate(input => { input.value = '1.6'; input.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.locator('#invert-y').check({ force: true });
   await page.locator('#reduce-motion').check({ force: true });
+  await page.locator('#scope-zoom').selectOption('3');
+  await page.locator('#scope-mode').selectOption('toggle');
+  await page.locator('#hud-scale').selectOption('1.15');
   await capture('settings');
   await click('#modal [data-action="close"]');
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -41,10 +44,26 @@ try {
   assert.equal(await page.locator('#quality').inputValue(), 'low');
   assert.equal(await page.locator('#sensitivity').inputValue(), '1.6');
   assert.equal(await page.locator('#invert-y').isChecked(), true);
+  assert.equal(await page.locator('#scope-zoom').inputValue(), '3');
+  assert.equal(await page.locator('#scope-mode').inputValue(), 'toggle');
+  assert.equal(await page.locator('#hud-scale').inputValue(), '1.15');
+  await page.locator('#scope-mode').selectOption('hold');
+  await page.locator('#hud-scale').selectOption('1');
   await page.locator('#invert-y').uncheck({ force: true });
   check('quality, mouse and motion preferences survive reload');
   await click('#modal [data-action="close"]');
-  for (const [width, height] of [[1280, 800], [960, 640], [768, 900], [375, 812]]) {
+  await click('[data-action="settings"]'); await click('[data-action="keyboard"]');
+  await click('[data-bind="fire"]'); await page.keyboard.press('r');
+  assert.equal(await text('[data-bind="fire"]'), 'R');
+  await click('#modal [data-action="close"]'); await page.reload({ waitUntil: 'domcontentloaded' });
+  await click('[data-action="settings"]'); await click('[data-action="keyboard"]');
+  assert.equal(await text('[data-bind="fire"]'), 'R');
+  await click('[data-bind="fire"]'); await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#modal').evaluate(modal => modal.open), true);
+  await click('#reset-keys'); assert.equal(await text('[data-bind="fire"]'), 'Space');
+  await click('#modal [data-action="close"]');
+  check('key remapping persists, Escape cancels capture, and defaults restore');
+  for (const [width, height] of [[1440, 900], [1280, 800], [960, 640], [768, 900], [390, 844]]) {
     await page.setViewportSize({ width, height });
     const layout = await page.evaluate(() => {
       const deploy = document.querySelector('[data-action="start"]').getBoundingClientRect();
@@ -81,6 +100,11 @@ try {
   await page.keyboard.down('e'); await waitValue('heading', 'value !== "000°"'); await page.keyboard.up('e');
   await page.keyboard.press('f'); await waitValue('heading', 'value === "000°"');
   check('independent turret and recenter');
+  await page.keyboard.down('c'); await page.keyboard.down('e');
+  await waitValue('camera-label', 'value.includes("獨立觀察")');
+  assert.equal(await text('#heading'), '000°');
+  await page.keyboard.up('e'); await page.keyboard.up('c');
+  check('free observation leaves turret bearing unchanged');
   for (const name of ['駕駛員視角', '炮手視角', '第三身視角']) {
     await page.keyboard.press('v'); await waitValue('camera-label', `value === ${JSON.stringify(name)}`);
   }

@@ -2,6 +2,7 @@ import { clampInput, controllerSchema, loadControllerConfig, saveControllerConfi
 import type { ControllerConfig } from './input-config';
 import { connectedPads, ControllerPoller, NEUTRAL_INPUT } from './input-controller';
 import { LocalControls } from './input-keys';
+import type { KeyBindings } from './key-bindings';
 
 export type { ControllerConfig } from './input-config';
 
@@ -15,6 +16,9 @@ export type InputFrame = {
   readonly scope: boolean;
   readonly toggleCamera: boolean;
   readonly pause: boolean;
+  readonly pointerX?: number;
+  readonly pointerY?: number;
+  readonly observe?: boolean;
 };
 
 export class Input {
@@ -45,6 +49,9 @@ export class Input {
   setPointer(sensitivity: number, invertY: boolean): void {
     this.local.sensitivity = sensitivity; this.local.invertY = invertY;
   }
+  setKeyboard(bindings: KeyBindings, scopeMode: 'hold' | 'toggle'): void {
+    this.local.bindings = { ...bindings }; this.local.scopeMode = scopeMode; this.local.reset();
+  }
 
   setSettings(partial: Partial<ControllerConfig>): void {
     const result = controllerSchema.safeParse({ ...this.config, ...partial });
@@ -74,6 +81,7 @@ export class Input {
       scope: keyboard.scope || gamepad.scope,
       toggleCamera: keyboard.toggleCamera || gamepad.toggleCamera,
       pause: keyboard.pause || gamepad.pause,
+      pointerX: keyboard.pointerX ?? 0, pointerY: keyboard.pointerY ?? 0, observe: keyboard.observe ?? false,
     };
   }
 

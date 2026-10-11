@@ -1,0 +1,21 @@
+{
+  "browser": "141.0.7390.37",
+  "defeated": {
+    "phase": "defeat",
+    "hp": 0,
+    "maxHp": 1050,
+    "elapsed": 107.71666666666184,
+    "shots": 0,
+    "difficulty": "veteran"
+  },
+  "restarted": {
+    "phase": "playing",
+    "hp": 1050,
+    "maxHp": 1050,
+    "elapsed": 0,
+    "shots": 0,
+    "difficulty": "veteran"
+  },
+  "errors": [],
+  "method": "Real Game, city, Interface and View in an isolated browser fixture. Fixed-step physics fast-forwarded without intermediate rendering; no health or outcome overrides. Production offline playthrough is covered separately."
+}

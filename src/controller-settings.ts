@@ -51,7 +51,7 @@ export function mountControllerSettings(host: HTMLElement, input: Input, onClose
   const liveHeading = textElement('h3', '裝置即時訊號');
   const liveHelp = textElement('p', '以下軸及按鈕編號由 0 開始。推動搖桿或按下按鈕，對照數值後填入上方；-1 表示停用。');
   const live = document.createElement('div'); live.className = 'device-readouts';
-  const keyboard = textElement('p', '鍵盤：W／S 前進後退 · A／D 轉向 · Q／E 或 ←／→ 轉炮塔 · ↑／↓ 炮管高低 · Space 開火 · B 煞車 · Shift 瞄準 · V 視角 · Esc 暫停 · H 控制設定。滑鼠：左鍵開火，按住右鍵拖動瞄準。', 'keyboard-reference');
+  const keyboard = textElement('p', '鍵盤預設：W／S 前進後退 · A／D 轉向 · Q／E 轉炮塔 · ↑／↓ 炮管高低 · Space 開火 · B 煞車 · Shift 瞄準 · C 獨立觀察 · V 視角 · Esc 暫停。自訂按鍵請在「遊戲設定 → 鍵盤按鍵設定」查看。滑鼠左鍵開火，按住右鍵拖動瞄準。', 'keyboard-reference');
   panel.append(header, intro, presets, fields.root, feedback, calibration, liveHeading, liveHelp, live, keyboard);
   host.replaceChildren(panel);
   input.reset();

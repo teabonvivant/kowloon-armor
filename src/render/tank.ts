@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { TankSpec } from '../data/tanks';
 import { FAMILY_SHAPES, slopedHull, trackGeometry, wheelGeometry, wheelMaterial } from './geo-tank';
-import { GeometryBatch, glowMaterial, metalMaterial, unitSphere } from './materials';
+import { GeometryBatch, glowMaterial, metalMaterial, unitSphere, unitBox } from './materials';
 import { addTankDetails, tankPaint } from './tank-details';
 
 export interface TankVisual {
@@ -9,7 +9,11 @@ export interface TankVisual {
   readonly turret: THREE.Group;
   readonly barrel: THREE.Group;
   readonly wheels: THREE.InstancedMesh;
+  readonly treads: THREE.InstancedMesh;
   wheelPhase: number;
+  rightWheelPhase: number;
+  leftTreadPhase: number;
+  rightTreadPhase: number;
   recoil: number;
 }
 
@@ -31,6 +35,9 @@ export function createTank(spec: TankSpec): TankVisual {
   const turret = new THREE.Group();
   const barrel = new THREE.Group();
   const wheels = new THREE.InstancedMesh(wheelGeometry, wheelMaterial, 14);
+  const treads = new THREE.InstancedMesh(unitBox, metalMaterial, 120);
+  treads.name = 'independent track links'; treads.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(treads);
+  for (let index = 0; index < 120; index++) treads.setColorAt(index, new THREE.Color(index % 3 ? 0x444b43 : 0x747362));
   const wheelPose = new THREE.Object3D();
   wheels.castShadow = true; wheels.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(wheels);
   root.name = spec.name;
@@ -56,11 +63,6 @@ export function createTank(spec: TankSpec): TankVisual {
     for (let index = 0; index < 7; index++) {
       wheelPose.position.set(side * 1.81, 0.71, -2.5 + index * 0.83);
       wheelPose.updateMatrix(); wheels.setMatrixAt((side < 0 ? 0 : 7) + index, wheelPose.matrix);
-    }
-    for (let index = 0; index < 31; index++) {
-      const z = -3.05 + index * 0.205;
-      chassis.box({ position: [side * 1.73, 0.145, z], scale: [0.65, 0.11, 0.065] }, 0x4c5047);
-      chassis.box({ position: [side * 1.73, 1.43, z], scale: [0.65, 0.09, 0.065] }, 0x42473f);
     }
     for (let index = 0; index < 7; index++) {
       const z = -2.67 + index * 0.87;
@@ -135,16 +137,43 @@ export function createTank(spec: TankSpec): TankVisual {
   addTankDetails(root, turret, spec);
   root.scale.z = shape.lengthScale;
   wheels.computeBoundingSphere();
-  return { root, turret, barrel, wheels, wheelPhase: 0, recoil: 0 };
+  const visual = { root, turret, barrel, wheels, treads, wheelPhase: 0, rightWheelPhase: 0, leftTreadPhase: 0, rightTreadPhase: 0, recoil: 0 };
+  updateTreads(visual); treads.computeBoundingSphere();
+  return visual;
 }
 const wheelTransform = new THREE.Object3D();
-export function rotateWheels(visual: TankVisual, travel: number): void {
-  if (Math.abs(travel) < .0001) return;
-  visual.wheelPhase -= travel / .52;
-  wheelTransform.rotation.x = visual.wheelPhase;
+export function rotateWheels(visual: TankVisual, leftTravel: number, rightTravel = leftTravel): void {
+  if (Math.abs(leftTravel) + Math.abs(rightTravel) < .0001) return;
+  visual.wheelPhase -= leftTravel / .52; visual.rightWheelPhase -= rightTravel / .52;
+  visual.leftTreadPhase += leftTravel; visual.rightTreadPhase += rightTravel;
   for (const side of [-1, 1]) for (let index = 0; index < 7; index++) {
+    wheelTransform.rotation.x = side < 0 ? visual.wheelPhase : visual.rightWheelPhase;
     wheelTransform.position.set(side * 1.81, .71, -2.5 + index * .83); wheelTransform.updateMatrix();
     visual.wheels.setMatrixAt((side < 0 ? 0 : 7) + index, wheelTransform.matrix);
   }
   visual.wheels.instanceMatrix.needsUpdate = true;
+  updateTreads(visual);
+}
+const treadTransform = new THREE.Object3D();
+const arcLength = Math.PI * .66;
+const trackLength = 11 + arcLength * 2;
+function updateTreads(visual: TankVisual): void {
+  treadTransform.scale.set(.66, .09, .14);
+  for (const side of [-1, 1]) for (let index = 0; index < 60; index++) {
+    const phase = side < 0 ? visual.leftTreadPhase : visual.rightTreadPhase;
+    const distance = ((index / 60 * trackLength + phase) % trackLength + trackLength) % trackLength;
+    let height = 1.44, along = -2.75, rotation = 0;
+    if (distance < 5.5) along += distance;
+    else if (distance < 5.5 + arcLength) {
+      const angle = (distance - 5.5) / .66;
+      along = 2.75 + Math.sin(angle) * .66; height = .78 + Math.cos(angle) * .66; rotation = angle;
+    } else if (distance < 11 + arcLength) { along = 2.75 - (distance - 5.5 - arcLength); height = .12; }
+    else {
+      const angle = (distance - 11 - arcLength) / .66;
+      along = -2.75 - Math.sin(angle) * .66; height = .78 - Math.cos(angle) * .66; rotation = angle;
+    }
+    treadTransform.position.set(side * 1.73, height, along); treadTransform.rotation.x = rotation; treadTransform.updateMatrix();
+    visual.treads.setMatrixAt((side < 0 ? 0 : 60) + index, treadTransform.matrix);
+  }
+  visual.treads.instanceMatrix.needsUpdate = true;
 }

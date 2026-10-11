@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DEFAULT_BINDINGS, keyBindingsSchema } from './key-bindings';
 
 const schema = z.object({
   quality: z.enum(['low', 'medium', 'high']).default('medium'),
@@ -7,6 +8,10 @@ const schema = z.object({
   invertY: z.boolean().default(false),
   reducedMotion: z.boolean().default(false),
   difficulty: z.enum(['training', 'standard', 'veteran']).default('standard'),
+  bindings: keyBindingsSchema.default(() => ({ ...DEFAULT_BINDINGS })),
+  scopeMode: z.enum(['hold', 'toggle']).default('hold'),
+  scopeZoom: z.union([z.literal(2), z.literal(3), z.literal(4)]).default(2),
+  hudScale: z.number().min(.85).max(1.15).default(1),
 });
 export type Preferences = z.infer<typeof schema>;
 export function loadPreferences(): Preferences {

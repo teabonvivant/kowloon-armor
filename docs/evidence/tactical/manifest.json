@@ -1,0 +1,94 @@
+{
+  "generatedAt": "2026-10-11T06:25:10.874Z",
+  "artifactBytes": 999887,
+  "artifactSha256": "3cb27789d3a4e5773c4c60e56e37fee23c72d5ec72705c42402436be21d46303",
+  "distMatchesOfflineArtifact": true,
+  "productionTestHooks": false,
+  "offlineBrowserChecks": 20,
+  "finalArtifactChecks": 3,
+  "unitTests": {
+    "simulation": 9,
+    "upgrade": 10,
+    "tactical": 21
+  },
+  "inputOnlyCampaignVictories": 6,
+  "tacticalIntegrationGroups": 8,
+  "comparison": [
+    {
+      "quality": "medium",
+      "surface": "garage",
+      "beforeCalls": 139,
+      "afterCalls": 146,
+      "callsChangePercent": 5.035971223021574,
+      "beforeTriangles": 317546,
+      "afterTriangles": 316462,
+      "beforeMedianMs": 1099.9000000000015,
+      "afterMedianMs": 966.5999999999985
+    },
+    {
+      "quality": "medium",
+      "surface": "drive",
+      "beforeCalls": 187,
+      "afterCalls": 197,
+      "callsChangePercent": 5.3475935828877,
+      "beforeTriangles": 441542,
+      "afterTriangles": 440464,
+      "beforeMedianMs": 1683.300000000003,
+      "afterMedianMs": 1266.5999999999913
+    },
+    {
+      "quality": "low",
+      "surface": "garage",
+      "beforeCalls": 87,
+      "afterCalls": 92,
+      "callsChangePercent": 5.747126436781613,
+      "beforeTriangles": 225302,
+      "afterTriangles": 225594,
+      "beforeMedianMs": 900.1000000000058,
+      "afterMedianMs": 783.2999999999884
+    },
+    {
+      "quality": "low",
+      "surface": "drive",
+      "beforeCalls": 135,
+      "afterCalls": 143,
+      "callsChangePercent": 5.9259259259259345,
+      "beforeTriangles": 349298,
+      "afterTriangles": 349596,
+      "beforeMedianMs": 1600,
+      "afterMedianMs": 1133.3000000000175
+    }
+  ],
+  "reports": [
+    "browser-check",
+    "defeat-check",
+    "campaign-check",
+    "tactical-browser",
+    "artifact-check",
+    "benchmark-tactical-baseline",
+    "benchmark-tactical-final"
+  ],
+  "screenshots": [
+    "release-garage-1440",
+    "release-garage-390",
+    "tactical-capture-1440",
+    "tactical-capture-390",
+    "tactical-settings-390",
+    "tactical-supply-1440",
+    "tactical-supply-390",
+    "tactical-combat-measured",
+    "tactical-hotas-simulated",
+    "artifact-drive-390",
+    "artifact-settings-390"
+  ],
+  "limits": [
+    "Linux headless Chromium and SwiftShader only; not Windows hardware FPS.",
+    "Synthetic HOTAS, not physical hardware.",
+    "20 minutes of fixed-step simulation with sparse rendering, not 20 wall-clock minutes of continuous rendering.",
+    "Matched baseline/final benchmarks cover garage and free drive. Combat samples are separate and have no matched pre-upgrade combat baseline.",
+    "Combat renderTimesMs measure CPU submission and one requestAnimationFrame wait, not GPU completion or continuous combat FPS.",
+    "Accelerated stability loop disables audio; it is not an audio-resource stress test.",
+    "Heap and renderer counters are bounded observations, not proof of absence of all leaks.",
+    "No complete model-token usage telemetry available."
+  ]
+}

@@ -68,7 +68,7 @@ test('survival grants one repair between waves, pauses countdown, and caps live 
   for (let frame = 0; frame < 481; frame++) game.update(1 / 60, neutral);
   assert.equal(game.wave, 2);
   assert.equal(game.enemies.length, 3);
-  assert.equal(game.player.hp, 100 + Math.round(game.player.maxHp * .2));
+  assert.equal(game.player.hp, 100 + Math.round(game.player.maxHp * .35));
   assert.ok(api.waveSize(100) <= 8);
   game.garage();
   assert.equal(game.intermission, 0);

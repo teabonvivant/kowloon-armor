@@ -1,5 +1,5 @@
 import { ACESFilmicToneMapping, Color, DirectionalLight, FogExp2, HemisphereLight,
-  PCFSoftShadowMap, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
+  PCFSoftShadowMap, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer, Mesh, MeshBasicMaterial, RingGeometry } from 'three';
 import type { Game } from './game';
 import { wallFraction } from './math';
 import { createWorld } from './render/world';
@@ -7,6 +7,8 @@ import { createWorld } from './render/world';
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
   readonly renderer: WebGLRenderer; readonly world = createWorld();
+  scopeZoom = 2;
+  private readonly zone = new Mesh(new RingGeometry(.94, 1, 64), new MeshBasicMaterial({ color: 0xe8a65a, transparent: true, opacity: .75, depthWrite: false }));
   private readonly sun = new DirectionalLight(0xffdfb0, 4.1);
   private reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private readonly desired = new Vector3();
@@ -28,6 +30,7 @@ export class View {
     Object.assign(this.sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 1, far: 250 });
     this.sun.shadow.bias = -0.0007; this.sun.shadow.normalBias = 0.15;
     this.scene.add(this.sun, this.sun.target, this.world.group);
+    this.zone.rotation.x = -Math.PI / 2; this.zone.visible = false; this.scene.add(this.zone);
     this.camera.position.set(15, 8, 115); this.resize();
     window.addEventListener('resize', () => this.resize());
     canvas.addEventListener('webglcontextlost', event => { event.preventDefault();
@@ -67,20 +70,28 @@ export class View {
         desired.z = p.z + (desired.z - p.z) * Math.max(.15, clearance - .08); }
       look.set(innerWidth > 1100 ? -1.2 : 0, 1.3, 0).add(p);
       fov = 48;
-    } else if (game.scope || game.cameraMode === 'gunner') {
+    } else if (!game.observing && (game.scope || game.cameraMode === 'gunner')) {
       desired.set(-Math.sin(actor.aim) * 5.8, 2.65, -Math.cos(actor.aim) * 5.8).add(p);
-      look.copy(this.aim); fov = game.scope ? 22 : 42;
-    } else if (game.cameraMode === 'driver') {
+      look.copy(this.aim); fov = game.scope ? 50 / this.scopeZoom : 42;
+    } else if (!game.observing && game.cameraMode === 'driver') {
       desired.set(-Math.sin(actor.yaw) * 2.4, 1.5, -Math.cos(actor.yaw) * 2.4).add(p);
       look.set(-Math.sin(actor.yaw) * 100, 1.5, -Math.cos(actor.yaw) * 100).add(p); fov = 70;
     } else {
-      desired.set(Math.sin(actor.aim) * 15, 8.2, Math.cos(actor.aim) * 15).add(p);
+      const yaw = game.observing ? game.observationYaw : actor.aim;
+      desired.set(Math.sin(yaw) * 15, 8.2, Math.cos(yaw) * 15).add(p);
       const distance = wallFraction(p.x, p.z, desired.x - p.x, desired.z - p.z, game.world.obstacles);
       if (distance < 1) { desired.x = p.x + (desired.x - p.x) * Math.max(0.15, distance - 0.07);
         desired.z = p.z + (desired.z - p.z) * Math.max(0.15, distance - 0.07); }
-      look.copy(this.aim);
+      if (game.observing) look.set(-Math.sin(yaw) * 100, 3, -Math.cos(yaw) * 100).add(p);
+      else look.copy(this.aim);
     }
-    actor.visual.root.visible = game.phase === 'garage' || (game.cameraMode === 'chase' && !game.scope);
+    actor.visual.root.visible = game.phase === 'garage' || game.observing || (game.cameraMode === 'chase' && !game.scope);
+    const goal = game.mode === 'campaign' && game.phase !== 'garage' ? game.mission?.objective : undefined;
+    this.zone.visible = !!goal && goal.kind !== 'clear';
+    if (goal && goal.kind !== 'clear') {
+      this.zone.position.set(goal.center[0], .06, goal.center[1]); this.zone.scale.setScalar(goal.radius);
+      this.zone.material.color.setHex(game.objective.contested ? 0xf36a5b : game.objective.inside ? 0x84c7b0 : 0xe8a65a);
+    }
     this.camera.position.lerp(desired, game.phase === 'garage' ? 1 - Math.exp(-dt * 4) : 1 - Math.exp(-dt * 12));
     this.shake = Math.max(0, this.shake - dt);
     if (this.shake > 0) this.camera.position.y += (Math.random() - 0.5) * this.shake;

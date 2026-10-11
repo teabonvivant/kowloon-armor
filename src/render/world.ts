@@ -5,6 +5,7 @@ import type { CityBlock } from './geo-buildings';
 import { createParkedVehicles } from './geo-vehicles';
 import { createAsphaltMaterial, GeometryBatch } from './materials';
 import { createStreetProps } from './street-props';
+import { createDistrictLandmarks } from './districts';
 
 export interface Obstacle {
   readonly x: number;
@@ -72,7 +73,7 @@ export function createWorld(): WorldData {
   }
   paving.finish(group);
   markings.finish(group, false, 84);
-  group.add(createBuildings(blocks), createCityDetails(blocks), createBackdrop());
+  group.add(createBuildings(blocks), createCityDetails(blocks), createBackdrop(), createDistrictLandmarks());
   obstacles.push(...createParkedVehicles(group));
   const props = createStreetProps(); group.add(props.group); obstacles.push(...props.obstacles);
   group.updateMatrixWorld(true);
