@@ -1,8 +1,8 @@
 import { Vector3 } from 'three';
 import type { TankSpec } from './data/tanks';
 import type { InputFrame } from './input';
-import { angleDelta, blocked, clamp, forward } from './math';
-import { createTank } from './render/tank';
+import { angleDelta, blocked, clamp, forward, wallFraction } from './math';
+import { createTank, rotateWheels } from './render/tank';
 import type { TankVisual } from './render/tank';
 import type { Obstacle } from './render/world';
 
@@ -35,7 +35,9 @@ export function moveActor(actor: Actor, throttle: number, steer: number, brake: 
   actor.visual.root.rotation.y = actor.yaw;
   actor.visual.turret.rotation.y = actor.aim - actor.yaw;
   actor.visual.barrel.rotation.x = actor.pitch;
-  for (const wheel of actor.visual.wheels) wheel.rotation.x -= actor.speed * dt / 0.52;
+  actor.visual.recoil = Math.max(0, actor.visual.recoil - dt * 1.8);
+  actor.visual.barrel.position.z = -1.42 + actor.visual.recoil;
+  rotateWheels(actor.visual, actor.speed * dt);
   actor.cooldown = Math.max(0, actor.cooldown - dt);
 }
 export function drivePlayer(actor: Actor, input: InputFrame, dt: number,
@@ -64,6 +66,7 @@ export function advanceEnemy(actor: Actor, player: Actor, dt: number,
   }
   const wanted = Math.atan2(-(actor.waypoint.x - position.x), -(actor.waypoint.z - position.z));
   const turn = angleDelta(actor.yaw, wanted);
-  const throttle = distance < 55 ? 0 : Math.abs(turn) > 0.7 ? 0.15 : 0.42;
+  const clear = wallFraction(position.x, position.z, target.x - position.x, target.z - position.z, obstacles) === 1;
+  const throttle = distance < 55 && clear ? 0 : Math.abs(turn) > 0.7 ? 0.15 : 0.42;
   moveActor(actor, throttle, clamp(-turn * 2, -1, 1), false, dt, obstacles, actors);
 }

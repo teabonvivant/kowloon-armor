@@ -10,7 +10,7 @@ export type LocalInput = {
 const PLAY_KEYS = new Set([
   'KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyQ', 'KeyE', 'ArrowLeft', 'ArrowRight',
   'ArrowUp', 'ArrowDown', 'Space', 'KeyV', 'Escape', 'ShiftLeft', 'ShiftRight',
-  'KeyH', 'KeyB',
+  'KeyH', 'KeyB', 'KeyM', 'KeyF',
 ]);
 
 export class LocalControls {
@@ -21,6 +21,8 @@ export class LocalControls {
   private dragging = false;
   private mouseX = 0;
   private mouseY = 0;
+  sensitivity = 1;
+  invertY = false;
 
   constructor(private readonly element: HTMLElement) {
     if (element.tabIndex < 0) element.tabIndex = 0;
@@ -33,6 +35,10 @@ export class LocalControls {
     window.addEventListener('pointerup', this.pointerUp, options);
     window.addEventListener('pointercancel', this.pointerUp, options);
     window.addEventListener('blur', () => this.reset(), options);
+    document.addEventListener('pointerlockchange', () => {
+      this.reset();
+      if (!document.pointerLockElement) this.element.dispatchEvent(new CustomEvent('tank-pause'));
+    }, options);
   }
 
   private acceptsKeyboard(target: EventTarget | null): boolean {
@@ -46,6 +52,13 @@ export class LocalControls {
     if (!event.repeat) this.edges.add(event.code);
     if (event.code === 'KeyH' && !event.repeat) {
       this.element.dispatchEvent(new CustomEvent('tank-controls', { bubbles: true }));
+    }
+    if (event.code === 'KeyF' && !event.repeat) this.element.dispatchEvent(new CustomEvent('tank-recentre'));
+    if (event.code === 'KeyM' && !event.repeat && document.body.classList.contains('in-battle')) {
+      if (document.pointerLockElement === this.element) document.exitPointerLock();
+      else if (this.element.requestPointerLock) {
+        Promise.resolve(this.element.requestPointerLock()).catch(() => this.element.dispatchEvent(new CustomEvent('tank-pointer-error')));
+      }
     }
   };
 
@@ -63,7 +76,7 @@ export class LocalControls {
   };
 
   private readonly pointerMove = (event: PointerEvent): void => {
-    if (!this.dragging) return;
+    if (!this.dragging && document.pointerLockElement !== this.element) return;
     this.mouseX += event.movementX;
     this.mouseY += event.movementY;
   };
@@ -78,12 +91,12 @@ export class LocalControls {
   sample(dt: number): LocalInput {
     if (!this.acceptsKeyboard(document.activeElement)) this.keys.clear();
     const held = (code: string): number => Number(this.keys.has(code));
-    const pointerScale = 0.0015 / Math.max(1 / 120, dt);
+    const pointerScale = this.sensitivity * 0.0015 / Math.max(1 / 120, dt);
     const frame: LocalInput = {
       throttle: held('KeyW') - held('KeyS'),
       steer: held('KeyD') - held('KeyA'),
       aimX: clampInput(held('KeyE') + held('ArrowRight') - held('KeyQ') - held('ArrowLeft') + this.mouseX * pointerScale),
-      aimY: clampInput(held('ArrowUp') - held('ArrowDown') - this.mouseY * pointerScale),
+      aimY: clampInput(held('ArrowUp') - held('ArrowDown') + this.mouseY * pointerScale * (this.invertY ? 1 : -1)),
       fire: this.keys.has('Space') || this.mouseFire,
       brake: this.keys.has('KeyB'),
       scope: this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'),

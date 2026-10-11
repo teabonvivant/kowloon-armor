@@ -14,3 +14,10 @@ Button: min44px,2px radius; amber primary dark text; secondary dark outline. Hov
 180ms transform/opacity interaction; camera interpolation. Reduced motion removes nonessential showroom motion. Pause on focus loss and active device disconnect. Inputs keep gameplay keys outside forms.
 ## 7. Depth and acceptance
 Real geometry and procedural textures, warm sun/cool fill, fog/shadows, bilingual projecting street signs. UI charcoal translucency plus top edge and technical rules. Four tank silhouettes with model/color/stat variation. Scene is a fictional Kowloon training circuit, not surveyed mapping. Gameplay physics and armour are balanced accessible simulation; no AAA-fidelity claim, no online multiplayer claim.
+
+## 8. Field expansion (1.1)
+Garage modes use a compact 2×2 selector, with a persistent difficulty field, a mission-specific deployment button, and a local best-score readout. At short desktop heights, subtitles collapse before controls collide with the fleet; at portrait widths, the garage scrolls. The selected vehicle always remains present in the carousel.
+
+HUD priorities are objective / live wave status, actual cardinal direction, target alignment, reload ring, hit confirmation, then driving and map telemetry. Enemy labels respect building occlusion; the minimap remains the overview. Results explain accuracy and difficulty multiplier. Preferences persist, dialogs release pointer lock, and reduced-motion mode also respects the operating system preference.
+
+Vehicle details use a shared original camouflage DataTexture, stencilled fleet numbers, road wear, stowage and a moving gun recoil assembly. Four existing model families and all 30 choices remain. Street shelters, cabinets, drain covers and asphalt repairs use batched original geometry. Window frames use a shared procedural texture; only structural building masses cast building shadows. Detailed geometry is spatially partitioned where its vertex cost warrants the extra draws. Medium shadows use 1024² and high shadows use 2048².

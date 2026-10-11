@@ -94,7 +94,7 @@ export function createCityDetails(blocks: readonly CityBlock[]): THREE.Group {
   }
   surfaces.finish(group);
   glass.finish(group, false);
-  metal.finish(group);
+  metal.finish(group, true, 168);
   lights.finish(group, false);
   for (const batch of [...signBatches, ...verticalBatches, ...roadBatches]) batch.finish(group, false);
   return group;

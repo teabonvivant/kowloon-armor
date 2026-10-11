@@ -42,6 +42,9 @@ export class Input {
   }
   get settings(): ControllerConfig { return this.config; }
   get saveStatus(): string { return this.persistenceStatus; }
+  setPointer(sensitivity: number, invertY: boolean): void {
+    this.local.sensitivity = sensitivity; this.local.invertY = invertY;
+  }
 
   setSettings(partial: Partial<ControllerConfig>): void {
     const result = controllerSchema.safeParse({ ...this.config, ...partial });

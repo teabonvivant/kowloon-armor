@@ -2,12 +2,15 @@ import * as THREE from 'three';
 import type { TankSpec } from '../data/tanks';
 import { FAMILY_SHAPES, slopedHull, trackGeometry, wheelGeometry, wheelMaterial } from './geo-tank';
 import { GeometryBatch, glowMaterial, metalMaterial, unitSphere } from './materials';
+import { addTankDetails, tankPaint } from './tank-details';
 
 export interface TankVisual {
   readonly root: THREE.Group;
   readonly turret: THREE.Group;
   readonly barrel: THREE.Group;
-  readonly wheels: readonly THREE.Mesh[];
+  readonly wheels: THREE.InstancedMesh;
+  wheelPhase: number;
+  recoil: number;
 }
 
 export function disposeTank(visual: TankVisual): void {
@@ -27,7 +30,9 @@ export function createTank(spec: TankSpec): TankVisual {
   const root = new THREE.Group();
   const turret = new THREE.Group();
   const barrel = new THREE.Group();
-  const wheels: THREE.Mesh[] = [];
+  const wheels = new THREE.InstancedMesh(wheelGeometry, wheelMaterial, 14);
+  const wheelPose = new THREE.Object3D();
+  wheels.castShadow = true; wheels.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(wheels);
   root.name = spec.name;
   turret.name = 'turret';
   barrel.name = 'barrel';
@@ -36,7 +41,7 @@ export function createTank(spec: TankSpec): TankVisual {
   const paint = new THREE.Color(spec.color);
   const lightPaint = paint.clone().lerp(new THREE.Color(0xc5c4a5), 0.2);
   const darkPaint = paint.clone().multiplyScalar(0.63);
-  const hull = new GeometryBatch();
+  const hull = new GeometryBatch(tankPaint);
   const chassis = new GeometryBatch(metalMaterial);
   const lamps = new GeometryBatch(glowMaterial);
 
@@ -49,11 +54,8 @@ export function createTank(spec: TankSpec): TankVisual {
   for (const side of [-1, 1]) {
     chassis.add(trackGeometry, { position: [side * 1.73, 0.78, 0], scale: [1, 1, 1] }, 0x262a29);
     for (let index = 0; index < 7; index++) {
-      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-      wheel.position.set(side * 1.81, 0.71, -2.5 + index * 0.83);
-      wheel.castShadow = true;
-      root.add(wheel);
-      wheels.push(wheel);
+      wheelPose.position.set(side * 1.81, 0.71, -2.5 + index * 0.83);
+      wheelPose.updateMatrix(); wheels.setMatrixAt((side < 0 ? 0 : 7) + index, wheelPose.matrix);
     }
     for (let index = 0; index < 31; index++) {
       const z = -3.05 + index * 0.205;
@@ -85,7 +87,7 @@ export function createTank(spec: TankSpec): TankVisual {
   chassis.finish(root);
   lamps.finish(root, false);
 
-  const armor = new GeometryBatch();
+  const armor = new GeometryBatch(tankPaint);
   const fittings = new GeometryBatch(metalMaterial);
   turret.position.set(0, 2.13, shape.turretZ);
   armor.add(form.geometry, { position: [0, 0.22, 0], scale: [shape.width * form.scale, shape.height * form.scale, shape.length * form.scale] }, paint);
@@ -130,6 +132,19 @@ export function createTank(spec: TankSpec): TankVisual {
   cannon.finish(barrel);
   turret.add(barrel);
   root.add(turret);
+  addTankDetails(root, turret, spec);
   root.scale.z = shape.lengthScale;
-  return { root, turret, barrel, wheels };
+  wheels.computeBoundingSphere();
+  return { root, turret, barrel, wheels, wheelPhase: 0, recoil: 0 };
+}
+const wheelTransform = new THREE.Object3D();
+export function rotateWheels(visual: TankVisual, travel: number): void {
+  if (Math.abs(travel) < .0001) return;
+  visual.wheelPhase -= travel / .52;
+  wheelTransform.rotation.x = visual.wheelPhase;
+  for (const side of [-1, 1]) for (let index = 0; index < 7; index++) {
+    wheelTransform.position.set(side * 1.81, .71, -2.5 + index * .83); wheelTransform.updateMatrix();
+    visual.wheels.setMatrixAt((side < 0 ? 0 : 7) + index, wheelTransform.matrix);
+  }
+  visual.wheels.instanceMatrix.needsUpdate = true;
 }

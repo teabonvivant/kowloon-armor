@@ -15,3 +15,63 @@
 @media(min-width:768px) and (max-height:950px){.operation-panel h1{font-size:40px;letter-spacing:1px;line-height:1.25;white-space:nowrap;margin-top:16px}.operation-panel h1>span{display:inline}.operation-panel .tagline{margin-top:8px}.panel-label{margin-top:24px}.mode-option{padding:8px 16px}.mission-summary{display:none}.deploy-button{margin-top:16px;padding:12px 20px}.vehicle-specs{display:none}.vehicle-panel>.text-button{margin-top:12px}}
 @media(min-width:768px) and (max-height:780px){.operation-panel{top:96px}.operation-panel h1{font-size:32px;margin-top:12px}.panel-label{margin-top:16px}.mode-list{gap:4px}.mode-option{padding:8px 12px}.mode-option strong{font-size:13px}.mode-option small{font-size:10px}.local-note{display:none}.vehicle-panel>p{line-height:1.6;margin:12px 0 16px}.vehicle-panel{top:104px}.vehicle-panel h2{margin:12px 0}.vehicle-stats{gap:12px}.vehicle-panel>.text-button{margin-top:12px}.fleet-heading{margin-bottom:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+:root{--muted:#a2afab}
+.garage{background:linear-gradient(90deg,#0c1418f5,#0c1418b8 24%,#0c141808 40%,#0c141808 69%,#0c1418e8 82%),linear-gradient(0deg,#0c1418 0%,#0c14188c 22%,transparent 42%,#0c141852 82%,#0c1418c9)}
+.topbar{background:#0b141bd9}
+.topnav button{min-height:44px}
+.operation-panel h1{letter-spacing:0;line-height:1.2}
+.operation-panel .eyebrow{letter-spacing:1px;color:var(--accent-hover)}
+.tagline{letter-spacing:.7px;line-height:1.7}
+.panel-label{font-size:12px;margin-top:24px}
+.mode-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode-option{display:block;min-height:72px;padding:12px;background:#152127e8;border:1px solid #52605b}
+.mode-option>svg{display:none}
+.mode-option strong{font-size:14px;font-weight:600;line-height:1.4}
+.mode-option small{font-size:11px;line-height:1.6;color:var(--secondary)}
+.mode-option.active{background:#3b3829;border:1px solid var(--accent)}
+.mode-option.active strong{color:#ffdb9f}
+.mode-option:hover{background:#27383a}
+.difficulty-field{display:flex;justify-content:space-between;align-items:center;gap:12px;pointer-events:auto;font-size:12px;color:var(--secondary);margin-top:16px}
+.difficulty-field select{background:#142128;border:1px solid #64716a;color:var(--text);padding:8px 10px;min-height:40px;max-width:190px}
+.drive-note{margin-top:16px;color:var(--secondary);font-size:12px;line-height:1.7}
+.deploy-button{background:#e8b56e;border:0;box-shadow:none;margin-top:16px;min-height:72px}
+.deploy-button span{font-size:22px;letter-spacing:1px}
+.deploy-button small{opacity:1;color:#473c29;letter-spacing:1px}
+.local-note{color:var(--secondary);font-size:11px}
+.scene-caption{left:40%;top:108px;font-size:13px}
+.scene-caption small{letter-spacing:.6px}
+.service-record{position:absolute;right:27%;top:108px;display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-shadow:0 2px 4px #000;color:var(--secondary);font-size:11px}
+.service-record strong{color:var(--accent-hover);font:18px var(--display)}
+.service-record small{font-size:10px}
+.vehicle-panel{width:218px}
+.vehicle-panel h2{font-weight:600;font-size:27px;line-height:1.2}
+.vehicle-tags{color:var(--accent-hover);font-size:12px;letter-spacing:.4px}
+.vehicle-panel>p{font-size:13px;line-height:1.8}
+.stat-row span{font-size:12px}
+.stat-track i{background:var(--accent)}
+.stat-track:after{background:none}
+.model-caption{background:#111b21c9;padding:10px 14px;border:1px solid #536159;left:42%;bottom:216px}
+.model-caption .model-line{display:none}
+.tank-card{background:#142127e8;border-color:#53635c}
+.tank-card.selected{background:#393c2e}
+.tank-card>strong{font-size:13px}
+.tank-card>small{font-size:10px}
+.tank-country>span{color:var(--secondary);font-size:10px}
+.fleet-heading>div>span{font-size:11px}
+.control-tip{color:var(--secondary);font-size:12px;line-height:2.4;margin-top:24px}
+.settings-field>label{display:flex;align-items:center;gap:8px;min-height:44px}
+.debrief-line{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:-8px 0 24px;font-size:12px;color:var(--secondary)}
+.debrief-line b{color:var(--text)}
+.record-badge{border:1px solid var(--accent);padding:5px 12px;font-size:12px;letter-spacing:1px}
+.result-wave{font-size:26px;font-weight:600}
+#notice{border:1px solid #69756a;box-shadow:none;background:#132127f5}
+dialog{box-shadow:none;background:#142027}
+dialog::backdrop{background:#060b10dc;backdrop-filter:blur(4px)}
+.training-tip{border:1px solid #53635c;background:#1c2b31}
+.reduce-motion *,.reduce-motion *:before,.reduce-motion *:after{transition:none!important;animation:none!important}
+@media(min-width:768px) and (max-height:950px){.mode-option{padding:10px;min-height:66px}.operation-panel{top:100px}.operation-panel h1{font-size:36px}.operation-panel .panel-label{margin-top:20px}.local-note{font-size:10px}.model-caption{bottom:204px}.vehicle-panel>p{font-size:12px}}
+@media(min-width:768px) and (max-height:720px){.garage{min-height:600px}.operation-panel{top:86px}.operation-panel h1{font-size:30px;margin-top:8px}.operation-panel .eyebrow,.tagline,.local-note{display:none}.operation-panel .panel-label{margin-top:14px}.mode-option{min-height:58px;padding:8px}.mode-option small{font-size:10px}.difficulty-field{margin-top:10px}.deploy-button{min-height:58px;padding:8px 16px;margin-top:10px}.fleet-track .tank-card{height:104px}.fleet-track .tank-silhouette{height:38px}.vehicle-panel{top:100px}.vehicle-panel>p{display:none}.model-caption{bottom:176px}.scene-caption,.service-record{top:92px}}
+@media(max-width:1100px){.vehicle-panel{width:190px}.vehicle-panel h2{font-size:23px}.service-record{display:none}.operation-panel{width:242px}.model-caption{left:38%}.mode-option strong{font-size:13px}.mode-option small{font-size:10px}}
+@media(max-width:767px){.garage{background:linear-gradient(0deg,#0c1418 0%,#0c1418f0 66%,#0c141830 88%,#0c1418a8)}.operation-panel{width:auto;top:auto;padding-top:280px}.operation-panel h1{font-size:36px;gap:8px;flex-wrap:nowrap}.mode-option{min-height:72px;padding:12px}.mode-option strong{font-size:14px}.mode-option small{font-size:11px}.vehicle-panel{width:auto}.vehicle-panel>p{font-size:13px}.scene-caption{left:20px;top:90px}.model-caption{left:20px;top:282px;bottom:auto;padding:6px 12px}.model-caption b{font-size:14px}.service-record{display:none}.difficulty-field{margin-top:0}.deploy-button{min-height:72px}.debrief-line{flex-direction:column;gap:8px}.fleet-heading{gap:8px}.fleet-heading button{font-size:11px}}
+@media(min-width:768px) and (max-height:720px){.mode-option{min-height:52px}.mode-option small{display:none}}

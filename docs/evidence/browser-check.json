@@ -1,0 +1,106 @@
+{
+  "browser": "141.0.7390.37",
+  "checks": [
+    {
+      "name": "offline standalone boots with all four modes",
+      "details": true
+    },
+    {
+      "name": "quality, mouse and motion preferences survive reload",
+      "details": true
+    },
+    {
+      "name": "garage layout 1280x800",
+      "details": {
+        "overflow": false,
+        "deployBottom": 557.765625,
+        "fleetTop": 594
+      }
+    },
+    {
+      "name": "garage layout 960x640",
+      "details": {
+        "overflow": false,
+        "deployBottom": 413,
+        "fleetTop": 446
+      }
+    },
+    {
+      "name": "garage layout 768x900",
+      "details": {
+        "overflow": false,
+        "deployBottom": 563.359375,
+        "fleetTop": 680
+      }
+    },
+    {
+      "name": "garage layout 375x812",
+      "details": {
+        "overflow": false,
+        "deployBottom": 879.078125,
+        "fleetTop": 1356.453125
+      }
+    },
+    {
+      "name": "30 vehicles, search and selected vehicle remain accessible in carousel",
+      "details": true
+    },
+    {
+      "name": "keyboard acceleration",
+      "details": "13"
+    },
+    {
+      "name": "braking and reverse",
+      "details": true
+    },
+    {
+      "name": "independent turret and recenter",
+      "details": true
+    },
+    {
+      "name": "three cameras, scope and shell reload",
+      "details": true
+    },
+    {
+      "name": "pointer lock releases into pause",
+      "details": true
+    },
+    {
+      "name": "pause freezes time, HOTAS settings and focus loss remain safe",
+      "details": true
+    },
+    {
+      "name": "skirmish and survival deploy with selected difficulty",
+      "details": true
+    },
+    {
+      "name": "real held-fire campaign victory and difficulty-specific score",
+      "details": {
+        "completed": 1,
+        "victories": 1,
+        "bestScores": {
+          "1": 2909,
+          "campaign:1:training": 2909
+        }
+      }
+    },
+    {
+      "name": "next mission starts and unlock survives reload",
+      "details": true
+    },
+    {
+      "name": "zero browser errors and zero network asset requests",
+      "details": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "file:///home/workspace/Projects/kowloon-armor/%E4%B9%9D%E9%BE%8D%E8%A3%9D%E7%94%B2%E8%A1%8C%E5%8B%95.html",
+    "file:///home/workspace/Projects/kowloon-armor/%E4%B9%9D%E9%BE%8D%E8%A3%9D%E7%94%B2%E8%A1%8C%E5%8B%95.html",
+    "file:///home/workspace/Projects/kowloon-armor/%E4%B9%9D%E9%BE%8D%E8%A3%9D%E7%94%B2%E8%A1%8C%E5%8B%95.html"
+  ],
+  "limitations": [
+    "Linux headless Chromium / SwiftShader; no physical HOTAS.",
+    "Wave transitions also have deterministic simulation coverage."
+  ]
+}

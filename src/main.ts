@@ -1,7 +1,6 @@
-import { Vector3 } from 'three';
 import { GameAudio } from './audio';
 import { Game } from './game';
-import { updateHud } from './hud';
+import { updateEnemyMarkers, updateHud } from './hud';
 import { Input } from './input';
 import { Interface } from './interface';
 import { required } from './ui-kit';
@@ -16,10 +15,10 @@ function boot(): void {
   const ui = new Interface(game, input, view, audio);
   let last = performance.now(), accumulator = 0, uiElapsed = 0;
   const step = 1 / 60;
-  const position = new Vector3();
   document.getElementById('boot')?.remove();
   document.addEventListener('graphics-lost', () => { ui.pause(); ui.notify('繪圖裝置已重設，請重新開啟遊戲。'); });
   function frame(now: number): void {
+    if (document.hidden) { last = now; accumulator = 0; requestAnimationFrame(frame); return; }
     const dt = Math.min((now - last) / 1000, .1); last = now; uiElapsed += dt;
     const control = input.sample(dt);
     if (control.pause) ui.pause();
@@ -34,13 +33,7 @@ function boot(): void {
       uiElapsed = 0;
       if (game.phase !== 'garage') {
         updateHud(game);
-        const markers = document.getElementById('enemy-markers');
-        if (markers) markers.innerHTML = game.enemies.filter(enemy => enemy.alive).map(enemy => {
-          position.copy(enemy.visual.root.position).add(new Vector3(0, 5, 0)).project(view.camera);
-          if (position.z > 1 || Math.abs(position.x) > .95 || Math.abs(position.y) > .9) return '';
-          const distance = Math.round(enemy.visual.root.position.distanceTo(game.player.visual.root.position));
-          return `<div class="enemy-marker" style="left:${(position.x*.5+.5)*100}%;top:${(-position.y*.5+.5)*100}%"><span>◇ ${distance} m</span><b>${enemy.spec.name}</b><i style="--health:${enemy.hp/enemy.maxHp*100}%"></i></div>`;
-        }).join('');
+        updateEnemyMarkers(game, view.camera);
       } else {
         const status = document.getElementById('pad-status');
         if (status) status.textContent = input.devices.length ? `HOTAS 已連接 (${input.devices.length})` : 'HOTAS 控制設定';

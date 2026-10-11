@@ -9,6 +9,24 @@ export const metalMaterial = new THREE.MeshStandardMaterial({ roughness: 0.4, me
 export const windowMaterial = new THREE.MeshStandardMaterial({ roughness: 0.32, metalness: 0.5 });
 export const glowMaterial = new THREE.MeshStandardMaterial({ roughness: 0.65, emissive: 0xffffff, emissiveIntensity: 0.6 });
 
+function createFacadeMaterial(): THREE.MeshStandardMaterial {
+  const pixels = new Uint8Array(64 * 64 * 4);
+  for (let row = 0; row < 64; row++) for (let column = 0; column < 64; column++) {
+    const frame = column < 3 || column > 60 || row < 3 || row > 58 || (column > 29 && column < 34);
+    const reflection = Math.round(12 * (1 - row / 64) + (column < 30 ? 4 : 0));
+    const offset = (row * 64 + column) * 4;
+    pixels[offset] = frame ? 190 : 61 + reflection;
+    pixels[offset + 1] = frame ? 188 : 78 + reflection;
+    pixels[offset + 2] = frame ? 175 : 74 + reflection;
+    pixels[offset + 3] = 255;
+  }
+  const texture = new THREE.DataTexture(pixels, 64, 64, THREE.RGBAFormat);
+  texture.colorSpace = THREE.SRGBColorSpace; texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter; texture.generateMipmaps = true; texture.needsUpdate = true;
+  return new THREE.MeshStandardMaterial({ map: texture, roughness: .68, metalness: .16 });
+}
+export const facadeMaterial = createFacadeMaterial();
+
 export interface Pose {
   readonly position: readonly [number, number, number];
   readonly scale: readonly [number, number, number];
@@ -34,22 +52,30 @@ export class GeometryBatch {
   cylinder(pose: Pose, color: THREE.ColorRepresentation): void { this.add(unitCylinder, pose, color); }
   sphere(pose: Pose, color: THREE.ColorRepresentation): void { this.add(unitSphere, pose, color); }
 
-  finish(group: THREE.Group, castShadow = true): void {
+  finish(group: THREE.Group, castShadow = true, cellSize = 0): void {
     const transform = new THREE.Object3D();
     for (const [geometry, instances] of this.entries) {
-      const mesh = new THREE.InstancedMesh(geometry, this.material, instances.length);
-      instances.forEach(({ pose, color }, index) => {
-        transform.position.set(...pose.position);
-        transform.scale.set(...pose.scale);
-        transform.rotation.set(...(pose.rotation ?? [0, 0, 0]));
-        transform.updateMatrix();
-        mesh.setMatrixAt(index, transform.matrix);
-        mesh.setColorAt(index, new THREE.Color(color));
-      });
-      mesh.castShadow = castShadow;
-      mesh.receiveShadow = true;
-      mesh.computeBoundingSphere();
-      group.add(mesh);
+      const cells = new Map<string, Instance[]>();
+      for (const instance of instances) {
+        const key = cellSize ? `${Math.floor((instance.pose.position[0] + cellSize / 2) / cellSize)},${Math.floor((instance.pose.position[2] + cellSize / 2) / cellSize)}` : 'all';
+        const cell = cells.get(key) ?? []; cell.push(instance); cells.set(key, cell);
+      }
+      for (const cell of cells.values()) {
+        const mesh = new THREE.InstancedMesh(geometry, this.material, cell.length);
+        cell.forEach(({ pose, color }, index) => {
+          transform.position.set(...pose.position);
+          transform.scale.set(...pose.scale);
+          transform.rotation.set(...(pose.rotation ?? [0, 0, 0]));
+          transform.updateMatrix();
+          mesh.setMatrixAt(index, transform.matrix);
+          mesh.setColorAt(index, new THREE.Color(color));
+        });
+        mesh.castShadow = castShadow;
+        mesh.receiveShadow = true;
+        mesh.computeBoundingSphere();
+        mesh.matrixAutoUpdate = false;
+        group.add(mesh);
+      }
     }
   }
 }

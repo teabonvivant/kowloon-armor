@@ -11,10 +11,12 @@ export class Combat {
   private readonly shells: Shell[] = [];
   private readonly geometry = new SphereGeometry(0.16, 6, 4);
   private readonly material = new MeshBasicMaterial({ color: 0xffdf8c });
+  private readonly step = new Vector3();
   constructor(private readonly scene: Scene, private readonly effects: Effects, private readonly events: CombatEvents) {}
   fire(actor: Actor, obstacles: readonly Obstacle[]): boolean {
     if (!actor.alive || actor.cooldown > 0) return false;
     actor.cooldown = actor.spec.reload;
+    actor.visual.recoil = .44;
     const direction = new Vector3(-Math.sin(actor.aim) * Math.cos(actor.pitch), Math.sin(actor.pitch),
       -Math.cos(actor.aim) * Math.cos(actor.pitch));
     const mesh = new Mesh(this.geometry, this.material);
@@ -35,7 +37,7 @@ export class Combat {
     for (let i = this.shells.length - 1; i >= 0; i--) {
       const shell = this.shells[i]; if (!shell) continue;
       shell.age += dt;
-      const p = shell.mesh.position, step = shell.velocity.clone().multiplyScalar(dt);
+      const p = shell.mesh.position, step = this.step.copy(shell.velocity).multiplyScalar(dt);
       let fraction = wallFraction(p.x, p.z, step.x, step.z, obstacles);
       let target: Actor | undefined;
       for (const actor of actors) {
