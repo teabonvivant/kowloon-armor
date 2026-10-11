@@ -1,0 +1,141 @@
+export interface TankSpec {
+  readonly id: string;
+  readonly name: string;
+  readonly country: string;
+  readonly flag: string;
+  readonly year: string;
+  readonly description: string;
+  readonly role: string;
+  readonly status: '服役' | '原型' | '升級型';
+  readonly color: number;
+  readonly speed: number;
+  readonly reverse: number;
+  readonly armor: number;
+  readonly damage: number;
+  readonly reload: number;
+  readonly hp: number;
+  readonly gun: number;
+  readonly weight: number;
+  readonly family: 'western' | 'eastern' | 'merkava' | 'futuristic';
+}
+
+export const TANK_CATALOGUE_NOTE = '精選 30 款具代表性的現代主戰坦克及原型車，並非實戰排名。年代指型號所屬時期；速度單位為 km/h，裝填單位為秒。性能、車重和主炮數值用於遊戲模型及平衡，不代表真實裝甲、火力或機密性能。';
+export const TANKS: readonly TankSpec[] = [
+  { id: 'leopard2a8', name: 'Leopard 2 A8', country: '德國', flag: 'DE', year: '2020s',
+    description: '豹式家族新一代升級。遊戲中火力、防護和操控均衡，適合首次出勤。', role: '全能主戰', status: '升級型',
+    color: 0x777865, speed: 64, reverse: 28, armor: 92, damage: 138, reload: 5.5, hp: 1050, gun: 120, weight: 67, family: 'western' },
+  { id: 'abrams', name: 'M1A2 Abrams SEPv3', country: '美國', flag: 'US', year: '2010s',
+    description: '艾布蘭系列的現代升級型。遊戲中車體厚重，適合正面推進和守住路口。', role: '重裝突破', status: '升級型',
+    color: 0xb3a184, speed: 61, reverse: 25, armor: 95, damage: 139, reload: 5.9, hp: 1100, gun: 120, weight: 67, family: 'western' },
+  { id: 'k2', name: 'K2 Black Panther', country: '南韓', flag: 'KR', year: '2010s',
+    description: '韓國黑豹主戰坦克。遊戲中加速爽快、裝填迅速，擅長在街區之間轉移。', role: '機動突擊', status: '服役',
+    color: 0x667453, speed: 72, reverse: 29, armor: 84, damage: 126, reload: 4.8, hp: 910, gun: 120, weight: 56, family: 'western' },
+  { id: 'challenger3', name: 'Challenger 3（原型）', country: '英國', flag: 'GB', year: '2020s',
+    description: '挑戰者新型驗證車。遊戲中以高防護換取較慢的節奏，適合穩守主要通道。', role: '重裝防線', status: '原型',
+    color: 0x716f58, speed: 59, reverse: 23, armor: 98, damage: 143, reload: 6.2, hp: 1120, gun: 120, weight: 66, family: 'western' },
+  { id: 'leclercxlr', name: 'Leclerc XLR', country: '法國', flag: 'FR', year: '2020s',
+    description: '勒克萊爾的數碼化升級。遊戲中兼顧高速移動與連續射擊，適合主動換位。', role: '快速支援', status: '升級型',
+    color: 0x73806b, speed: 71, reverse: 30, armor: 82, damage: 125, reload: 4.7, hp: 900, gun: 120, weight: 58, family: 'western' },
+  { id: 'type10', name: 'Type 10 / 10 式', country: '日本', flag: 'JP', year: '2010s',
+    description: '日本新世代主戰坦克。遊戲中車重較輕、倒車靈活，適合狹窄街口的短促交戰。', role: '靈活側擊', status: '服役',
+    color: 0x63705e, speed: 73, reverse: 32, armor: 75, damage: 118, reload: 4.6, hp: 840, gun: 120, weight: 44, family: 'western' },
+  { id: 'merkavabarak', name: 'Merkava Mk4 Barak', country: '以色列', flag: 'IL', year: '2020s',
+    description: '梅卡瓦家族的感測系統升級型。遊戲中耐久出色，適合控制密集街區。', role: '街區防守', status: '升級型',
+    color: 0x8d8974, speed: 59, reverse: 22, armor: 97, damage: 134, reload: 6.0, hp: 1120, gun: 120, weight: 65, family: 'merkava' },
+  { id: 't90m', name: 'T-90M', country: '俄羅斯', flag: 'RU', year: '2010s',
+    description: 'T-90 系列現代化型號。遊戲中輪廓低、單發火力高，需要預先安排撤退位置。', role: '低矮伏擊', status: '升級型',
+    color: 0x61734f, speed: 65, reverse: 16, armor: 86, damage: 143, reload: 6.0, hp: 940, gun: 125, weight: 50, family: 'eastern' },
+  { id: 'type99a', name: 'Type 99A / 99A 式', country: '中國', flag: 'CN', year: '2010s',
+    description: '中國現代主戰坦克。遊戲中速度和主炮威力突出，適合沿主要道路快速推進。', role: '快速重擊', status: '服役',
+    color: 0x657460, speed: 74, reverse: 22, armor: 87, damage: 140, reload: 5.8, hp: 950, gun: 125, weight: 55, family: 'eastern' },
+  { id: 'altay', name: 'Yeni ALTAY', country: '土耳其', flag: 'TR', year: '2020s',
+    description: 'ALTAY 的新配置。遊戲中以穩健防護和充足耐久見長，適合長時間推進。', role: '持續推進', status: '升級型',
+    color: 0x938467, speed: 65, reverse: 26, armor: 90, damage: 136, reload: 5.8, hp: 1030, gun: 120, weight: 65, family: 'western' },
+  { id: 'leopard2a7v', name: 'Leopard 2 A7V', country: '德國', flag: 'DE', year: '2010s',
+    description: '豹 2 家族的強化版本。遊戲中比 A8 稍輕快，適合機動防守和中距離交戰。', role: '均衡支援', status: '升級型',
+    color: 0x64735a, speed: 67, reverse: 29, armor: 88, damage: 133, reload: 5.4, hp: 1000, gun: 120, weight: 64, family: 'western' },
+  { id: 'abramssepv2', name: 'M1A2 Abrams SEPv2', country: '美國', flag: 'US', year: '2000s',
+    description: '艾布蘭數碼化升級系列。遊戲中有可靠防護，操控比 SEPv3 稍為輕快。', role: '前線支援', status: '升級型',
+    color: 0xa99672, speed: 65, reverse: 27, armor: 89, damage: 132, reload: 5.6, hp: 1020, gun: 120, weight: 63, family: 'western' },
+  { id: 'challenger2', name: 'Challenger 2', country: '英國', flag: 'GB', year: '1990s',
+    description: '英國挑戰者主戰坦克。遊戲中防護厚實、行動沉穩，善用掩護可發揮優勢。', role: '堅守據點', status: '服役',
+    color: 0x69735a, speed: 56, reverse: 19, armor: 94, damage: 137, reload: 6.3, hp: 1070, gun: 120, weight: 63, family: 'western' },
+  { id: 'leclerc', name: 'Leclerc', country: '法國', flag: 'FR', year: '1990s',
+    description: '法國自動裝填主戰坦克。遊戲中連射節奏快，適合利用交叉路口繞側支援。', role: '高速游擊', status: '服役',
+    color: 0x677762, speed: 72, reverse: 31, armor: 76, damage: 120, reload: 4.7, hp: 860, gun: 120, weight: 56, family: 'western' },
+  { id: 'merkava4', name: 'Merkava Mk4', country: '以色列', flag: 'IL', year: '2000s',
+    description: '梅卡瓦第四代主戰坦克。遊戲中擁有高耐久，適合為持續交戰保留容錯空間。', role: '重裝守護', status: '服役',
+    color: 0x8b826b, speed: 58, reverse: 21, armor: 93, damage: 130, reload: 5.9, hp: 1090, gun: 120, weight: 65, family: 'merkava' },
+  { id: 'type90', name: 'Type 90 / 90 式', country: '日本', flag: 'JP', year: '1990s',
+    description: '日本自動裝填主戰坦克。遊戲中射速快、移動靈活，適合持續壓制對手。', role: '機動火力', status: '服役',
+    color: 0x5d6a53, speed: 70, reverse: 27, armor: 77, damage: 121, reload: 4.8, hp: 880, gun: 120, weight: 50, family: 'western' },
+  { id: 'k1a2', name: 'K1A2', country: '南韓', flag: 'KR', year: '2010s',
+    description: 'K1 家族的數碼化改良型。遊戲中操作平順、各項能力平均，適合練習走位。', role: '穩健全能', status: '升級型',
+    color: 0x657052, speed: 65, reverse: 25, armor: 80, damage: 125, reload: 5.2, hp: 920, gun: 120, weight: 54, family: 'western' },
+  { id: 'strv122', name: 'Stridsvagn 122', country: '瑞典', flag: 'SE', year: '1990s',
+    description: '瑞典採用的豹式衍生型。遊戲中前線生存能力出色，適合佔住十字路口。', role: '路口控制', status: '服役',
+    color: 0x526b57, speed: 66, reverse: 28, armor: 91, damage: 130, reload: 5.6, hp: 1030, gun: 120, weight: 62, family: 'western' },
+  { id: 't90ms', name: 'T-90MS', country: '俄羅斯', flag: 'RU', year: '2010s',
+    description: 'T-90 系列的現代出口配置。遊戲中車體低矮、主炮強勁，適合短時間探頭射擊。', role: '伏擊突擊', status: '升級型',
+    color: 0x8b8766, speed: 68, reverse: 18, armor: 84, damage: 140, reload: 5.9, hp: 920, gun: 125, weight: 48, family: 'eastern' },
+  { id: 't80bvm', name: 'T-80BVM', country: '俄羅斯', flag: 'RU', year: '2010s',
+    description: 'T-80 家族現代化升級型。遊戲中前進速度高，適合先到達有利位置再交戰。', role: '高速截擊', status: '升級型',
+    color: 0x647b57, speed: 75, reverse: 15, armor: 80, damage: 136, reload: 5.7, hp: 890, gun: 125, weight: 46, family: 'eastern' },
+  { id: 't72b3m', name: 'T-72B3M', country: '俄羅斯', flag: 'RU', year: '2010s',
+    description: 'T-72 家族的現代改良型。遊戲中單發傷害可觀，需留意較慢的倒車速度。', role: '定點重擊', status: '升級型',
+    color: 0x71805b, speed: 63, reverse: 12, armor: 76, damage: 137, reload: 6.1, hp: 880, gun: 125, weight: 46, family: 'eastern' },
+  { id: 'leopard2a6', name: 'Leopard 2 A6', country: '德國', flag: 'DE', year: '2000s',
+    description: '豹 2 長炮管系列。遊戲中比後期型號輕快，適合在主幹道保持距離交戰。', role: '機動射手', status: '升級型',
+    color: 0x6b7960, speed: 70, reverse: 30, armor: 80, damage: 132, reload: 5.3, hp: 910, gun: 120, weight: 60, family: 'western' },
+  { id: 'arjunmk1a', name: 'Arjun Mk1A', country: '印度', flag: 'IN', year: '2020s',
+    description: '阿瓊主戰坦克強化型。遊戲中火力和耐久較高，適合沿寬闊道路穩步推進。', role: '重型支援', status: '升級型',
+    color: 0xa18c60, speed: 58, reverse: 22, armor: 90, damage: 142, reload: 6.4, hp: 1080, gun: 120, weight: 68, family: 'western' },
+  { id: 'ariete', name: 'C1 Ariete', country: '意大利', flag: 'IT', year: '1990s',
+    description: '意大利公羊主戰坦克。遊戲中轉移靈活、裝填穩定，適合從側街支援主路。', role: '側翼支援', status: '服役',
+    color: 0x687759, speed: 69, reverse: 27, armor: 72, damage: 127, reload: 5.0, hp: 850, gun: 120, weight: 54, family: 'western' },
+  { id: 'oplot', name: 'BM Oplot', country: '烏克蘭', flag: 'UA', year: '2000s',
+    description: '烏克蘭堡壘主戰坦克。遊戲中輪廓低、進退較靈活，適合穿梭街道交戰。', role: '機動伏擊', status: '服役',
+    color: 0x72866a, speed: 69, reverse: 24, armor: 82, damage: 134, reload: 5.7, hp: 920, gun: 125, weight: 51, family: 'eastern' },
+  { id: 'leclercevolution', name: 'Leclerc Evolution（原型）', country: '法國', flag: 'FR', year: '2020s',
+    description: '勒克萊爾的技術展示原型。遊戲中把快速射擊和機動能力結合，適合主動出擊。', role: '未來機動', status: '原型',
+    color: 0x777f73, speed: 73, reverse: 31, armor: 82, damage: 132, reload: 4.9, hp: 880, gun: 120, weight: 62, family: 'futuristic' },
+  { id: 'kf51', name: 'KF51 Panther（原型）', country: '德國', flag: 'DE', year: '2020s',
+    description: '配備大口徑主炮的技術展示原型。遊戲中每發傷害高，需把握裝填空檔。', role: '未來重擊', status: '原型',
+    color: 0x666d66, speed: 71, reverse: 29, armor: 84, damage: 153, reload: 6.4, hp: 910, gun: 130, weight: 59, family: 'futuristic' },
+  { id: 'abramsx', name: 'AbramsX（原型）', country: '美國', flag: 'US', year: '2020s',
+    description: '艾布蘭新技術展示車。遊戲中加速和倒車靈活，適合迅速射擊後轉移。', role: '未來突擊', status: '原型',
+    color: 0x818a89, speed: 76, reverse: 32, armor: 83, damage: 132, reload: 5.1, hp: 880, gun: 120, weight: 59, family: 'futuristic' },
+  { id: 'leopard2arc', name: 'Leopard 2 A-RC 3.0（原型）', country: '德國', flag: 'DE', year: '2020s',
+    description: '豹式遙控炮塔概念車。遊戲中兼顧低矮外形和主炮威力，適合機動重擊。', role: '未來全能', status: '原型',
+    color: 0x798179, speed: 71, reverse: 30, armor: 87, damage: 147, reload: 6.0, hp: 930, gun: 130, weight: 60, family: 'futuristic' },
+  { id: 'embt', name: 'EMBT ADT 140（原型）', country: '法國／德國', flag: 'FR/DE', year: '2020s',
+    description: '法德合作的大口徑技術展示車。遊戲中主炮打擊最重，裝填期間需要掩護。', role: '重炮原型', status: '原型',
+    color: 0x7d8177, speed: 64, reverse: 27, armor: 86, damage: 155, reload: 6.6, hp: 940, gun: 140, weight: 63, family: 'futuristic' },
+] as const;
+
+export const TANK_SOURCES: readonly { readonly title: string; readonly url: string }[] = [
+  { title: 'KNDS：Leopard 2 A8', url: 'https://backend.knds.com/uploads/KNDS_B_Ansicht_LEOPARD_2_A8_EN_056fd1a8ad.pdf' },
+  { title: '德國聯邦國防軍：Leopard 2 各型', url: 'https://www.bundeswehr.de/de/ausruestung-technik-bundeswehr/kampfpanzer-leopard-versionen-bundeswehr' },
+  { title: 'General Dynamics：Abrams 系列', url: 'https://www.gdls.com/abrams/' },
+  { title: '美國陸軍：M1A2 SEPv2', url: 'https://www.benning.army.mil/armor/eARMOR/content/issues/2014/JAN_FEB/Brown.html' },
+  { title: 'General Dynamics：AbramsX 技術展示車', url: 'https://gdmissionsystems.com/articles/2022/10/04/general-dynamics-business-units-to-participate-in-ausa-2022' },
+  { title: 'Hyundai Rotem：K2、K1A2', url: 'https://www.hyundai-rotem.co.kr/ko/company/press/details.do?seq=1040' },
+  { title: '英國陸軍：Challenger 3 驗證計劃', url: 'https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/challenger-3/' },
+  { title: '英國陸軍：Challenger 2', url: 'https://www.army.mod.uk/learn-and-explore/equipment/combat-vehicles/challenger-2/' },
+  { title: '法國國防部：Leclerc XLR', url: 'https://www.defense.gouv.fr/en/node/267' },
+  { title: '三菱重工：10 式戰車', url: 'https://www.mhi.com/jp/business/products-services/space-defense/defense-vehicles/type-10-main-battle-tank' },
+  { title: '三菱重工：90 式戰車資料', url: 'https://www.mhi.com/finance/library/business/pdf/gsh2006.pdf' },
+  { title: '以色列國防軍：Merkava Mk4 Barak', url: 'https://www.idf.il/en/mini-sites/technology-and-innovation/meet-the-merkava-mk-4-barak/' },
+  { title: '以色列國防軍：Merkava Mk4', url: 'https://www.idf.il/en/mini-sites/our-units/armored-corps/armored-corps/' },
+  { title: 'Rostec：T-90M、T-72B3M', url: 'https://www.rostec.ru/en/media/news/uralvagonzavod-delivered-the-t-90m-and-t-72b3m-tanks-to-the-field-on-the-eve-of-the-victory-day/' },
+  { title: 'Rosoboronexport：T-90MS', url: 'https://roe.ru/pdfs/pdf_4436.pdf' },
+  { title: 'Rostec：T-80BVM', url: 'https://www.rostec.ru/media/news/gazoturbinnaya-legenda-50-let-tanku-t-80-ch-ii/' },
+  { title: '中國國防部：99A 式坦克', url: 'https://eng.mod.gov.cn/xb/Home/Focus/16300466.html' },
+  { title: 'BMC：Yeni ALTAY', url: 'https://www.bmc.com.tr/yeni-altay/altay.html' },
+  { title: '瑞典國防軍：Stridsvagn 122', url: 'https://www.forsvarsmakten.se/kontakt/press-och-media/stridsvagn-122-pa-plats-i-ukraina/' },
+  { title: 'DRDO：Arjun Mk1A', url: 'https://drdo.gov.in/drdo/sites/default/files/schemes_services/DRDO-Product-for-Export-2021_web.pdf' },
+  { title: '意大利陸軍：Ariete', url: 'https://www.esercito.difesa.it/en/equipment/combat-tanks-and-armoured-vehicles/combat-vehicles/-ariete--tank/75610.html' },
+  { title: 'Ukroboronprom：BM Oplot', url: 'https://ukroboronprom.com.ua/storage/documents/report_eng.pdf' },
+  { title: 'Rheinmetall：KF51 Panther 原型', url: 'https://www.rheinmetall.com/en/products/tracked-armoured-vehicles/panther-kf51-main-battle-tank' },
+  { title: 'KNDS：Leclerc Evolution、A-RC 3.0、EMBT 原型', url: 'https://www.knds.com/fileadmin/user_upload/content/Newsroom/20240613-KNDS-Press-release-Eurosatory-2024.pdf' },
+] as const;

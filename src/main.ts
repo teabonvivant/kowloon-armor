@@ -1,0 +1,60 @@
+import { Vector3 } from 'three';
+import { GameAudio } from './audio';
+import { Game } from './game';
+import { updateHud } from './hud';
+import { Input } from './input';
+import { Interface } from './interface';
+import { required } from './ui-kit';
+import { View } from './view';
+
+function boot(): void {
+  const canvas = required('#world', HTMLCanvasElement);
+  const view = new View(canvas), audio = new GameAudio(), input = new Input(canvas);
+  const game = new Game(view.scene, view.world, { shot: () => { audio.fire(); view.recoil(); },
+    hit: (damage, killed, enemy) => ui.hit(damage, killed, enemy),
+    finish: victory => ui.finish(victory), notify: message => ui.notify(message) });
+  const ui = new Interface(game, input, view, audio);
+  let last = performance.now(), accumulator = 0, uiElapsed = 0;
+  const step = 1 / 60;
+  const position = new Vector3();
+  document.getElementById('boot')?.remove();
+  document.addEventListener('graphics-lost', () => { ui.pause(); ui.notify('繪圖裝置已重設，請重新開啟遊戲。'); });
+  function frame(now: number): void {
+    const dt = Math.min((now - last) / 1000, .1); last = now; uiElapsed += dt;
+    const control = input.sample(dt);
+    if (control.pause) ui.pause();
+    if (game.phase === 'playing') {
+      if (control.toggleCamera) game.cycleCamera();
+      accumulator = Math.min(accumulator + dt, .15);
+      while (accumulator >= step) { game.update(step, { ...control, toggleCamera: false }); accumulator -= step; }
+      audio.engine(Math.abs(game.player.speed));
+    } else accumulator = 0;
+    view.render(game, dt);
+    if (uiElapsed > .1) {
+      uiElapsed = 0;
+      if (game.phase !== 'garage') {
+        updateHud(game);
+        const markers = document.getElementById('enemy-markers');
+        if (markers) markers.innerHTML = game.enemies.filter(enemy => enemy.alive).map(enemy => {
+          position.copy(enemy.visual.root.position).add(new Vector3(0, 5, 0)).project(view.camera);
+          if (position.z > 1 || Math.abs(position.x) > .95 || Math.abs(position.y) > .9) return '';
+          const distance = Math.round(enemy.visual.root.position.distanceTo(game.player.visual.root.position));
+          return `<div class="enemy-marker" style="left:${(position.x*.5+.5)*100}%;top:${(-position.y*.5+.5)*100}%"><span>◇ ${distance} m</span><b>${enemy.spec.name}</b><i style="--health:${enemy.hp/enemy.maxHp*100}%"></i></div>`;
+        }).join('');
+      } else {
+        const status = document.getElementById('pad-status');
+        if (status) status.textContent = input.devices.length ? `HOTAS 已連接 (${input.devices.length})` : 'HOTAS 控制設定';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+try { boot(); }
+catch (error) {
+  if (!(error instanceof Error)) throw error;
+  const bootScreen = document.getElementById('boot');
+  if (bootScreen) { bootScreen.innerHTML = '<span class="boot-mark">K / A</span><h1>無法啟動 3D 場景</h1><p>請用 Windows Edge 或 Chrome 開啟，並在瀏覽器設定啟用圖形加速。</p><p id="boot-error"></p>';
+    const detail = document.getElementById('boot-error'); if (detail) detail.textContent = error.message; }
+  console.error(error);
+}
