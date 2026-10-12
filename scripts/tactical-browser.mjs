@@ -88,6 +88,7 @@ async function garage() {
   if ((await state()).phase === 'playing') { await page.keyboard.press('Escape'); await advance(1 / 60, 'keyboard'); }
   if (await page.locator('#modal [data-action="return"]').count()) await click('#modal [data-action="return"]');
   else await click('#modal [data-action="close"]');
+  if (await page.locator('#modal [data-action="confirm-return"]').count()) await click('#modal [data-action="confirm-return"]');
 }
 async function mission(index) {
   await click('[data-action="missions"]'); await click(`[data-mission="${index}"]`); await click('[data-action="start"]');
@@ -112,6 +113,7 @@ try {
   await page.keyboard.press('Escape'); await advance(1 / 60, 'keyboard'); await click('#modal [data-action="settings"]');
   assert.equal(await page.locator('#modal').evaluate(modal => modal.scrollWidth <= modal.clientWidth), true);
   await shot('settings-390');
+  await click('#tab-controls');
   await page.locator('#scope-mode').selectOption('toggle'); await page.locator('#scope-zoom').selectOption('4');
   await click('#modal [data-action="close"]');
   await page.waitForFunction(() => window.qa.state().phase === 'playing');

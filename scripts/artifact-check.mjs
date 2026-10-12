@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
 const artifact = await readFile('九龍裝甲行動.html');
+const framing = process.argv.includes('--framing');
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--disable-gpu-sandbox'] });
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
 page.setDefaultTimeout(120000);
@@ -14,8 +15,44 @@ page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => { if (/^https?:/.test(request.url())) network.push(request.url()); });
 await page.context().setOffline(true);
 await page.addInitScript(() => localStorage.setItem('kowloon-armor-settings', JSON.stringify({ quality: 'low', volume: 0, reducedMotion: true })));
+if (framing) await page.addInitScript(() => {
+  const locations = new WeakMap(), context = WebGL2RenderingContext.prototype;
+  const getLocation = context.getUniformLocation, matrix = context.uniformMatrix4fv;
+  context.getUniformLocation = function (program, name) {
+    const location = getLocation.call(this, program, name);
+    if (location) locations.set(location, name);
+    return location;
+  };
+  context.uniformMatrix4fv = function (...args) {
+    if (locations.get(args[0]) === 'projectionMatrix') {
+      window.framingProjection = Array.from(args[2]);
+    }
+    return matrix.apply(this, args);
+  };
+  for (const name of ['drawElements', 'drawElementsInstanced']) {
+    const draw = context[name];
+    context[name] = function (...args) {
+      window.framingDraws = (window.framingDraws ?? 0) + 1;
+      return draw.apply(this, args);
+    };
+  }
+});
 try {
   await page.goto(pathToFileURL(resolve('九龍裝甲行動.html')).href, { waitUntil: 'domcontentloaded' });
+  let framingResult = null;
+  if (framing) {
+    await page.waitForFunction(() => window.framingProjection?.length === 16);
+    const before = await page.evaluate(() => window.framingProjection[9]);
+    await page.locator('.fleet-track [data-tank="type10"]').click();
+    const selection = await page.evaluate(() => ({ scroll: scrollY, draws: window.framingDraws }));
+    assert.ok(selection.scroll > 0, 'Fleet selection exercises a scrolled mobile page');
+    await page.waitForFunction(previous => window.framingDraws > previous, selection.draws);
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForFunction(expected => Math.abs(window.framingProjection[9] - expected) < .000001, before);
+    assert.match(await page.locator('.vehicle-panel h2').innerText(), /Type 10/);
+    await page.screenshot({ path: '.omo/evidence/artifact-garage-reselect-390.png' });
+    framingResult = { selectionScrollY: selection.scroll, before, after: await page.evaluate(() => window.framingProjection[9]) };
+  }
   await page.locator('[data-action="settings"]').first().click({ force: true });
   await page.evaluate(() => {
     document.querySelector('#modal [data-action="close"]').click();
@@ -44,8 +81,9 @@ try {
   assert.deepEqual(errors, []); assert.deepEqual(network, []);
   assert.equal(await page.evaluate(() => 'qa' in window || 'failureHarness' in window), false);
   const report = { timestamp: new Date().toISOString(), artifactSha256: createHash('sha256').update(artifact).digest('hex'),
-    browser: browser.version(), checks: ['Rapid HOTAS reopen retains fields in production bundle', 'Actual fire and non-overlapping 390 HUD', 'Scrolled settings retain visible close control'],
-    layout, close, errors, networkRequests: network, productionTestHooks: false };
+    browser: browser.version(), checks: ['Rapid HOTAS reopen retains fields in production bundle', 'Actual fire and non-overlapping 390 HUD', 'Scrolled settings retain visible close control',
+      ...(framing ? ['Scrolled mobile fleet selection preserves the rendered projection'] : [])],
+    layout, close, framingResult, errors, networkRequests: network, productionTestHooks: false };
   await writeFile('.omo/evidence/artifact-check.json', JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally { await browser.close(); }

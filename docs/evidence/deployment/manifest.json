@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-10-12T14:35:24.071Z",
+  "artifactBytes": 1038475,
+  "artifactSha256": "483e501610fb7a7aad8c4f37b14a966e23370e1ef82b49608819ea5d4fdf987f",
+  "fullBrowserArtifactSha256": "be57e80c88c74920cbb25763fb3013618c45cd3601f9451fc85582e7c9ac40ec",
+  "benchmarkArtifactSha256": "be57e80c88c74920cbb25763fb3013618c45cd3601f9451fc85582e7c9ac40ec",
+  "finalSourceChange": {
+    "file": "src/view.ts",
+    "original": "stage.top + stage.height / 2",
+    "replacement": "stage.top + window.scrollY + stage.height / 2",
+    "reconstructedFullBrowserArtifactMatches": true
+  },
+  "distMatchesOfflineArtifact": true,
+  "productionTestHooks": false,
+  "unitTests": {
+    "simulation": 9,
+    "upgrade": 10,
+    "tactical": 21,
+    "deployment": 7
+  },
+  "inputOnlyCampaignVictories": 6,
+  "deploymentBrowserChecks": 14,
+  "legacyBrowserChecks": 20,
+  "tacticalIntegrationGroups": 8,
+  "finalArtifactChecks": 4,
+  "resultSettingsNavigation": {
+    "backReachable": true,
+    "headerReturnsGarage": true,
+    "escapeReturnsGarage": true
+  },
+  "reports": [
+    "deployment-browser",
+    "browser-check",
+    "defeat-check",
+    "campaign-check",
+    "tactical-browser",
+    "artifact-check",
+    "benchmark-deployment-final"
+  ],
+  "screenshots": [
+    "deployment-garage-1440",
+    "deployment-garage-1280",
+    "deployment-garage-390",
+    "deployment-briefing",
+    "deployment-records",
+    "deployment-settings-390",
+    "deployment-training-complete",
+    "deployment-training-1280",
+    "deployment-training-320",
+    "artifact-garage-reselect-390",
+    "release-victory",
+    "release-defeat"
+  ],
+  "limits": [
+    "Linux headless Chromium and SwiftShader; not Windows or hardware FPS.",
+    "Synthetic HOTAS only; no physical device acceptance.",
+    "Mobile browsing/settings, not touch-driving controls.",
+    "20 minutes of fixed-step simulation with sparse rendering, not continuous real-time rendering.",
+    "Garage framing changed; the current benchmark is not a matched before/after performance claim.",
+    "Combat renderTimesMs do not wait for GPU completion; they are not combat FPS.",
+    "Accelerated stability loop disables audio; bounded resource observations do not prove absence of all leaks.",
+    "No complete model-token usage telemetry available."
+  ]
+}

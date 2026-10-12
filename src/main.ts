@@ -11,7 +11,7 @@ function boot(): void {
   const canvas = required('#world', HTMLCanvasElement);
   const view = new View(canvas), audio = new GameAudio(), input = new Input(canvas);
   const game = new Game(view.scene, view.world, { shot: () => view.recoil(),
-    cannon: position => audio.fire(position), ready: () => audio.ready(),
+    cannon: position => audio.fire(position), ready: () => audio.ready(), trained: () => ui.completeTraining(),
     hit: (damage, killed, enemy, impact) => ui.hit(damage, killed, enemy, impact),
     finish: victory => ui.finish(victory), notify: message => ui.notify(message) });
   const ui = new Interface(game, input, view, audio);

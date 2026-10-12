@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-10-12T14:35:23.739Z",
+  "artifactSha256": "483e501610fb7a7aad8c4f37b14a966e23370e1ef82b49608819ea5d4fdf987f",
+  "browser": "141.0.7390.37",
+  "checks": [
+    "Rapid HOTAS reopen retains fields in production bundle",
+    "Actual fire and non-overlapping 390 HUD",
+    "Scrolled settings retain visible close control",
+    "Scrolled mobile fleet selection preserves the rendered projection"
+  ],
+  "layout": {
+    "mapBottom": 708,
+    "ammoTop": 718,
+    "overflow": false
+  },
+  "close": {
+    "x": 308,
+    "y": 69.671875,
+    "width": 44,
+    "height": 44
+  },
+  "framingResult": {
+    "selectionScrollY": 796,
+    "before": -0.5616113543510437,
+    "after": -0.5616113543510437
+  },
+  "errors": [],
+  "networkRequests": [],
+  "productionTestHooks": false
+}

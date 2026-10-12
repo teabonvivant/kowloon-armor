@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DEFAULT_BINDINGS, keyBindingsSchema } from './key-bindings';
+import { TANKS } from './data/tanks';
 
 const schema = z.object({
   quality: z.enum(['low', 'medium', 'high']).default('medium'),
@@ -12,6 +13,10 @@ const schema = z.object({
   scopeMode: z.enum(['hold', 'toggle']).default('hold'),
   scopeZoom: z.union([z.literal(2), z.literal(3), z.literal(4)]).default(2),
   hudScale: z.number().min(.85).max(1.15).default(1),
+  tankId: z.string().refine(id => TANKS.some(tank => tank.id === id)).default('leopard2a8').catch('leopard2a8'),
+  mode: z.enum(['drive', 'battle', 'campaign', 'survival']).default('campaign').catch('campaign'),
+  missionIndex: z.number().int().min(0).max(5).default(0).catch(0),
+  deploymentSet: z.boolean().default(false).catch(false),
 });
 export type Preferences = z.infer<typeof schema>;
 export function loadPreferences(): Preferences {

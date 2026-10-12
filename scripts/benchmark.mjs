@@ -71,6 +71,7 @@ try {
       if (surface === 'drive') {
         await page.keyboard.press('Escape');
         await page.locator('#modal [data-action="return"]').click({ force: true });
+        await page.locator('#modal [data-action="confirm-return"]').click({ force: true });
       }
     }
   }

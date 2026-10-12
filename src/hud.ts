@@ -14,6 +14,7 @@ export function hudMarkup(game: Game, bindings: KeyBindings = DEFAULT_BINDINGS):
   return `<div class="battle-hud"><div class="combat-vignette"></div><div class="driver-frame" id="driver-frame" hidden></div>
     <div class="hud-top"><div class="operation-tag"><span class="live-dot"></span><span>${MODE_NAMES[game.mode]} <small>${game.mode === 'campaign' ? game.mission?.area : '九龍 · 封閉演習區'}${game.mode !== 'drive' ? ` / ${DIFFICULTIES[game.difficulty].name}` : ''}</small></span></div><div class="compass"><span id="compass-direction">北 N</span><b id="heading">000°</b></div><div class="hud-tools"><button class="icon-button" data-action="camera" aria-label="切換視角">${icon('camera')}</button><button class="icon-button" data-action="pause" aria-label="暫停遊戲">${icon('pause')}</button></div></div>
     <section class="objective"><span class="small-label" id="district-label">${game.mode === 'drive' ? '自由探索' : '作戰目標'}</span><strong id="objective-title">${game.mode === 'drive' ? '探索九龍街道' : objectiveName(game.mode === 'campaign' ? game.mission?.objective : undefined)}</strong><div><span id="objective-count">0 / ${game.totalEnemies}</span><span id="mission-time">00:00</span></div><p id="zone-status" hidden></p><p id="zone-location" hidden></p><progress id="zone-progress" max="100" value="0" aria-label="任務進度" hidden></progress><p id="wave-status" ${game.mode === 'survival' ? '' : 'hidden'}></p></section>
+    ${game.training ? `<section class="training-hud" aria-label="基礎訓練"><span class="small-label" id="training-step">基礎訓練 · 1 / 4</span><strong id="training-title">向前行駛 15 米</strong><progress id="training-progress" max="4" value="0" aria-label="訓練完成步驟"></progress><p data-training-hint="0">按住 ${keyLabel(bindings.forward)} 前進，或推動已校準的 HOTAS 油門。</p><p data-training-hint="1" hidden>放開油門，按住 ${keyLabel(bindings.brake)} 煞車，停穩約 1 秒。</p><p data-training-hint="2" hidden>右鍵拖動，或按 ${keyLabel(bindings.turretLeft)} / ${keyLabel(bindings.turretRight)}，把炮塔從目前方向轉動 30°。只轉車身不計算。</p><p data-training-hint="3" hidden>按 ${keyLabel(bindings.fire)}、滑鼠左鍵或 HOTAS 開火。等主炮就緒才可射擊。</p><p data-training-hint="4" hidden>四步已完成。可繼續自由駕駛，或返回車庫開始戰役。</p><button class="text-button" id="training-return" data-action="training-return" hidden>返回車庫 →</button></section>` : ''}
     <div class="bearing-instrument"><span id="hull-heading">車頭 000°</span><span id="turret-bearing">炮塔 0°</span><span id="observation-status" hidden>獨立觀察</span></div>
     <div class="incoming-indicator" id="incoming-indicator" hidden><i></i><span>受擊方向</span></div>
     <div class="reticle" id="reticle"><svg class="reload-ring" viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="43"/></svg><div class="reticle-h"></div><div class="reticle-v"></div><i></i><span id="reticle-range">APFSDS</span><b id="reload-label">就緒</b><em id="hit-confirm" aria-live="off"></em></div>
@@ -30,6 +31,14 @@ const setText = (id: string, value: string): void => { const e = document.getEle
 export function updateHud(game: Game): void {
   const p = game.player;
   const target = game.target;
+  if (game.training) {
+    const training = game.training;
+    setText('training-step', training.step < 4 ? `基礎訓練 · ${training.step + 1} / 4` : '基礎訓練完成');
+    setText('training-title', [`向前行駛 ${Math.min(15, Math.floor(training.distance))} / 15 米`, '煞車並保持停穩', '獨立轉動炮塔 30°', '發射一枚炮彈', '已掌握基本操作'][training.step] ?? '');
+    const progress = document.getElementById('training-progress'); if (progress instanceof HTMLProgressElement) progress.value = training.step;
+    for (const hint of document.querySelectorAll<HTMLElement>('[data-training-hint]')) hint.hidden = Number(hint.dataset['trainingHint']) !== training.step;
+    const back = document.getElementById('training-return'); if (back) back.hidden = training.step !== 4;
+  }
   const heading = ((p.aim * -180 / Math.PI) % 360 + 360) % 360;
   setText('hull-heading', `車頭 ${String(Math.round(((-p.yaw * 180 / Math.PI) % 360 + 360) % 360) % 360).padStart(3, '0')}°`);
   const relative = Math.round(-angleDelta(p.yaw, p.aim) * 180 / Math.PI);
@@ -74,6 +83,8 @@ export function updateHud(game: Game): void {
   }
   const time = game.mode === 'campaign' ? Math.max(0, (game.mission?.timeLimit ?? 0) - game.elapsed) : game.elapsed;
   setText('mission-time', `${Math.floor(time / 60).toString().padStart(2, '0')}:${Math.floor(time % 60).toString().padStart(2, '0')}`);
+  document.getElementById('mission-time')?.classList.toggle('time-critical', game.mode === 'campaign' && time <= 30);
+  document.querySelector('.tank-status')?.classList.toggle('health-critical', p.hp / p.maxHp < .3);
   setText('reload-label', p.cooldown > 0 ? `裝填 ${p.cooldown.toFixed(1)} s` : '主炮就緒');
   setText('ammo-status', `${p.cooldown > 0 ? `裝填中 ${p.cooldown.toFixed(1)} 秒` : '可以開火'}${p.rapidShots > 0 ? ` · 快裝 ${p.rapidShots} 發` : ''}`);
   setText('gun-angle', `炮管 ${p.pitch >= 0 ? '+' : ''}${(p.pitch * 180 / Math.PI).toFixed(1)}°`);

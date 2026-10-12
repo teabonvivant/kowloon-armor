@@ -65,8 +65,27 @@ try {
   assert.equal(restarted.elapsed, 0);
   assert.equal(restarted.difficulty, 'veteran');
   assert.equal(await page.locator('#modal').evaluate(modal => modal.open), false);
+  await page.evaluate(() => window.failureHarness.advance());
+  await page.locator('#modal [data-action="records"]').click();
+  await page.locator('#tab-controls').click();
+  await page.locator('#modal [data-action="controller"]').click();
+  await page.getByRole('button', { name: '關閉控制設定', exact: true }).focus();
+  await page.keyboard.press('Shift+Tab');
+  const backReachable = await page.locator('[data-action="settings-controls"]').evaluate(button => document.activeElement === button);
+  await page.getByRole('button', { name: '關閉控制設定', exact: true }).click();
+  const headerReturnsGarage = await page.locator('.garage').count() === 1;
+  console.log(JSON.stringify({ backReachable, headerReturnsGarage }));
+  assert.equal(backReachable, true, 'HOTAS child return belongs to its keyboard focus trap');
+  assert.equal(headerReturnsGarage, true, 'Closing HOTAS from result settings cannot strand a finished game');
+  await page.locator('[data-action="start"]').click();
+  await page.evaluate(() => window.failureHarness.advance());
+  await page.locator('#modal [data-action="records"]').click();
+  await page.locator('#tab-controls').click();
+  await page.locator('#modal [data-action="controller"]').click();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.garage').count(), 1, 'HOTAS Escape from a finished game returns safely to garage');
   assert.deepEqual(errors, []);
-  const report = { browser: browser.version(), defeated, restarted, errors,
+  const report = { browser: browser.version(), defeated, restarted, errors, resultSettingsNavigation: { backReachable, headerReturnsGarage, escapeReturnsGarage: true },
     method: 'Real Game, city, Interface and View in an isolated browser fixture. Fixed-step physics fast-forwarded without intermediate rendering; no health or outcome overrides. Production offline playthrough is covered separately.' };
   await writeFile(`${evidence}/defeat-check.json`, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));

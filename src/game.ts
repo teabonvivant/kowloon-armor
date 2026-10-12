@@ -16,6 +16,8 @@ import type { WorldData } from './render/world';
 import { disposeTank } from './render/tank';
 import type { Impact } from './armor';
 import { createObjectiveState, updateObjective } from './objectives';
+import { createTraining, updateTraining } from './training';
+import type { TrainingState } from './training';
 
 export type GameMode = 'drive' | 'battle' | 'campaign' | 'survival';
 export type GamePhase = 'garage' | 'playing' | 'paused' | 'victory' | 'defeat';
@@ -23,6 +25,7 @@ export type CameraMode = 'chase' | 'driver' | 'gunner';
 export interface GameEvents {
   readonly shot: () => void; readonly hit: (damage: number, killed: boolean, enemy: boolean, impact?: Impact) => void;
   readonly cannon?: (position: Vector3, enemy: boolean) => void; readonly ready?: () => void;
+  readonly trained?: () => void;
   readonly finish: (victory: boolean) => void; readonly notify: (message: string) => void;
 }
 function firstTank(): TankSpec {
@@ -35,6 +38,7 @@ export class Game {
   difficulty: Difficulty = 'standard'; wave = 0; intermission = 0; seed = 1;
   objective = createObjectiveState(); supply: 'repair' | 'reload' = 'repair';
   damageBearing = 0; damageTimer = 0; observing = false; observationYaw = 0;
+  training: TrainingState | null = null;
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
   private readonly actors: Actor[] = [];
@@ -61,6 +65,7 @@ export class Game {
     this.intermission = 0; this.totalEnemies = 0;
     this.objective = createObjectiveState(); this.supply = 'repair'; this.damageTimer = 0;
     this.observing = false; this.observationYaw = 0; this.dustTimer = 0;
+    this.training = null;
     const mission = this.mission;
     if (mode === 'campaign' && mission) this.player.visual.root.position.set(mission.spawn[0], 0, mission.spawn[1]);
     const spots = mode === 'battle' || mode === 'survival'
@@ -70,7 +75,10 @@ export class Game {
     this.phase = 'playing';
     this.events.notify(mode === 'drive' ? '自由駕駛開始 · 無限彈藥，探索九龍街道' : '演習開始 · 紅色標記為敵方坦克');
   }
-  garage(): void { this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.select(this.player.spec); this.intermission = 0; this.phase = 'garage'; }
+  garage(): void { this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.select(this.player.spec); this.intermission = 0; this.training = null; this.phase = 'garage'; }
+  beginTraining(): void {
+    if (this.phase === 'playing' && this.mode === 'drive') this.training = createTraining(this.player, this.shots);
+  }
   pause(): void { if (this.phase === 'playing') this.phase = 'paused'; }
   resume(): void { if (this.phase === 'paused') this.phase = 'playing'; }
   cycleCamera(): void {
@@ -93,6 +101,10 @@ export class Game {
     drivePlayer(this.player, this.observing ? { ...input, aimX: 0, aimY: 0, pointerX: 0, pointerY: 0 } : input, dt, this.world.obstacles, actors);
     if (previousCooldown > 0 && this.player.cooldown === 0) this.events.ready?.();
     if (input.fire) this.combat.fire(this.player, this.world.obstacles);
+    if (this.training && updateTraining(this.training, this.player, this.shots, dt)) {
+      if (this.training.step === 4) this.events.trained?.();
+      this.events.notify(this.training.step === 4 ? '基礎訓練完成 · 可繼續探索，或返回車庫開始戰役' : `訓練步驟 ${this.training.step} / 4 完成`);
+    }
     const p = this.player.visual.root.position;
     const goal = this.mode === 'campaign' ? this.mission?.objective : undefined;
     const orders = goal && goal.kind !== 'clear' ? this.objectivePosition.set(goal.center[0], 0, goal.center[1]) : undefined;

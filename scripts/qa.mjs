@@ -89,6 +89,7 @@ try {
     await page.keyboard.press('v'); await page.keyboard.down('Shift'); await page.waitForTimeout(200); await capture('scope'); await page.keyboard.up('Shift');
     await page.keyboard.press('Escape'); await capture('pause');
     await page.locator('#modal [data-action="return"]').click();
+    await page.locator('#modal [data-action="confirm-return"]').click();
     await page.locator('[data-mode="campaign"]').click(); await page.locator('#app [data-action="start"]').click();
     await hold('w', 1800); await hold('b', 1000); await page.keyboard.down('Space');
     for (let i = 0; i < 40; i++) {
@@ -169,12 +170,14 @@ try {
   await hold('d', 2200); await hold('w', 7000); check('drive into side building', await hud());
   await page.screenshot({ path: `${evidence}/qa-collision-1280.png` });
   await page.keyboard.press('Escape'); await page.locator('[data-action="return"]').click();
+  await page.locator('[data-action="confirm-return"]').click();
   await page.locator('[data-mode="battle"]').click(); await page.locator('[data-action="start"]').click();
   const initialHp = await page.locator('#hp-value').textContent();
   await page.waitForFunction(hp => Number(document.getElementById('hp-value').textContent) < Number(hp), initialHp, { timeout: 35000 });
   check('AI battle damages player', { initialHp, hud: await hud() });
   await page.screenshot({ path: `${evidence}/qa-ai-damage-1280.png` });
   await page.keyboard.press('Escape'); await page.locator('[data-action="return"]').click();
+  await page.locator('[data-action="confirm-return"]').click();
   await page.locator('[data-mode="campaign"]').click(); await page.locator('[data-action="start"]').click();
   await hold('w', 1800); await hold('b', 1000);
   console.log('QA: playing first campaign through real Space key');

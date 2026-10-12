@@ -15,6 +15,9 @@ export class View {
   private readonly look = new Vector3();
   private readonly aim = new Vector3();
   private orbit = 0; private shake = 0; private elapsed = 0;
+  private garageOffset = { horizontal: 0, vertical: 0 };
+  private garageFov = 48;
+  private framingDirty = true; private cameraInGarage = false;
   constructor(readonly canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -39,6 +42,15 @@ export class View {
   resize(): void {
     this.renderer.setSize(innerWidth, innerHeight); this.camera.aspect = innerWidth / innerHeight;
     this.camera.updateProjectionMatrix();
+    this.frameGarage();
+  }
+  frameGarage(): void {
+    const stage = document.querySelector('.showroom')?.getBoundingClientRect();
+    if (stage) {
+      this.garageOffset = { horizontal: innerWidth / 2 - (stage.left + stage.width / 2), vertical: innerHeight / 2 - (stage.top + window.scrollY + stage.height / 2) };
+      this.garageFov = Math.min(78, 2 * Math.atan(Math.tan(24 * Math.PI / 180) * Math.max(1, innerHeight / Math.max(220, stage.width) * .6)) * 180 / Math.PI);
+    }
+    this.framingDirty = true;
   }
   rotate(): void { this.orbit += Math.PI / 3; }
   reduceMotion(enabled: boolean): void {
@@ -61,6 +73,12 @@ export class View {
     const desired = this.desired, look = this.look;
     game.getAimPoint(this.aim);
     let fov = 50;
+    const inGarage = game.phase === 'garage';
+    if (this.framingDirty || inGarage !== this.cameraInGarage) {
+      if (inGarage) this.camera.setViewOffset(innerWidth, innerHeight, this.garageOffset.horizontal, this.garageOffset.vertical, innerWidth, innerHeight);
+      else this.camera.clearViewOffset();
+      this.cameraInGarage = inGarage; this.framingDirty = false;
+    }
     if (game.phase === 'garage') {
       const angle = 2.35 + this.orbit + (this.reducedMotion ? 0 : Math.sin(this.elapsed * 0.08) * 0.08);
       const distance = innerWidth < 768 ? 23 : 17;
@@ -69,7 +87,7 @@ export class View {
       if (clearance < 1) { desired.x = p.x + (desired.x - p.x) * Math.max(.15, clearance - .08);
         desired.z = p.z + (desired.z - p.z) * Math.max(.15, clearance - .08); }
       look.set(innerWidth > 1100 ? -1.2 : 0, 1.3, 0).add(p);
-      fov = 48;
+      fov = this.garageFov;
     } else if (!game.observing && (game.scope || game.cameraMode === 'gunner')) {
       desired.set(-Math.sin(actor.aim) * 5.8, 2.65, -Math.cos(actor.aim) * 5.8).add(p);
       look.copy(this.aim); fov = game.scope ? 50 / this.scopeZoom : 42;

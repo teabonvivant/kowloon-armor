@@ -23,6 +23,7 @@ async function waitValue(id, predicate, timeout = 90000) {
 }
 async function returnGarage() {
   await page.keyboard.press('Escape'); await click('#modal [data-action="return"]');
+  await click('#modal [data-action="confirm-return"]');
 }
 try {
   await page.goto(pathToFileURL(resolve('九龍裝甲行動.html')).href, { waitUntil: 'domcontentloaded' });
@@ -31,32 +32,34 @@ try {
   check('offline standalone boots with all four modes');
   await click('[data-action="settings"]');
   await page.locator('#quality').selectOption('low');
+  await page.locator('#reduce-motion').check({ force: true });
+  await page.locator('#hud-scale').selectOption('1.15');
+  await click('#tab-controls');
   await page.locator('#sensitivity').evaluate(input => { input.value = '1.6'; input.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.locator('#invert-y').check({ force: true });
-  await page.locator('#reduce-motion').check({ force: true });
   await page.locator('#scope-zoom').selectOption('3');
   await page.locator('#scope-mode').selectOption('toggle');
-  await page.locator('#hud-scale').selectOption('1.15');
   await capture('settings');
   await click('#modal [data-action="close"]');
   await page.reload({ waitUntil: 'domcontentloaded' });
   await click('[data-action="settings"]');
   assert.equal(await page.locator('#quality').inputValue(), 'low');
+  assert.equal(await page.locator('#hud-scale').inputValue(), '1.15');
+  await page.locator('#hud-scale').selectOption('1');
+  await click('#tab-controls');
   assert.equal(await page.locator('#sensitivity').inputValue(), '1.6');
   assert.equal(await page.locator('#invert-y').isChecked(), true);
   assert.equal(await page.locator('#scope-zoom').inputValue(), '3');
   assert.equal(await page.locator('#scope-mode').inputValue(), 'toggle');
-  assert.equal(await page.locator('#hud-scale').inputValue(), '1.15');
   await page.locator('#scope-mode').selectOption('hold');
-  await page.locator('#hud-scale').selectOption('1');
   await page.locator('#invert-y').uncheck({ force: true });
   check('quality, mouse and motion preferences survive reload');
   await click('#modal [data-action="close"]');
-  await click('[data-action="settings"]'); await click('[data-action="keyboard"]');
+  await click('[data-action="settings"]'); await click('#tab-controls'); await click('[data-action="keyboard"]');
   await click('[data-bind="fire"]'); await page.keyboard.press('r');
   assert.equal(await text('[data-bind="fire"]'), 'R');
   await click('#modal [data-action="close"]'); await page.reload({ waitUntil: 'domcontentloaded' });
-  await click('[data-action="settings"]'); await click('[data-action="keyboard"]');
+  await click('[data-action="settings"]'); await click('#tab-controls'); await click('[data-action="keyboard"]');
   assert.equal(await text('[data-bind="fire"]'), 'R');
   await click('[data-bind="fire"]'); await page.keyboard.press('Escape');
   assert.equal(await page.locator('#modal').evaluate(modal => modal.open), true);
@@ -135,6 +138,7 @@ try {
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await capture('pause');
   await click('#modal [data-action="return"]');
+  await click('#modal [data-action="confirm-return"]');
   check('pause freezes time, HOTAS settings and focus loss remain safe');
   await click('[data-mode="battle"]'); await page.locator('#difficulty').selectOption('veteran');
   await click('[data-action="start"]'); await waitValue('objective-count', 'value.includes("/ 4")');

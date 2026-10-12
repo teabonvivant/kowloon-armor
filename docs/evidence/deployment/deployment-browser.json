@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-10-12T14:18:38.713Z",
+  "browser": "141.0.7390.37",
+  "artifactBytes": 1038460,
+  "sha256": "be57e80c88c74920cbb25763fb3013618c45cd3601f9451fc85582e7c9ac40ec",
+  "checks": [
+    {
+      "name": "layout 1280×577",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 363,
+          "bottom": 423
+        },
+        "fleetTop": 427,
+        "titleBottom": 92.75
+      }
+    },
+    {
+      "name": "layout 1440×900",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 628,
+          "bottom": 692
+        },
+        "fleetTop": 704,
+        "titleBottom": 154
+      }
+    },
+    {
+      "name": "layout 960×640",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 404,
+          "bottom": 464
+        },
+        "fleetTop": 472,
+        "titleBottom": 103.25
+      }
+    },
+    {
+      "name": "layout 768×1024",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 752,
+          "bottom": 816
+        },
+        "fleetTop": 828,
+        "titleBottom": 150.25
+      }
+    },
+    {
+      "name": "layout 390×844",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 1302.953125,
+          "bottom": 1366.953125
+        },
+        "fleetTop": 1399.953125,
+        "titleBottom": 379.5
+      }
+    },
+    {
+      "name": "layout 320×568",
+      "detail": {
+        "overflow": false,
+        "start": {
+          "top": 1295.203125,
+          "bottom": 1359.203125
+        },
+        "fleetTop": 1388.203125,
+        "titleBottom": 375.75
+      }
+    },
+    {
+      "name": "30 vehicles, useful filters and deployment choice survive reload",
+      "detail": true
+    },
+    {
+      "name": "actual download, preview/cancel, invalid-file rejection and idempotent merge",
+      "detail": true
+    },
+    {
+      "name": "a stale file read cannot replace a newer rejected selection",
+      "detail": true
+    },
+    {
+      "name": "initial and completed training preserve objective, health and map separation at three sizes",
+      "detail": true
+    },
+    {
+      "name": "real keyboard training completes, saves and returns ready for campaign",
+      "detail": true
+    },
+    {
+      "name": "exit confirmation freezes simulation and supports continue or abandon",
+      "detail": true
+    },
+    {
+      "name": "damaged local data visibly recovers the prior valid save",
+      "detail": true
+    },
+    {
+      "name": "blocked storage visibly rejects import without applying it and reports unsaved settings",
+      "detail": true
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "productionTestHooks": false
+}

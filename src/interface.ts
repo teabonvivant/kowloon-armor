@@ -2,40 +2,49 @@ import type { GameAudio } from './audio';
 import { mountControllerSettings } from './controller-settings';
 import { MISSIONS } from './data/missions';
 import { TANKS } from './data/tanks';
-import { aboutDialog, dialogHeader, guideDialog, missionsDialog, resultDialog } from './dialogs';
+import { aboutDialog, briefingDialog, dialogHeader, guideDialog, missionsDialog, resultDialog } from './dialogs';
 import type { Game, GameMode } from './game';
 import { garageMarkup, tankCard } from './garage';
 import { hudMarkup } from './hud';
 import type { Input } from './input';
-import { loadProgress, recordResult, saveProgress } from './persistence';
+import { PROGRESS_KEY, mergeProgress, readProgress, recordResult, saveProgress } from './persistence';
+import type { Progress, ProgressStatus } from './persistence';
 import { loadPreferences, savePreferences } from './preferences';
 import { icon, required } from './ui-kit';
 import type { View } from './view';
 import { FACE_NAMES, ZONE_NAMES } from './armor';
 import type { Impact } from './armor';
 import { mountKeyboardSettings } from './keyboard-settings';
+import { mountSettings } from './settings';
+import type { SettingsTab } from './settings';
 
 export class Interface {
   private readonly app = required('#app', HTMLElement);
   private readonly modal = required('#modal', HTMLDialogElement);
   private cleanup: (() => void) | undefined;
-  private progress = loadProgress(); private mode: GameMode = 'campaign'; private missionIndex = 0;
+  private progress: Progress;
+  private storageStatus: ProgressStatus | 'unsaved';
+  private mode: GameMode = 'campaign'; private missionIndex = 0;
   private noticeTimer = 0; private returnFocus: HTMLElement | null = null;
   private hitTimer = 0;
   private preferences = loadPreferences();
   constructor(private readonly game: Game, private readonly input: Input, private readonly view: View, private readonly audio: GameAudio) {
-    this.missionIndex = Math.min(this.progress.completed, 5);
+    const stored = readProgress(); this.progress = stored.progress; this.storageStatus = stored.status;
+    this.mode = this.preferences.mode;
+    this.missionIndex = this.preferences.deploymentSet ? Math.min(this.preferences.missionIndex, this.progress.completed, 5) : Math.min(this.progress.completed, 5);
+    const selected = TANKS.find(tank => tank.id === this.preferences.tankId);
+    if (selected && selected.id !== this.game.player.spec.id) this.game.select(selected);
     this.applyPreferences();
     document.addEventListener('click', event => this.click(event));
     this.modal.addEventListener('close', () => {
       if (this.modal.open) return;
-      this.cleanup?.(); this.cleanup = undefined;
-      this.input.reset();
+      this.cleanup?.(); this.cleanup = undefined; this.input.reset();
       if (this.game.phase === 'paused' || this.game.phase === 'playing') { this.game.resume(); this.view.canvas.focus(); }
-      else this.returnFocus?.focus(); });
+      else if (this.returnFocus?.isConnected) this.returnFocus.focus();
+      else this.app.querySelector<HTMLButtonElement>('[data-action="start"]')?.focus();
+    });
     this.modal.addEventListener('cancel', event => {
       if (this.game.phase === 'victory' || this.game.phase === 'defeat') event.preventDefault();
-      else this.cleanup?.();
     });
     this.view.canvas.addEventListener('tank-controls', () => this.controller());
     this.view.canvas.addEventListener('tank-pause', () => this.pause());
@@ -47,40 +56,69 @@ export class Interface {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.pause(); });
     window.addEventListener('gamepaddisconnected', () => { if (this.game.phase === 'playing') {
       this.pause(); this.notify('搖桿已斷線，演習已暫停。'); } });
+    window.addEventListener('storage', event => {
+      if (event.key !== PROGRESS_KEY) return;
+      const latest = readProgress();
+      if (latest.status !== 'ready') return;
+      this.progress = mergeProgress(this.progress, latest.progress);
+      if (this.game.phase === 'garage') this.showGarage();
+    });
     this.showGarage();
+    if (stored.status === 'recovered') this.notify('已從上一次有效副本救回戰績，建議到「戰績」匯出備份。');
+    if (stored.status === 'invalid' || stored.status === 'unavailable') this.notify('本機紀錄未能讀取，可到「戰績」查看儲存狀態及匯入備份。');
   }
   notify(message: string): void {
     const notice = required('#notice', HTMLElement); notice.textContent = message; notice.classList.add('show');
-    clearTimeout(this.noticeTimer); this.noticeTimer = window.setTimeout(() => notice.classList.remove('show'), 3200);
+    clearTimeout(this.noticeTimer); this.noticeTimer = window.setTimeout(() => notice.classList.remove('show'), 3600);
   }
   showGarage(): void {
     const scoreKey = `${this.mode}:${this.mode === 'campaign' ? this.missionIndex + 1 : 0}:${this.preferences.difficulty}`;
+    const previousScroll = this.app.querySelector('.fleet-track')?.scrollLeft ?? 0;
     this.app.innerHTML = garageMarkup(this.game.player.spec, this.mode, this.missionIndex, this.progress.completed,
-      this.preferences.difficulty, this.progress.bestScores[scoreKey] ?? 0);
+      this.preferences.difficulty, this.progress.bestScores[scoreKey] ?? 0, this.progress.trainingComplete);
     document.body.classList.remove('in-battle');
-    const difficulty = document.getElementById('difficulty');
+    const track = this.app.querySelector<HTMLElement>('.fleet-track');
+    const selected = track?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (track && selected) {
+      track.scrollLeft = previousScroll;
+      if (selected.offsetLeft < track.offsetLeft + track.scrollLeft || selected.offsetLeft + selected.offsetWidth > track.offsetLeft + track.scrollLeft + track.clientWidth) {
+        track.scrollLeft = selected.offsetLeft - track.offsetLeft - (track.clientWidth - selected.offsetWidth) / 2;
+      }
+    }
+    this.view.frameGarage();
+    const difficulty = this.app.querySelector<HTMLSelectElement>('#difficulty');
     difficulty?.addEventListener('change', () => {
-      if (!(difficulty instanceof HTMLSelectElement)) return;
       const value = difficulty.value;
       if (value === 'training' || value === 'standard' || value === 'veteran') {
-        this.preferences.difficulty = value; this.storePreferences(); this.showGarage();
-        document.getElementById('difficulty')?.focus();
+        this.preferences.difficulty = value; this.storePreferences(); this.showGarage(); document.getElementById('difficulty')?.focus();
       }
     });
   }
-  start(): void {
-    this.close(); this.audio.unlock(); this.audio.setVolume(this.preferences.volume); this.input.reset();
-    this.game.start(this.mode, this.missionIndex, this.preferences.difficulty); this.app.innerHTML = hudMarkup(this.game, this.preferences.bindings);
+  start(training = false): void {
+    if (training) this.mode = 'drive';
+    this.rememberDeployment(); this.close(); this.audio.unlock(); this.audio.setVolume(this.preferences.volume); this.input.reset();
+    this.game.start(this.mode, this.missionIndex, this.preferences.difficulty);
+    if (training) this.game.beginTraining();
+    this.app.innerHTML = hudMarkup(this.game, this.preferences.bindings);
     document.body.classList.add('in-battle'); this.view.canvas.focus();
   }
+  completeTraining(): void {
+    if (this.progress.trainingComplete) return;
+    this.persistProgress({ ...mergeProgress(this.progress, readProgress().progress), trainingComplete: true });
+  }
   finish(victory: boolean): void {
-    this.audio.stop();
+    this.audio.stop(); this.progress = mergeProgress(this.progress, readProgress().progress);
     const scoreKey = `${this.game.mode}:${this.game.mode === 'campaign' ? this.game.mission?.id ?? 0 : 0}:${this.game.difficulty}`;
     const bestBefore = this.progress.bestScores[scoreKey] ?? 0;
-    this.progress = recordResult(this.progress, { mode: this.game.mode, missionId: this.game.mission?.id ?? 0,
-      difficulty: this.game.difficulty, victory, score: this.game.score, wave: this.game.wave });
-    if (!saveProgress(this.progress)) this.notify('本次成績未能儲存；請檢查瀏覽器的儲存權限。');
-    this.open(resultDialog(this.game, victory, this.progress.completed, (victory || this.game.mode === 'survival') && this.game.score > bestBefore));
+    this.persistProgress(recordResult(this.progress, { mode: this.game.mode, missionId: this.game.mission?.id ?? 0,
+      difficulty: this.game.difficulty, victory, score: this.game.score, wave: this.game.wave }));
+    this.open(resultDialog(this.game, victory, this.progress.completed,
+      (victory || this.game.mode === 'survival') && this.game.score > bestBefore, bestBefore, this.storageStatus !== 'unsaved'), 'result');
+  }
+  private persistProgress(progress: Progress): void {
+    this.progress = progress;
+    if (saveProgress(progress)) { this.progress = mergeProgress(progress, readProgress().progress); this.storageStatus = 'ready'; }
+    else { this.storageStatus = 'unsaved'; this.notify('戰績未能寫入瀏覽器，離開前可到「戰績」匯出備份。'); }
   }
   hit(damage: number, killed: boolean, enemy: boolean, impact?: Impact): void {
     this.audio.hit(impact?.zone.endsWith('Track'));
@@ -94,96 +132,84 @@ export class Interface {
         requestAnimationFrame(() => { marker.classList.add('confirmed'); marker.classList.toggle('destroyed', killed); });
         clearTimeout(this.hitTimer); this.hitTimer = window.setTimeout(() => marker.classList.remove('confirmed'), 750);
       }
+    } else {
+      const flash = document.getElementById('hit-flash'); flash?.classList.remove('active');
+      requestAnimationFrame(() => flash?.classList.add('active')); this.notify(`裝甲受擊 −${damage}`);
     }
-    else { const flash = document.getElementById('hit-flash'); flash?.classList.remove('active');
-      requestAnimationFrame(() => flash?.classList.add('active')); this.notify(`裝甲受擊 −${damage}`); }
   }
-  pause(): void {
-    if (this.game.phase !== 'playing') return;
-    this.open(`${dialogHeader('SIMULATION PAUSED', '演習暫停')}<p class="dialog-intro">炮彈、車輛和倒數計時均已暫停。</p><div class="pause-menu"><button class="btn btn-primary" data-action="close">繼續演習</button><button class="btn" data-action="settings">畫面及瞄準設定</button><button class="btn" data-action="controller">搖桿設定</button><button class="btn" data-action="guide">操作指南</button><button class="btn" data-action="return">返回車庫</button></div>`);
+  pause(): void { if (this.game.phase === 'playing') this.pauseMenu(); }
+  private pauseMenu(): void {
+    this.open(`${dialogHeader('SIMULATION PAUSED', '演習暫停')}<p class="dialog-intro">炮彈、車輛和倒數計時均已暫停。關閉視窗或按 Esc 繼續演習。</p><div class="pause-menu"><button class="btn btn-primary" data-action="close">繼續演習</button><button class="btn" data-action="settings">遊戲設定</button><button class="btn" data-action="controller">HOTAS 控制設定</button><button class="btn" data-action="guide">操作指南</button><button class="btn" data-action="return">返回車庫</button></div>`, 'pause');
   }
-  private open(content: string): void {
+  private open(content: string, page = 'other'): void {
     this.cleanup?.(); this.cleanup = undefined;
     if (!this.modal.open) this.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    this.game.pause(); this.input.reset(); this.audio.stop(); this.modal.innerHTML = content;
+    this.game.pause(); this.input.reset(); this.audio.stop(); this.modal.innerHTML = content; this.modal.dataset['page'] = page;
+    this.modal.scrollTop = 0;
     if (document.pointerLockElement) document.exitPointerLock();
     if (!this.modal.open) this.modal.showModal();
+    else this.modal.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
   }
   private close(): void { this.cleanup?.(); this.cleanup = undefined; if (this.modal.open) this.modal.close(); }
+  private dismiss(): void { if (this.game.phase === 'victory' || this.game.phase === 'defeat') this.returnGarage(); else this.close(); }
+  private childBack(parent: string | undefined): void {
+    const action = parent === 'settings' ? 'settings-controls' : this.game.phase === 'paused' ? 'return-pause' : 'guide';
+    const label = parent === 'settings' ? '返回操作設定' : this.game.phase === 'paused' ? '返回暫停選單' : '返回操作指南';
+    (this.modal.querySelector('.settings-panel') ?? this.modal).insertAdjacentHTML('beforeend', `<button class="text-button back-link" data-action="${action}">← ${label}</button>`);
+  }
   private controller(): void {
-    this.open(''); this.cleanup = mountControllerSettings(this.modal, this.input, () => this.close());
+    const parent = this.modal.dataset['page'];
+    this.open('', 'controller'); this.cleanup = mountControllerSettings(this.modal, this.input, () => this.dismiss()); this.childBack(parent);
   }
   private keyboard(): void {
-    this.open('');
+    const parent = this.modal.dataset['page'];
+    this.open('', 'keyboard');
     this.cleanup = mountKeyboardSettings(this.modal, this.preferences.bindings, bindings => {
       this.preferences.bindings = bindings; this.input.setKeyboard(bindings, this.preferences.scopeMode); this.storePreferences();
       if (this.game.phase === 'paused') this.app.innerHTML = hudMarkup(this.game, bindings);
     });
+    this.childBack(parent);
   }
   private roster(): void {
-    this.open(`${dialogHeader('ARMOURED COLLECTION', '30 款現代戰車')}<label class="search-field">${icon('search')}<input id="tank-search" type="search" placeholder="搜尋型號或國家…" aria-label="搜尋戰車"></label><div id="roster-grid" class="roster-grid"></div><p class="fine-print">精選代表性型號及原型。數值經遊戲平衡處理，並非真實戰力排名。</p>`);
-    const search = required('#tank-search', HTMLInputElement);
-    const grid = required('#roster-grid', HTMLElement);
+    this.open(`${dialogHeader('ARMOURED COLLECTION', '選擇你的戰車')}<label class="search-field">${icon('search')}<input id="tank-search" type="search" placeholder="搜尋型號、國家或定位…" aria-label="搜尋戰車" autocomplete="off"></label>
+      <div class="roster-toolbar"><label>車重<select id="tank-filter"><option value="all">全部戰車</option><option value="mobile">55 t 或以下</option><option value="balanced">超過 55 至 65 t</option><option value="heavy">超過 65 t</option></select></label><label>排序<select id="tank-sort"><option value="catalogue">預設次序</option><option value="speed">最高速度</option><option value="armor">正面防護</option><option value="reload">最快裝填</option></select></label><output id="roster-count" role="status"></output></div>
+      <div id="roster-grid" class="roster-grid"></div><p class="fine-print">選擇後返回車庫。性能為遊戲平衡設定，並非真實戰力排名。</p>`, 'roster');
+    const search = required('#tank-search', HTMLInputElement), filter = required('#tank-filter', HTMLSelectElement), sort = required('#tank-sort', HTMLSelectElement);
     const render = (): void => {
       const query = search.value.trim().toLocaleLowerCase();
-      const items = TANKS.filter(t => `${t.name} ${t.country} ${t.role}`.toLocaleLowerCase().includes(query));
-      grid.innerHTML = items.length ? items.map(t => tankCard(t, this.game.player.spec.id)).join('') : '<p class="empty-state">找不到符合的戰車，請試試其他型號或國家。</p>';
+      const items = TANKS.filter(tank => `${tank.name} ${tank.country} ${tank.role}`.toLocaleLowerCase().includes(query)
+        && (filter.value === 'mobile' ? tank.weight <= 55 : filter.value === 'balanced' ? tank.weight > 55 && tank.weight <= 65 : filter.value === 'heavy' ? tank.weight > 65 : true));
+      if (sort.value === 'speed' || sort.value === 'armor') { const field = sort.value; items.sort((first, second) => second[field] - first[field]); }
+      if (sort.value === 'reload') items.sort((first, second) => first.reload - second.reload);
+      required('#roster-grid', HTMLElement).innerHTML = items.length ? items.map(tank => tankCard(tank, this.game.player.spec.id)).join('')
+        : '<div class="empty-state"><p>找不到符合的戰車。請調整型號、國家或車重篩選。</p><button class="text-button" data-action="clear-search">清除搜尋及篩選</button></div>';
+      required('#roster-count', HTMLElement).textContent = `${items.length} / 30 款`;
     };
-    search.addEventListener('input', render); render(); search.focus();
+    search.addEventListener('input', render); filter.addEventListener('change', render); sort.addEventListener('change', render); render(); search.focus();
   }
-  private settings(): void {
-    this.open(`${dialogHeader('SYSTEM SETTINGS', '遊戲設定')}
-      <div class="settings-grid">
-        <label class="settings-field">音量<input id="volume" type="range" min="0" max="1" step=".05" value="${this.preferences.volume}"></label>
-        <label class="settings-field">畫面品質<select id="quality"><option value="medium">平衡</option><option value="low">流暢（關閉陰影）</option><option value="high">高畫質</option></select></label>
-        <label class="settings-field">滑鼠瞄準靈敏度<span id="sensitivity-value">${this.preferences.sensitivity.toFixed(1)}×</span><input id="sensitivity" type="range" min=".3" max="2.5" step=".1" value="${this.preferences.sensitivity}"></label>
-        <div class="settings-field"><label><input id="invert-y" type="checkbox" ${this.preferences.invertY ? 'checked' : ''}> 反向滑鼠垂直瞄準</label><label><input id="reduce-motion" type="checkbox" ${this.preferences.reducedMotion ? 'checked' : ''}> 減少動態效果及開炮震動</label></div>
-        <label class="settings-field">鍵盤瞄準鏡<select id="scope-mode"><option value="hold">按住使用</option><option value="toggle">按一下切換</option></select></label>
-        <label class="settings-field">瞄準鏡倍率<select id="scope-zoom"><option value="2">2 倍 · 廣視野</option><option value="3">3 倍</option><option value="4">4 倍 · 遠距離</option></select></label>
-        <label class="settings-field">戰鬥資訊大小<select id="hud-scale"><option value="0.85">精簡 · 85%</option><option value="1">標準 · 100%</option><option value="1.15">放大 · 115%</option></select></label>
-        <p class="settings-field settings-help">按住觀察鍵可轉動鏡頭而保持炮塔方向。小視窗會自動限制資訊大小，保留中央視野。HOTAS 瞄準鏡維持按住操作。</p>
-      </div><div class="dialog-buttons"><button class="btn btn-primary" data-action="keyboard">鍵盤按鍵設定</button><button class="btn" data-action="controller">HOTAS 設定</button><button class="btn" data-action="fullscreen">全螢幕</button></div>
-      <p class="fine-print" id="settings-save-status" role="status">設定自動儲存在目前瀏覽器。畫面較慢時可選「流暢」。</p>`);
-    const scopeMode = required('#scope-mode', HTMLSelectElement); scopeMode.value = this.preferences.scopeMode;
-    scopeMode.addEventListener('change', () => {
-      this.preferences.scopeMode = scopeMode.value === 'toggle' ? 'toggle' : 'hold';
-      this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode); this.storePreferences();
-    });
-    const zoom = required('#scope-zoom', HTMLSelectElement); zoom.value = String(this.preferences.scopeZoom);
-    zoom.addEventListener('change', () => {
-      this.preferences.scopeZoom = zoom.value === '4' ? 4 : zoom.value === '3' ? 3 : 2;
-      this.view.scopeZoom = this.preferences.scopeZoom; this.storePreferences();
-    });
-    const scale = required('#hud-scale', HTMLSelectElement); scale.value = String(this.preferences.hudScale);
-    scale.addEventListener('change', () => {
-      this.preferences.hudScale = Number(scale.value); document.body.style.setProperty('--hud-scale', scale.value); this.storePreferences();
-    });
-    required('#volume', HTMLInputElement).addEventListener('input', event => { if (event.target instanceof HTMLInputElement) {
-      this.preferences.volume = Number(event.target.value); this.audio.unlock(); this.audio.setVolume(this.preferences.volume); this.storePreferences(); } });
-    const quality = required('#quality', HTMLSelectElement); quality.value = this.preferences.quality;
-    quality.addEventListener('change', () => {
-      if (quality.value === 'low' || quality.value === 'medium' || quality.value === 'high') {
-        this.preferences.quality = quality.value; this.view.quality(quality.value); this.storePreferences();
-      }
-    });
-    required('#sensitivity', HTMLInputElement).addEventListener('input', event => {
-      if (event.target instanceof HTMLInputElement) {
-        this.preferences.sensitivity = Number(event.target.value);
-        required('#sensitivity-value', HTMLElement).textContent = `${this.preferences.sensitivity.toFixed(1)}×`;
-        this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY); this.storePreferences();
-      }
-    });
-    required('#invert-y', HTMLInputElement).addEventListener('change', event => {
-      if (event.target instanceof HTMLInputElement) {
-        this.preferences.invertY = event.target.checked;
-        this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY); this.storePreferences();
-      }
-    });
-    required('#reduce-motion', HTMLInputElement).addEventListener('change', event => {
-      if (event.target instanceof HTMLInputElement) {
-        this.preferences.reducedMotion = event.target.checked; this.view.reduceMotion(this.preferences.reducedMotion); this.storePreferences();
-      }
-    });
+  private settings(tab: SettingsTab = 'display'): void {
+    this.open('', 'settings');
+    this.cleanup = mountSettings(this.modal, this.preferences, {
+      changed: key => {
+        if (key === 'quality') this.view.quality(this.preferences.quality);
+        if (key === 'reducedMotion') this.view.reduceMotion(this.preferences.reducedMotion);
+        if (key === 'volume') { this.audio.unlock(); this.audio.setVolume(this.preferences.volume); }
+        if (key === 'sensitivity' || key === 'invertY') this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY);
+        if (key === 'scopeMode') this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode);
+        if (key === 'scopeZoom') this.view.scopeZoom = this.preferences.scopeZoom;
+        if (key === 'hudScale') document.body.style.setProperty('--hud-scale', String(this.preferences.hudScale));
+        this.storePreferences();
+      },
+      getProgress: () => this.progress, getStatus: () => this.storageStatus,
+      importProgress: incoming => {
+        const merged = mergeProgress(mergeProgress(this.progress, readProgress().progress), incoming);
+        if (!saveProgress(merged)) return false;
+        this.progress = mergeProgress(merged, readProgress().progress); this.storageStatus = 'ready';
+        if (this.game.phase === 'garage') this.showGarage();
+        return true;
+      },
+      testAudio: () => { this.audio.unlock(); this.audio.setVolume(this.preferences.volume); this.audio.ready(); },
+    }, tab, this.game.phase === 'paused');
   }
   private applyPreferences(): void {
     this.view.quality(this.preferences.quality); this.view.reduceMotion(this.preferences.reducedMotion);
@@ -194,43 +220,67 @@ export class Interface {
   private storePreferences(): void {
     const saved = savePreferences(this.preferences);
     const status = document.getElementById('settings-save-status');
-    if (status) status.textContent = saved ? '設定已儲存。' : '設定已套用，但瀏覽器未允許儲存。';
+    if (status) status.textContent = saved ? '設定已儲存。' : '設定已套用，但瀏覽器未允許儲存；關閉後可能無法保留。';
     if (!saved) this.notify('設定已套用，但瀏覽器未允許儲存。');
   }
+  private rememberDeployment(): void {
+    this.preferences.mode = this.mode; this.preferences.missionIndex = this.missionIndex;
+    this.preferences.tankId = this.game.player.spec.id; this.preferences.deploymentSet = true; this.storePreferences();
+  }
+  private leave(): void {
+    if (this.game.phase === 'paused') {
+      this.open(`${dialogHeader('LEAVE OPERATION', '結束這次演習？')}<p class="dialog-intro">本回合的分數不會記錄。已完成的戰役進度及最高分會保留。</p><div class="dialog-buttons"><button class="btn btn-primary" data-action="close">繼續演習</button><button class="btn" data-action="confirm-return">結束並返回車庫</button></div>`, 'leave');
+    } else this.returnGarage();
+  }
+  private returnGarage(): void { this.game.garage(); this.close(); this.audio.stop(); this.showGarage(); }
   private click(event: MouseEvent): void {
-    if (!(event.target instanceof Element)) return;
-    const button = event.target.closest('button'); if (!button || button.disabled) return;
+    const button = event.target instanceof Element ? event.target.closest('button') : null;
+    if (!button || button.disabled) return;
     const supply = button.dataset['supply'];
-    if (supply === 'repair' || supply === 'reload') {
-      if (this.game.chooseSupply(supply)) this.view.canvas.focus();
+    if (supply === 'repair' || supply === 'reload') { if (this.game.chooseSupply(supply)) this.view.canvas.focus(); return; }
+    const fleet = button.dataset['fleet'];
+    if (fleet) { const track = this.app.querySelector('.fleet-track'); track?.scrollBy({ left: Number(fleet) * track.clientWidth * .7, behavior: 'instant' }); return; }
+    const tankId = button.dataset['tank'];
+    if (tankId) {
+      const spec = TANKS.find(tank => tank.id === tankId);
+      if (spec && this.game.phase === 'garage') {
+        this.game.select(spec); this.rememberDeployment(); this.close(); this.showGarage();
+        this.app.querySelector<HTMLButtonElement>(`[data-tank="${tankId}"]`)?.focus({ preventScroll: true });
+      }
       return;
     }
-    const tankId = button.dataset['tank'];
-    if (tankId) { const spec = TANKS.find(t => t.id === tankId); if (spec && this.game.phase === 'garage') {
-      this.game.select(spec); this.close(); this.showGarage(); } return; }
     const mode = button.dataset['mode'];
     if (mode === 'drive' || mode === 'battle' || mode === 'campaign' || mode === 'survival') {
-      this.mode = mode; this.showGarage(); this.app.querySelector<HTMLElement>(`[data-mode="${mode}"]`)?.focus(); return;
+      this.mode = mode; this.rememberDeployment(); this.showGarage(); this.app.querySelector<HTMLElement>(`[data-mode="${mode}"]`)?.focus(); return;
     }
     const mission = button.dataset['mission'];
-    if (mission !== undefined) { const index = Number(mission);
+    if (mission !== undefined) {
+      const index = Number(mission);
       if (Number.isInteger(index) && index >= 0 && index < MISSIONS.length && index <= this.progress.completed) {
-        this.missionIndex = index; this.mode = 'campaign'; this.close(); this.showGarage(); } return; }
+        this.missionIndex = index; this.mode = 'campaign'; this.rememberDeployment(); this.close(); this.showGarage();
+      }
+      return;
+    }
     switch (button.dataset['action']) {
       case 'start': case 'retry': this.start(); break;
-      case 'next': this.missionIndex = Math.min((this.game.mission?.id ?? 1), 5); this.start(); break;
-      case 'close':
-        if (this.game.phase === 'victory' || this.game.phase === 'defeat') { this.game.garage(); this.showGarage(); }
-        this.close(); break;
-      case 'return': this.game.garage(); this.close(); this.audio.stop(); this.showGarage(); break;
+      case 'training': this.start(true); break;
+      case 'training-return': if (this.game.training?.step === 4) { this.mode = 'campaign'; this.missionIndex = Math.min(this.progress.completed, 5); this.rememberDeployment(); this.returnGarage(); } break;
+      case 'next': this.missionIndex = Math.min(this.game.mission?.id ?? 1, 5); this.start(); break;
+      case 'close': this.dismiss(); break;
+      case 'return': this.leave(); break;
+      case 'confirm-return': this.returnGarage(); break;
+      case 'return-pause': this.pauseMenu(); break;
       case 'garage': if (this.game.phase === 'garage') this.showGarage(); break;
       case 'controller': this.controller(); break;
       case 'keyboard': this.keyboard(); break;
       case 'settings': this.settings(); break;
-      case 'guide': this.open(guideDialog(this.preferences.bindings)); break;
-      case 'missions': this.open(missionsDialog(this.progress, this.missionIndex)); break;
-      case 'roster': this.roster(); break;
-      case 'about': this.open(aboutDialog()); break;
+      case 'settings-controls': this.settings('controls'); break;
+      case 'records': this.settings('records'); break;
+      case 'guide': this.open(guideDialog(this.preferences.bindings, this.game.phase === 'garage'), 'guide'); if (this.game.phase === 'paused') this.childBack('pause'); break;
+      case 'briefing': this.open(briefingDialog(this.mode, this.missionIndex, this.preferences.difficulty, this.game.player.spec), 'briefing'); break;
+      case 'missions': this.open(missionsDialog(this.progress, this.missionIndex), 'missions'); break;
+      case 'roster': case 'clear-search': this.roster(); break;
+      case 'about': this.open(aboutDialog(), 'about'); break;
       case 'rotate': this.view.rotate(); break;
       case 'pause': this.pause(); break;
       case 'camera': this.game.cycleCamera(); break;
@@ -239,6 +289,6 @@ export class Interface {
   }
   private async fullscreen(): Promise<void> {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
-    catch (error) { if (error instanceof Error) this.notify('此視窗未允許全螢幕，請按 F11 或在 Edge／Chrome 開啟。'); else throw error; }
+    catch { this.notify('此視窗未允許全螢幕，請按 F11 或在 Edge／Chrome 開啟。'); }
   }
 }
