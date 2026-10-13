@@ -48,6 +48,9 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
       <h3>保持視野清楚</h3><p>畫面較慢時選「流暢」。資訊大小會按小視窗限制，保留中央瞄準位置。</p>
       <div class="settings-grid">
         <label class="settings-field">畫面品質<select id="quality"><option value="low" ${selected(preferences.quality === 'low')}>流暢 · 關閉陰影</option><option value="medium" ${selected(preferences.quality === 'medium')}>平衡</option><option value="high" ${selected(preferences.quality === 'high')}>高畫質</option></select></label>
+        <label class="settings-field">九龍光影<select id="lighting"><option value="day" ${selected(preferences.lighting === 'day')}>日間 · 清晰視野</option><option value="dusk" ${selected(preferences.lighting === 'dusk')}>黃昏 · 暖光街景</option></select></label>
+        <div class="settings-field"><label><input id="adaptive-resolution" type="checkbox" ${checked(preferences.adaptiveResolution)}> 自動調整 3D 解像度</label><small>持續慢幀時降至最低 60%，穩定後回升；文字保持清晰。</small></div>
+        <div class="settings-field"><label><input id="high-contrast" type="checkbox" ${checked(preferences.highContrast)}> 高對比敵我標記</label><small>敵軍琥珀菱形、我方青色箭頭，毋須只靠紅綠分辨。</small></div>
         <label class="settings-field">戰鬥資訊大小<select id="hud-scale"><option value="0.85" ${selected(preferences.hudScale === .85)}>精簡 · 85%</option><option value="1" ${selected(preferences.hudScale === 1)}>標準 · 100%</option><option value="1.15" ${selected(preferences.hudScale === 1.15)}>放大 · 115%</option></select></label>
         <div class="settings-field"><label><input id="reduce-motion" type="checkbox" ${checked(preferences.reducedMotion)}> 減少展示動態及開炮震動</label><small>也會遵循系統的減少動態效果設定。</small></div>
         <div class="settings-field settings-help"><button class="btn" data-action="fullscreen">切換全螢幕</button><small>瀏覽器亦可用 F11 切換。</small></div>
@@ -68,6 +71,7 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
       <h3>九龍戰場聲景</h3><p>分層炮聲、建築遮擋與街谷回響；原創配樂隨附近敵軍及受擊升溫。短提示音表示裝填完成。</p>
       <div class="settings-grid"><label class="settings-field">遊戲音量 <output id="volume-value" for="volume">${Math.round(preferences.volume * 100)}%</output><input id="volume" type="range" min="0" max="1" step=".05" value="${preferences.volume}"></label>
       <label class="settings-field">配樂音量 <output id="music-volume-value" for="music-volume">${Math.round(preferences.musicVolume * 100)}%</output><input id="music-volume" type="range" min="0" max="1" step=".05" value="${preferences.musicVolume}"></label>
+      <div class="settings-field"><label><input id="night-audio" type="checkbox" ${checked(preferences.nightAudio)}> 夜間音效</label><small>壓低炮聲峰值及整體輸出，保留方向與裝填提示。</small></div>
       <div class="settings-field settings-help"><button class="btn" id="test-audio">試聽裝填完成提示</button><small>遊戲音量為總音量；配樂設為 0 只關閉音樂。全部聲音為原創軟件合成。</small></div></div>
     </section>
     <section id="panel-records" class="settings-section" role="tabpanel" aria-labelledby="tab-records" tabindex="0" ${initialTab === 'records' ? '' : 'hidden'}>${recordsMarkup(actions.getProgress(), actions.getStatus())}</section>
@@ -89,6 +93,10 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
     let key: keyof Preferences | undefined;
     switch (field.id) {
       case 'quality': preferences.quality = field.value as Preferences['quality']; key = 'quality'; break;
+      case 'lighting': preferences.lighting = field.value === 'dusk' ? 'dusk' : 'day'; key = 'lighting'; break;
+      case 'adaptive-resolution': if (field instanceof HTMLInputElement) { preferences.adaptiveResolution = field.checked; key = 'adaptiveResolution'; } break;
+      case 'high-contrast': if (field instanceof HTMLInputElement) { preferences.highContrast = field.checked; key = 'highContrast'; } break;
+      case 'night-audio': if (field instanceof HTMLInputElement) { preferences.nightAudio = field.checked; key = 'nightAudio'; } break;
       case 'hud-scale': preferences.hudScale = Number(field.value); key = 'hudScale'; break;
       case 'scope-mode': preferences.scopeMode = field.value === 'toggle' ? 'toggle' : 'hold'; key = 'scopeMode'; break;
       case 'scope-zoom': preferences.scopeZoom = Number(field.value) as 2 | 3 | 4; key = 'scopeZoom'; break;

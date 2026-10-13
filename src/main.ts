@@ -21,7 +21,9 @@ function boot(): void {
   document.addEventListener('graphics-lost', () => { ui.pause(); ui.notify('繪圖裝置已重設，請重新開啟遊戲。'); });
   function frame(now: number): void {
     if (document.hidden) { audio.stop(); last = now; clock.reset(); requestAnimationFrame(frame); return; }
-    const dt = Math.min((now - last) / 1000, .1); last = now; uiElapsed += dt;
+    const frameSeconds = (now - last) / 1000;
+    const dt = Math.min(frameSeconds, .1); last = now; uiElapsed += dt;
+    view.sampleFrame(frameSeconds, game.phase === 'playing');
     audio.listen(game.player.visual.root.position, game.observing ? game.observationYaw : game.cameraMode === 'driver' && !game.scope ? game.player.yaw : game.player.aim, game.world.obstacles);
     if (game.phase === 'playing') {
       clock.advance(dt, step => {
@@ -42,6 +44,8 @@ function boot(): void {
       if (game.phase !== 'garage') {
         updateHud(game);
         updateEnemyMarkers(game, view.camera);
+        const resolution = document.getElementById('render-scale');
+        if (resolution) resolution.textContent = `3D ${Math.round(view.renderScale * 100)}%`;
       } else {
         const status = document.getElementById('pad-status');
         if (status) status.textContent = input.devices.length ? `HOTAS 已連接 (${input.devices.length})` : 'HOTAS 控制設定';

@@ -18,6 +18,7 @@ import type { Impact } from './armor';
 import { createObjectiveState, updateObjective } from './objectives';
 import { createTraining, updateTraining } from './training';
 import type { TrainingState } from './training';
+import { fireSolution, imminentThreats, LandmarkTour } from './field';
 
 export type GameMode = 'drive' | 'battle' | 'campaign' | 'survival';
 export type GamePhase = 'garage' | 'playing' | 'paused' | 'victory' | 'defeat';
@@ -39,6 +40,9 @@ export class Game {
   objective = createObjectiveState(); supply: 'repair' | 'reload' = 'repair';
   damageBearing = 0; damageTimer = 0; observing = false; observationYaw = 0;
   training: TrainingState | null = null;
+  tour = new LandmarkTour();
+  report = { dealt: 0, received: 0, flankingHits: 0, distance: 0 };
+  repairingTracks = false;
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
   private readonly actors: Actor[] = [];
@@ -48,8 +52,9 @@ export class Game {
     this.effects = new Effects(scene);
     this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; events.shot(); },
       cannon: (position, enemy) => events.cannon?.(position, enemy),
-      hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++; }
-        else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; }
+      hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++;
+          this.report.dealt += damage; if (impact.face !== 'front') this.report.flankingHits++; }
+        else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; this.report.received += damage; }
         events.hit(damage, killed, enemy, impact); } });
   }
   select(spec: TankSpec): void {
@@ -66,6 +71,7 @@ export class Game {
     this.objective = createObjectiveState(); this.supply = 'repair'; this.damageTimer = 0;
     this.observing = false; this.observationYaw = 0; this.dustTimer = 0;
     this.training = null;
+    this.tour = new LandmarkTour(); this.report = { dealt: 0, received: 0, flankingHits: 0, distance: 0 }; this.repairingTracks = false;
     const mission = this.mission;
     if (mode === 'campaign' && mission) this.player.visual.root.position.set(mission.spawn[0], 0, mission.spawn[1]);
     const spots = mode === 'battle' || mode === 'survival'
@@ -78,6 +84,11 @@ export class Game {
   garage(): void { this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.select(this.player.spec); this.intermission = 0; this.training = null; this.phase = 'garage'; }
   beginTraining(): void {
     if (this.phase === 'playing' && this.mode === 'drive') this.training = createTraining(this.player, this.shots);
+  }
+  toggleTour(): boolean {
+    if (this.phase !== 'playing' || this.mode !== 'drive' || this.training) return false;
+    this.tour.active = !this.tour.active; this.tour.dwell = 0;
+    return true;
   }
   pause(): void { if (this.phase === 'playing') this.phase = 'paused'; }
   resume(): void { if (this.phase === 'paused') this.phase = 'playing'; }
@@ -98,7 +109,14 @@ export class Game {
     const actors = this.actors;
     actors.length = 0; actors.push(this.player, ...this.enemies);
     const previousCooldown = this.player.cooldown;
+    const previousX = this.player.visual.root.position.x, previousZ = this.player.visual.root.position.z;
     drivePlayer(this.player, this.observing ? { ...input, aimX: 0, aimY: 0, pointerX: 0, pointerY: 0 } : input, dt, this.world.obstacles, actors);
+    this.report.distance += Math.hypot(this.player.visual.root.position.x - previousX, this.player.visual.root.position.z - previousZ);
+    this.repairingTracks = Math.abs(this.player.speed) < .4 && (input.brake || Math.abs(input.throttle) < .04);
+    if (this.mode === 'drive' && !this.training) {
+      const visited = this.tour.update(this.player, dt);
+      if (visited) this.events.notify(`已到訪 ${visited} · ${this.tour.visited.size} / 6${this.tour.visited.size === 6 ? ' · 九龍巡遊完成！' : ''}`);
+    }
     if (previousCooldown > 0 && this.player.cooldown === 0) this.events.ready?.();
     if (input.fire) this.combat.fire(this.player, this.world.obstacles);
     if (this.training && updateTraining(this.training, this.player, this.shots, dt)) {
@@ -175,16 +193,9 @@ export class Game {
     this.supply = choice; return true;
   }
   private clearEnemies(): void { for (const enemy of this.enemies) { this.scene.remove(enemy.visual.root); disposeTank(enemy.visual); } this.enemies.length = 0; }
-  get target(): Actor | undefined {
-    const p = this.player.visual.root.position;
-    return this.enemies.find(enemy => {
-      if (!enemy.alive) return false;
-      const e = enemy.visual.root.position;
-      const yaw = Math.atan2(-(e.x - p.x), -(e.z - p.z));
-      return Math.abs(angleDelta(this.player.aim, yaw)) < 0.06 &&
-        wallFraction(p.x, p.z, e.x - p.x, e.z - p.z, this.world.obstacles) === 1;
-    });
-  }
+  get fireSolution(): ReturnType<typeof fireSolution> { return fireSolution(this.player, this.enemies, this.world.obstacles); }
+  get target(): Actor | undefined { return this.fireSolution.target; }
+  get threats(): number { return imminentThreats(this.player, this.enemies, this.world.obstacles); }
   getAimPoint(target: Vector3): Vector3 {
     return target.set(-Math.sin(this.player.aim) * Math.cos(this.player.pitch) * 100, 2.5 + Math.sin(this.player.pitch) * 100,
       -Math.cos(this.player.aim) * Math.cos(this.player.pitch) * 100).add(this.player.visual.root.position);

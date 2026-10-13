@@ -3,11 +3,17 @@ import { ACESFilmicToneMapping, Color, DirectionalLight, FogExp2, HemisphereLigh
 import type { Game } from './game';
 import { wallFraction } from './math';
 import { createWorld } from './render/world';
+import { AdaptiveResolution } from './resolution';
 
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
   readonly renderer: WebGLRenderer; readonly world = createWorld();
   scopeZoom = 2;
+  highContrast = false;
+  private adaptiveEnabled = false;
+  private readonly resolution = new AdaptiveResolution();
+  private baseRatio = 1;
+  private readonly ambient = new HemisphereLight(0xb7d3df, 0x514734, 2.6);
   private readonly zone = new Mesh(new RingGeometry(.94, 1, 64), new MeshBasicMaterial({ color: 0xe8a65a, transparent: true, opacity: .75, depthWrite: false }));
   private readonly sun = new DirectionalLight(0xffdfb0, 4.1);
   private reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -25,7 +31,7 @@ export class View {
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.scene.background = new Color(0x8cabb8); this.scene.fog = new FogExp2(0x8cabb8, 0.0033);
-    this.scene.add(new HemisphereLight(0xb7d3df, 0x514734, 2.6));
+    this.scene.add(this.ambient);
     const fill = new DirectionalLight(0xc4d5e3, 1.4);
     fill.position.set(12, 18, -30); this.scene.add(fill);
     this.sun.position.set(-45, 85, 65); this.sun.castShadow = true;
@@ -58,8 +64,22 @@ export class View {
     document.body.classList.toggle('reduce-motion', this.reducedMotion);
   }
   recoil(): void { if (!this.reducedMotion) this.shake = 0.28; }
+  lighting(preset: 'day' | 'dusk'): void {
+    const dusk = preset === 'dusk', sky = dusk ? 0x666a85 : 0x8cabb8;
+    this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky, dusk ? .0038 : .0033);
+    this.sun.color.setHex(dusk ? 0xffac72 : 0xffdfb0); this.sun.intensity = dusk ? 2.6 : 4.1;
+    this.ambient.color.setHex(dusk ? 0x9bace2 : 0xb7d3df); this.ambient.intensity = dusk ? 2.1 : 2.6;
+  }
+  adaptive(enabled: boolean): void {
+    this.adaptiveEnabled = enabled; this.resolution.reset(); this.renderer.setPixelRatio(this.baseRatio);
+  }
+  sampleFrame(seconds: number, playing: boolean): void {
+    if (this.adaptiveEnabled && playing && this.resolution.sample(seconds)) this.renderer.setPixelRatio(this.baseRatio * this.resolution.scale);
+  }
+  get renderScale(): number { return this.resolution.scale; }
   quality(level: string): void {
-    this.renderer.setPixelRatio(level === 'low' ? 1 : Math.min(devicePixelRatio, level === 'high' ? 2 : 1.5));
+    this.baseRatio = level === 'low' ? 1 : Math.min(devicePixelRatio, level === 'high' ? 2 : 1.5);
+    this.resolution.reset(); this.renderer.setPixelRatio(this.baseRatio);
     this.renderer.shadowMap.enabled = level !== 'low';
     const size = level === 'high' ? 2048 : 1024;
     if (this.sun.shadow.mapSize.x !== size) {
@@ -108,8 +128,10 @@ export class View {
     this.zone.visible = !!goal && goal.kind !== 'clear';
     if (goal && goal.kind !== 'clear') {
       this.zone.position.set(goal.center[0], .06, goal.center[1]); this.zone.scale.setScalar(goal.radius);
-      this.zone.material.color.setHex(game.objective.contested ? 0xf36a5b : game.objective.inside ? 0x84c7b0 : 0xe8a65a);
+      this.zone.material.color.setHex(game.objective.contested ? this.highContrast ? 0xffcf5a : 0xf36a5b : game.objective.inside ? this.highContrast ? 0x64e5ff : 0x84c7b0 : 0xe8a65a);
     }
+    const stop = game.mode === 'drive' && !game.training && game.phase !== 'garage' ? game.tour.destination : undefined;
+    if (stop) { this.zone.visible = true; this.zone.position.set(stop.x, .06, stop.z); this.zone.scale.setScalar(10); this.zone.material.color.setHex(0xffd18b); }
     this.camera.position.lerp(desired, game.phase === 'garage' ? 1 - Math.exp(-dt * 4) : 1 - Math.exp(-dt * 12));
     this.shake = Math.max(0, this.shake - dt);
     if (this.shake > 0) this.camera.position.y += (Math.random() - 0.5) * this.shake;

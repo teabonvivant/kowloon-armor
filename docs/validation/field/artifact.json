@@ -1,0 +1,43 @@
+{
+  "artifactSha256": "6327425bfdd866b9ff4c0b1ae7270dd2b90edeb1a872149da03bc2608b19023e",
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "tourBottom": 356.984375,
+      "tankTop": 655.5,
+      "solutionTop": 554,
+      "solutionHeight": 24.5,
+      "reloadBottom": 549
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "tourBottom": 222.984375,
+      "tankTop": 393.5,
+      "solutionTop": 392.5,
+      "solutionHeight": 24.5,
+      "reloadBottom": 387.5
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "tourBottom": 261.1875,
+      "tankTop": 603.5,
+      "solutionTop": 505.20001220703125,
+      "solutionHeight": 19.5999755859375,
+      "reloadBottom": 501.20001220703125
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "tourBottom": 232.1875,
+      "tankTop": 349.5,
+      "solutionTop": 0,
+      "solutionHeight": 0,
+      "reloadBottom": 363.20001220703125
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

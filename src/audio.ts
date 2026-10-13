@@ -21,6 +21,8 @@ export class GameAudio {
   private trackFilter: BiquadFilterNode | null = null;
   private obstacles: readonly Obstacle[] = [];
   private echo: GainNode | null = null;
+  private limiter: DynamicsCompressorNode | null = null;
+  private night = false;
 
   unlock(): void {
     if (typeof AudioContext !== 'function') return;
@@ -28,10 +30,11 @@ export class GameAudio {
       this.context = new AudioContext();
       this.master = this.context.createGain();
       this.master.gain.value = this.volume;
-      const limiter = this.context.createDynamicsCompressor();
+      const limiter = this.context.createDynamicsCompressor(); this.limiter = limiter;
       limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 8;
       limiter.attack.value = .003; limiter.release.value = .18;
       this.master.connect(limiter).connect(this.context.destination);
+      this.setNightMode(this.night);
       this.field = this.context.createGain(); this.field.gain.value = 0; this.field.connect(this.master);
       this.soundtrack = new Soundtrack(this.context, this.master); this.soundtrack.setVolume(this.musicVolume);
       this.echo = this.context.createGain(); this.echo.gain.value = .2;
@@ -81,7 +84,16 @@ export class GameAudio {
 
   setVolume(value: number): void {
     this.volume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
-    if (this.context && this.master) this.master.gain.setTargetAtTime(this.volume, this.context.currentTime, 0.05);
+    if (this.context && this.master) this.master.gain.setTargetAtTime(this.volume * (this.night ? .65 : 1), this.context.currentTime, 0.05);
+  }
+
+  setNightMode(enabled: boolean): void {
+    this.night = enabled;
+    if (this.context && this.limiter) {
+      this.limiter.threshold.setTargetAtTime(enabled ? -24 : -10, this.context.currentTime, .05);
+      this.limiter.ratio.setTargetAtTime(enabled ? 12 : 8, this.context.currentTime, .05);
+    }
+    this.setVolume(this.volume);
   }
 
   setMusicVolume(value: number): void {

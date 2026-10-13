@@ -192,6 +192,10 @@ export class Interface {
     this.cleanup = mountSettings(this.modal, this.preferences, {
       changed: key => {
         if (key === 'quality') this.view.quality(this.preferences.quality);
+        if (key === 'lighting') this.view.lighting(this.preferences.lighting);
+        if (key === 'adaptiveResolution') this.view.adaptive(this.preferences.adaptiveResolution);
+        if (key === 'nightAudio') this.audio.setNightMode(this.preferences.nightAudio);
+        if (key === 'highContrast') { this.view.highContrast = this.preferences.highContrast; document.body.classList.toggle('high-contrast', this.preferences.highContrast); }
         if (key === 'reducedMotion') this.view.reduceMotion(this.preferences.reducedMotion);
         if (key === 'volume') { this.audio.unlock(); this.audio.setVolume(this.preferences.volume); }
         if (key === 'musicVolume') this.audio.setMusicVolume(this.preferences.musicVolume);
@@ -214,6 +218,9 @@ export class Interface {
   }
   private applyPreferences(): void {
     this.view.quality(this.preferences.quality); this.view.reduceMotion(this.preferences.reducedMotion);
+    this.view.lighting(this.preferences.lighting); this.view.adaptive(this.preferences.adaptiveResolution);
+    this.view.highContrast = this.preferences.highContrast; document.body.classList.toggle('high-contrast', this.preferences.highContrast);
+    this.audio.setNightMode(this.preferences.nightAudio);
     this.audio.setVolume(this.preferences.volume); this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY);
     this.audio.setMusicVolume(this.preferences.musicVolume);
     this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode); this.view.scopeZoom = this.preferences.scopeZoom;
@@ -265,6 +272,7 @@ export class Interface {
     }
     switch (button.dataset['action']) {
       case 'start': case 'retry': this.start(); break;
+      case 'tour': if (this.game.toggleTour()) { this.notify(this.game.tour.active ? '六站九龍巡遊 · 跟隨方位到觀景點停穩兩秒' : '已暫停巡遊 · 本回合到訪紀錄保留'); this.view.canvas.focus(); } break;
       case 'training': this.start(true); break;
       case 'training-return': if (this.game.training?.step === 4) { this.mode = 'campaign'; this.missionIndex = Math.min(this.progress.completed, 5); this.rememberDeployment(); this.returnGarage(); } break;
       case 'next': this.missionIndex = Math.min(this.game.mission?.id ?? 1, 5); this.start(); break;

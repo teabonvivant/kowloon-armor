@@ -61,8 +61,8 @@ export class Combat {
         this.effects.burst(p, !!target);
         if (target) {
           const { face, factor, bearing } = impactArmor(target, zone, shell.velocity);
-          const damage = Math.round(shell.source.spec.damage * factor * (1.35 - target.spec.armor / 200) *
-            (shell.source.enemy ? damageScale : 1.9));
+          const damage = Math.min(target.hp, Math.round(shell.source.spec.damage * factor * (1.35 - target.spec.armor / 200) *
+            (shell.source.enemy ? damageScale : 1.9)));
           target.hp = Math.max(0, target.hp - damage);
           if (zone === 'leftTrack') target.leftTrack = 6;
           if (zone === 'rightTrack') target.rightTrack = 6;

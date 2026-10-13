@@ -1,0 +1,139 @@
+{
+  "artifactSha256": "a93202f3634668ac5e16a8a30f347da1fb380e131f876610117c9a60cd194ad7",
+  "checks": [
+    {
+      "name": "production settings survive reload",
+      "result": {
+        "quality": "low",
+        "volume": 0,
+        "musicVolume": 0.35,
+        "lighting": "dusk",
+        "adaptiveResolution": true,
+        "nightAudio": true,
+        "highContrast": true,
+        "sensitivity": 1,
+        "invertY": false,
+        "reducedMotion": true,
+        "difficulty": "standard",
+        "bindings": {
+          "forward": "KeyW",
+          "reverse": "KeyS",
+          "left": "KeyA",
+          "right": "KeyD",
+          "turretLeft": "KeyQ",
+          "turretRight": "KeyE",
+          "elevate": "ArrowUp",
+          "lower": "ArrowDown",
+          "fire": "Space",
+          "brake": "KeyB",
+          "scope": "ShiftLeft",
+          "observe": "KeyC",
+          "camera": "KeyV",
+          "recentre": "KeyF",
+          "pointer": "KeyM",
+          "controls": "KeyH"
+        },
+        "scopeMode": "hold",
+        "scopeZoom": 2,
+        "hudScale": 1,
+        "tankId": "leopard2a8",
+        "mode": "campaign",
+        "missionIndex": 0,
+        "deploymentSet": false
+      }
+    },
+    {
+      "name": "production tour starts, pauses and resumes",
+      "result": true
+    },
+    {
+      "name": "production tour layout 1440x900",
+      "result": {
+        "overflow": false,
+        "tourBottom": 356.984375,
+        "tankTop": 655.5,
+        "tourRight": 312,
+        "width": 1440,
+        "solutionTop": 554,
+        "reloadBottom": 549
+      }
+    },
+    {
+      "name": "production tour layout 1280x577",
+      "result": {
+        "overflow": false,
+        "tourBottom": 222.984375,
+        "tankTop": 393.5,
+        "tourRight": 280,
+        "width": 1280,
+        "solutionTop": 392.5,
+        "reloadBottom": 387.5
+      }
+    },
+    {
+      "name": "production tour layout 390x844",
+      "result": {
+        "overflow": false,
+        "tourBottom": 261.1875,
+        "tankTop": 603.5,
+        "tourRight": 226,
+        "width": 390,
+        "solutionTop": 505.20001220703125,
+        "reloadBottom": 501.20001220703125
+      }
+    },
+    {
+      "name": "production tour layout 320x568",
+      "result": {
+        "overflow": false,
+        "tourBottom": 232.1875,
+        "tankTop": 349.5,
+        "tourRight": 226,
+        "width": 320,
+        "solutionTop": 367.20001220703125,
+        "reloadBottom": 363.20001220703125
+      }
+    },
+    {
+      "name": "production fire and pause",
+      "result": true
+    },
+    {
+      "name": "presentation options can be reversed while paused",
+      "result": true
+    },
+    {
+      "name": "source integration: arrival, repair, threat, fire solution and GPU resolution",
+      "result": {
+        "tour": {
+          "count": 1,
+          "title": "2 / 6 · 油麻地舊警署"
+        },
+        "moving": "左履帶 · 須停車收油 6.0 s",
+        "repairing": "左履帶 · 修復中 5.0 s",
+        "threat": "⚠ 1 輛敵車即將開火 · 尋找掩護",
+        "solution": "正面炮塔 · 直線估算",
+        "ratio": 0.7,
+        "pausedRatio": 0.7,
+        "resetRatio": 1
+      }
+    },
+    {
+      "name": "rendered night audio: lower peak, stereo preserved, pause silence",
+      "result": {
+        "normal": {
+          "peak": 0.7263737320899963,
+          "tail": 0,
+          "stereo": 1523.9972900988898
+        },
+        "night": {
+          "peak": 0.4612564444541931,
+          "tail": 0,
+          "stereo": 1594.9090898786194
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

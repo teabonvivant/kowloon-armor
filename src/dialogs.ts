@@ -71,6 +71,7 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
     <div><small>演習時間</small><strong>${Math.floor(game.elapsed)}<span> 秒</span></strong></div>
     <div><small>${DIFFICULTIES[game.difficulty].name}難度得分</small><strong>${game.score.toLocaleString()}</strong></div></div>
     <div class="debrief-line"><span>命中率 <b>${accuracy}%</b>（${game.hits} / ${game.shots} 發）</span><span>剩餘耐久 <b>${Math.round(health * 100)}%</b></span><span>得分倍率 <b>×${DIFFICULTIES[game.difficulty].score}</b></span></div>
+    <div class="debrief-line"><span>有效傷害 <b>${game.report.dealt}</b></span><span>承受傷害 <b>${game.report.received}</b></span><span>側後命中 <b>${game.report.flankingHits}</b> 次</span><span>行駛 <b>${Math.round(game.report.distance)}</b> m</span></div>
     <div class="debrief-objective">${brief.objective}<small>${objective && objective.kind !== 'clear' ? `控制時間 ${Math.floor(game.objective.progress)} / ${objective.seconds} 秒${objective.kind === 'defend' ? ` · 防線 ${Math.ceil(game.objective.integrity)}%` : ''}` : `擊破 ${game.kills} 輛 · ${brief.area}`}</small></div>
     <p class="dialog-intro">${advice}</p>
     <p class="fine-print">${previousBest ? `上次最佳 ${previousBest.toLocaleString()} 分${victory || survival ? ` · 本次 ${game.score >= previousBest ? '+' : '−'}${Math.abs(game.score - previousBest).toLocaleString()} 分` : ' · 本回合未完成，不列入最高分'}` : victory || survival ? '首次完成紀錄。' : '完成演習後才會記錄最高分。'} ${saved ? '戰績已儲存於目前瀏覽器。' : '尚未成功儲存，請在離開前匯出備份。'}</p>
