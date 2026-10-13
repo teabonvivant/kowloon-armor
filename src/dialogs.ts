@@ -35,6 +35,7 @@ export function briefingDialog(mode: GameMode, missionIndex: number, difficulty:
 }
 export function guideDialog(bindings: KeyBindings = DEFAULT_BINDINGS, allowTraining = true): string {
   return `${dialogHeader('FIELD MANUAL', '駕駛與射擊指南')}
+    <div class="training-tip"><strong>手機及平板觸控</strong><p>左搖桿前進、倒車及轉向；在場景空白位置拖曳瞄準。右側按住開火，單按瞄準鏡、觀察或回正。可三指同時駕駛、瞄準及射擊。放開搖桿預設自動煞車，也可按住煞車鍵。橫向視野較闊；轉換方向時會暫停。</p><p>「地圖」暫停查看完整戰況；「遊戲設定 → 操作」可調慣用手、觸控靈敏度及自動煞車。外接鍵盤可選鍵鼠模式。</p></div>
     ${allowTraining ? '<div class="training-tip"><strong>第一次駕駛？</strong><p>在沒有敵軍的街道，跟隨四步提示實際練習行駛、停車、炮塔瞄準及射擊。</p><div class="dialog-buttons"><button class="btn btn-primary" data-action="training">開始基礎訓練</button></div></div>' : ''}
     <div class="guide-columns"><section><h3>USB 飛行搖桿 / HOTAS</h3>
     <ol><li>在 Windows 接上搖桿與油門，按一次每個裝置的按鈕，讓瀏覽器識別。</li>

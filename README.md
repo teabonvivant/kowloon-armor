@@ -1,6 +1,28 @@
 # 九龍裝甲行動 · Kowloon Armor
 
-適用於 Windows 的單人 3D 坦克遊戲，支援 USB 飛行搖桿／HOTAS、鍵盤及滑鼠。
+單人 3D 坦克遊戲，支援手機／平板觸控、鍵盤及滑鼠，以及 USB 飛行搖桿／HOTAS。
+
+## 1.7 觸控與清晰視野
+
+[完整 50 項改善](docs/touch-upgrade.md) · [驗證紀錄及實機限制](docs/touch-validation.md)。保留 30 款戰車、四種模式、六關戰役、HOTAS、原有平衡及單檔離線。
+
+- **手機、平板自動切換**：左側搖桿前進／倒車及轉向，在場景空白處拖動瞄準；右側按住開火。可多指同時操作，觸碰場景不會開炮。
+- **手指可完成整場操作**：煞車、瞄準鏡、獨立觀察、炮塔回正、三種視角、暫停及地圖均有按鍵。放開搖桿預設自動煞車；可在「設定 → 操作」關閉、交換左右手、調觸控靈敏度及垂直反向。
+- **資訊按需要顯示**：預設精簡 HUD，常駐保留耐久、目標、速度及瞄準資訊；詳細戰況、事件簿和地圖按「地圖」暫停查看。正常車況、未啟動巡遊的說明、重複彈藥及鍵盤提示不再佔據戰鬥畫面。
+- **橫直向安全切換**：橫向較闊；旋轉、失焦、切到其他程式時會暫停並清除按住狀態。觸控區避免頁面拖動及選字；車庫和設定仍可正常捲動。
+- **保留外接裝置**：控制方式可選自動／觸控／鍵鼠。觸控啟用時固定精簡 HUD；鍵鼠可另選詳細 HUD。新設定僅存於目前瀏覽器，不會帶入 HOTAS 校準或戰績備份。
+
+使用 [GitHub Pages 遊玩入口](https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html) 可在手機／平板直接開啟。需要 WebGL 2；本輪驗證包含 Chromium 觸控模擬，**不等同 iPhone、Android 或 iPad 實機效能／Safari 驗證**。桌面仍可下載 HTML 離線遊玩。
+
+```sh
+npm run build
+npm test
+node scripts/touch-input-browser.mjs
+node scripts/touch-layout.mjs
+node scripts/touch-browser.mjs
+node scripts/touch-browser.mjs --framing
+node scripts/touch-smoke.mjs
+```
 
 ## 1.6 作戰工作台
 

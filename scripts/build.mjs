@@ -5,7 +5,7 @@ const result = await build({ entryPoints: ['src/main.ts'], bundle: true, minify:
   format: 'iife', target: ['chrome110', 'edge110'], write: false, legalComments: 'eof' });
 const script = result.outputFiles.find(file => file.path.endsWith('.js')) ?? result.outputFiles[0];
 if (!script) throw new Error('Game bundle was not generated');
-const css = (await Promise.all(['src/style.css', 'src/hud.css'].map(file => readFile(file, 'utf8')))).join('\n');
+const css = (await Promise.all(['src/style.css', 'src/hud.css', 'src/mobile.css'].map(file => readFile(file, 'utf8')))).join('\n');
 const template = await readFile('index.html', 'utf8');
 const html = template.replace('<link rel="stylesheet" href="/src/style.css">', '')
   .replace('<link rel="stylesheet" href="/src/hud.css">', '')

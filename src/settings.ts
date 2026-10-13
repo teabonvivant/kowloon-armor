@@ -59,7 +59,7 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
       </div>
     </section>
     <section id="panel-controls" class="settings-section" role="tabpanel" aria-labelledby="tab-controls" tabindex="0" ${initialTab === 'controls' ? '' : 'hidden'}>
-      <h3>按你的習慣瞄準</h3><p>鍵盤、滑鼠和 HOTAS 可並用。手機可瀏覽及設定，駕駛需要鍵盤或控制器。</p>
+      <h3>按你的習慣瞄準</h3><p>手機及平板自動使用觸控：左搖桿駕駛、場景拖曳瞄準、右側開火。可同時按住駕駛、瞄準及開火；詳細資訊在暫停地圖。鍵盤及 HOTAS 仍可並用。</p>
       <div class="settings-grid">
         <label class="settings-field">滑鼠瞄準靈敏度 <output id="sensitivity-value" for="sensitivity">${preferences.sensitivity.toFixed(1)}×</output><input id="sensitivity" type="range" min=".3" max="2.5" step=".1" value="${preferences.sensitivity}"></label>
         <div class="settings-field"><label><input id="invert-y" type="checkbox" ${checked(preferences.invertY)}> 反向滑鼠垂直瞄準</label></div>
@@ -86,7 +86,14 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
     `<label class="settings-field">準星顏色<select id="reticleColor" data-comfort="true">${[['white', '白色'], ['cyan', '青色'], ['amber', '琥珀']].map(([id, label]) => `<option value="${id}" ${selected(preferences.reticleColor === id)}>${label}</option>`).join('')}</select></label>
     <div class="settings-field"><label><input id="lowFlash" data-comfort="true" type="checkbox" ${checked(preferences.lowFlash)}> 低閃光 · 保留受擊方向</label></div>
     <div class="settings-field"><label><input id="diagnostics" data-comfort="true" type="checkbox" ${checked(preferences.diagnostics)}> 顯示效能儀表</label><small>最近 120 個活躍畫面樣本，中位／P95 幀時間及繪圖負載；窄螢幕收起，不代表其他電腦表現。</small></div>`);
-  modal.querySelector('#panel-controls .settings-grid')!.insertAdjacentHTML('beforeend', rangeField('scopeSensitivity', '瞄準鏡滑鼠倍率', preferences.scopeSensitivity, .25, 1.5, .05));
+  modal.querySelector('#panel-controls .settings-grid')!.insertAdjacentHTML('afterbegin',
+    `<label class="settings-field">控制方式<select id="controlMode" data-comfort="true">${[['auto', '自動辨識'], ['touch', '觸控'], ['desktop', '鍵盤／滑鼠／HOTAS']].map(([id, label]) => `<option value="${id}" ${selected(preferences.controlMode === id)}>${label}</option>`).join('')}</select></label>
+    <label class="settings-field">觸控慣用手<select id="touchHand" data-comfort="true"><option value="right" ${selected(preferences.touchHand === 'right')}>右手瞄準／開火</option><option value="left" ${selected(preferences.touchHand === 'left')}>左手瞄準／開火</option></select></label>
+    ${rangeField('touchSensitivity', '觸控瞄準靈敏度', preferences.touchSensitivity, .3, 2, .1)}
+    <label class="settings-field"><span><input id="touchInvert" data-comfort="true" type="checkbox" ${checked(preferences.touchInvert)}> 觸控垂直反向</span></label>
+    <label class="settings-field"><span><input id="touchAutoBrake" data-comfort="true" type="checkbox" ${checked(preferences.touchAutoBrake)}> 放開搖桿自動煞車</span></label>`);
+  modal.querySelector('#panel-display .settings-grid')!.insertAdjacentHTML('afterbegin', `<label class="settings-field">戰鬥資訊密度<select id="hudDensity" data-comfort="true"><option value="compact" ${selected(preferences.hudDensity === 'compact')}>精簡 · 保留作戰視野</option><option value="full" ${selected(preferences.hudDensity === 'full')}>詳細 · 鍵鼠使用</option></select><small>觸控固定採精簡畫面；完整地圖、戰況及事件在「地圖」內。</small></label>`);
+  modal.querySelector('#panel-controls .settings-grid')!.insertAdjacentHTML('beforeend', rangeField('scopeSensitivity', '瞄準鏡滑鼠／觸控倍率', preferences.scopeSensitivity, .25, 1.5, .05));
   modal.querySelector('#panel-audio .settings-grid')!.insertAdjacentHTML('beforeend',
     rangeField('effectsVolume', '炮聲／爆炸（0–1）', preferences.effectsVolume, 0, 1, .05) +
     rangeField('engineVolume', '引擎／履帶（0–1）', preferences.engineVolume, 0, 1, .05) +
@@ -107,12 +114,16 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
     if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement) || field.type === 'file') return;
     let key: keyof Preferences | undefined;
     if (field.dataset['comfort']) {
-      const numeric = ['scopeSensitivity', 'chaseDistance', 'chaseFov', 'shakeStrength', 'reticleWidth', 'effectsVolume', 'engineVolume', 'alertsVolume'] as const;
+      const numeric = ['touchSensitivity', 'scopeSensitivity', 'chaseDistance', 'chaseFov', 'shakeStrength', 'reticleWidth', 'effectsVolume', 'engineVolume', 'alertsVolume'] as const;
       for (const name of numeric) if (field.id === name) {
         preferences[name] = Number(field.value); key = name;
         modal.querySelector(`#${name}-value`)!.textContent = field.value;
       }
       if (field.id === 'reticleColor' && ['white', 'cyan', 'amber'].includes(field.value)) { preferences.reticleColor = field.value as Preferences['reticleColor']; key = 'reticleColor'; }
+      if (field.id === 'controlMode' && ['auto', 'touch', 'desktop'].includes(field.value)) { preferences.controlMode = field.value as Preferences['controlMode']; key = 'controlMode'; }
+      if (field.id === 'touchHand' && ['left', 'right'].includes(field.value)) { preferences.touchHand = field.value as Preferences['touchHand']; key = 'touchHand'; }
+      if (field.id === 'hudDensity' && ['compact', 'full'].includes(field.value)) { preferences.hudDensity = field.value as Preferences['hudDensity']; key = 'hudDensity'; }
+      if (field instanceof HTMLInputElement && (field.id === 'touchInvert' || field.id === 'touchAutoBrake')) { preferences[field.id] = field.checked; key = field.id; }
       if (field instanceof HTMLInputElement && (field.id === 'lowFlash' || field.id === 'diagnostics')) { preferences[field.id] = field.checked; key = field.id; }
     }
     switch (field.id) {

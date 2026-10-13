@@ -78,6 +78,7 @@ export class LocalControls {
   }
 
   private readonly pointerDown = (event: PointerEvent): void => {
+    if (event.pointerType && event.pointerType !== 'mouse') return;
     if (event.button !== 0 && event.button !== 2) return;
     this.element.focus({ preventScroll: true });
     this.mouseFire = event.button === 0 || this.mouseFire;
@@ -86,12 +87,14 @@ export class LocalControls {
   };
 
   private readonly pointerMove = (event: PointerEvent): void => {
+    if (event.pointerType && event.pointerType !== 'mouse') return;
     if (!this.dragging && document.pointerLockElement !== this.element) return;
     this.mouseX += event.movementX;
     this.mouseY += event.movementY;
   };
 
   private readonly pointerUp = (event: PointerEvent): void => {
+    if (event.pointerType && event.pointerType !== 'mouse') return;
     if (event.button === 0 || event.type === 'pointercancel') this.mouseFire = false;
     if (event.button === 2 || event.type === 'pointercancel') this.dragging = false;
   };

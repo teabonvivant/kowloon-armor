@@ -31,7 +31,7 @@ if (fullBrowserArtifactSha256 !== artifactSha256) {
         return { contents: contents.replace(replacement, original), loader: 'ts' };
       });
     } }] });
-  const css = (await Promise.all(['src/style.css', 'src/hud.css'].map(path => readFile(path, 'utf8')))).join('\n');
+  const css = (await Promise.all(['src/style.css', 'src/hud.css', 'src/mobile.css'].map(path => readFile(path, 'utf8')))).join('\n');
   const template = await readFile('index.html', 'utf8');
   const reconstructed = template.replace('<link rel="stylesheet" href="/src/style.css">', '')
     .replace('<link rel="stylesheet" href="/src/hud.css">', '').replace('</head>', `<style>${css}</style></head>`)

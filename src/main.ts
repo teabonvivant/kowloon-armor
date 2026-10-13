@@ -67,7 +67,7 @@ try { boot(); }
 catch (error) {
   if (!(error instanceof Error)) throw error;
   const bootScreen = document.getElementById('boot');
-  if (bootScreen) { bootScreen.innerHTML = '<span class="boot-mark">K / A</span><h1>無法啟動 3D 場景</h1><p>請用 Windows Edge 或 Chrome 開啟，並在瀏覽器設定啟用圖形加速。</p><p id="boot-error"></p>';
+  if (bootScreen) { bootScreen.innerHTML = '<span class="boot-mark">K / A</span><h1>無法啟動 3D 場景</h1><p>需要支援 WebGL 2 的瀏覽器及圖形加速。請更新瀏覽器，或改用支援的裝置開啟。</p><p id="boot-error"></p>';
     const detail = document.getElementById('boot-error'); if (detail) detail.textContent = error.message; }
   console.error(error);
 }

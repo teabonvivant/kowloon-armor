@@ -36,7 +36,7 @@ const bundle = await build({ stdin: { resolveDir: resolve('.'), contents: `
   document.getElementById('boot').remove();
   view.render(game, 1 / 60);
 ` }, bundle: true, format: 'iife', write: false });
-const css = (await Promise.all(['src/style.css', 'src/hud.css'].map(file => readFile(file, 'utf8')))).join('\n');
+const css = (await Promise.all(['src/style.css', 'src/hud.css', 'src/mobile.css'].map(file => readFile(file, 'utf8')))).join('\n');
 const template = await readFile('index.html', 'utf8');
 const html = template.replace('<link rel="stylesheet" href="/src/style.css">', '')
   .replace('<link rel="stylesheet" href="/src/hud.css">', '')

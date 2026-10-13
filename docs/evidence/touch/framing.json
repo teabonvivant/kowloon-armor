@@ -1,0 +1,472 @@
+{
+  "sha256": "2499143dc2f8c921bcdf47549482ee292308e129a8ca1266367d29fbd8ae9e69",
+  "checks": [
+    {
+      "name": "offline phone automatically selects touch and removes redundant HUD",
+      "data": true
+    },
+    {
+      "name": "seven phone/tablet viewports: clear center, controls >=44px, no overlapping controls or overflow",
+      "data": [
+        {
+          "overflow": false,
+          "width": 844,
+          "height": 390,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 20,
+              "y": 266,
+              "width": 104,
+              "height": 104
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 696,
+              "y": 214,
+              "width": 68,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 772,
+              "y": 214,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 772,
+              "y": 270,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 696,
+              "y": 326,
+              "width": 128,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 136,
+              "y": 322,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 680,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 788,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 390,
+          "height": 844,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 12,
+              "y": 736,
+              "width": 88,
+              "height": 88
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 260,
+              "y": 668,
+              "width": 62,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 330,
+              "y": 668,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 330,
+              "y": 724,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 260,
+              "y": 780,
+              "width": 118,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 108,
+              "y": 776,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 226,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 334,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 320,
+          "height": 568,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 12,
+              "y": 460,
+              "width": 88,
+              "height": 88
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 190,
+              "y": 392,
+              "width": 62,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 260,
+              "y": 392,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 260,
+              "y": 448,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 190,
+              "y": 504,
+              "width": 118,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 108,
+              "y": 500,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 156,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 264,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 568,
+          "height": 320,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 12,
+              "y": 212,
+              "width": 88,
+              "height": 88
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 438,
+              "y": 144,
+              "width": 62,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 508,
+              "y": 144,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 508,
+              "y": 200,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 438,
+              "y": 256,
+              "width": 118,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 108,
+              "y": 252,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 404,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 512,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 768,
+          "height": 1024,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 20,
+              "y": 900,
+              "width": 104,
+              "height": 104
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 620,
+              "y": 848,
+              "width": 68,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 696,
+              "y": 848,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 696,
+              "y": 904,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 620,
+              "y": 960,
+              "width": 128,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 136,
+              "y": 956,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 604,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 712,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 1024,
+          "height": 768,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 20,
+              "y": 644,
+              "width": 104,
+              "height": 104
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 876,
+              "y": 592,
+              "width": 68,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 952,
+              "y": 592,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 952,
+              "y": 648,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 876,
+              "y": 704,
+              "width": 128,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 136,
+              "y": 700,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 860,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 968,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        },
+        {
+          "overflow": false,
+          "width": 1366,
+          "height": 1024,
+          "rectangles": [
+            {
+              "selector": "#touch-stick",
+              "x": 20,
+              "y": 900,
+              "width": 104,
+              "height": 104
+            },
+            {
+              "selector": "#touch-fire",
+              "x": 1218,
+              "y": 848,
+              "width": 68,
+              "height": 104
+            },
+            {
+              "selector": "#touch-scope",
+              "x": 1294,
+              "y": 848,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-observe",
+              "x": 1294,
+              "y": 904,
+              "width": 52,
+              "height": 48
+            },
+            {
+              "selector": "#touch-recentre",
+              "x": 1218,
+              "y": 960,
+              "width": 128,
+              "height": 44
+            },
+            {
+              "selector": "[data-touch-hold=\"brake\"]",
+              "x": 136,
+              "y": 956,
+              "width": 48,
+              "height": 48
+            },
+            {
+              "selector": ".compact-map",
+              "x": 1202,
+              "y": 12,
+              "width": 48,
+              "height": 44
+            },
+            {
+              "selector": ".hud-tools [data-action=\"pause\"]",
+              "x": 1310,
+              "y": 12,
+              "width": 44,
+              "height": 44
+            }
+          ],
+          "center": "world"
+        }
+      ]
+    },
+    {
+      "name": "final offline desktop keeps keyboard drive, brake and pause without touch overlay",
+      "data": true
+    },
+    {
+      "name": "no JavaScript errors or external asset requests",
+      "data": true
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

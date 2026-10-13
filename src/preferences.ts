@@ -3,6 +3,12 @@ import { DEFAULT_BINDINGS, keyBindingsSchema } from './key-bindings';
 import { TANKS } from './data/tanks';
 
 const schema = z.object({
+  controlMode: z.enum(['auto', 'touch', 'desktop']).default('auto').catch('auto'),
+  hudDensity: z.enum(['compact', 'full']).default('compact').catch('compact'),
+  touchSensitivity: z.number().min(.3).max(2).default(1).catch(1),
+  touchInvert: z.boolean().default(false).catch(false),
+  touchAutoBrake: z.boolean().default(true).catch(true),
+  touchHand: z.enum(['right', 'left']).default('right').catch('right'),
   quality: z.enum(['low', 'medium', 'high']).default('medium'),
   volume: z.number().min(0).max(1).default(.4),
   musicVolume: z.number().min(0).max(1).default(.35),

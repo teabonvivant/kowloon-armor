@@ -111,7 +111,7 @@ test('scope sensitivity changes only scoped mouse displacement, not ordinary or 
   globalThis.window = new EventTarget();
   const element = new EventTarget(); element.tabIndex = 0; element.focus = () => {};
   globalThis.document = Object.assign(new EventTarget(), {body: {}, documentElement: {}, activeElement: element, pointerLockElement: element, hidden: false});
-  const input = new api.Input(element); input.scopeSensitivity = .5;
+  const input = new api.Input(element, { sample: () => ({ ...idle, brake: false }), reset() {}, dispose() {} }); input.scopeSensitivity = .5;
   const move = () => window.dispatchEvent(Object.assign(new Event('pointermove'), {movementX:100, movementY:0}));
   const key = code => {
     const event = Object.assign(new Event('keydown'), {code, repeat:false}); Object.defineProperty(event, 'target', {value:element}); window.dispatchEvent(event);

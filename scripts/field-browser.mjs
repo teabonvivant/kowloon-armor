@@ -71,7 +71,7 @@ try {
     const game = new Game(view.scene, view.world, {shot(){}, hit(){}, finish(){}, notify(){}});
     window.qa = {view, game, GameAudio, hudMarkup, updateHud, updateEnemyMarkers, createActor, TANKS, resultDialog};
   ` }, bundle: true, format: 'iife', write: false });
-  const css = (await Promise.all(['src/style.css', 'src/hud.css'].map(file => readFile(file, 'utf8')))).join('\n');
+  const css = (await Promise.all(['src/style.css', 'src/hud.css', 'src/mobile.css'].map(file => readFile(file, 'utf8')))).join('\n');
   const harness = resolve(evidence, 'harness.html');
   await writeFile(harness, `<style>${css}</style><canvas id="world"></canvas><div id="app"></div><script>${bundle.outputFiles[0].text.replaceAll('</script', '<\\/script')}</script>`);
   await page.goto(pathToFileURL(harness).href);

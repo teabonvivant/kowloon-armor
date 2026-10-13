@@ -43,7 +43,7 @@ export class Interface {
     this.modal.addEventListener('close', () => {
       if (this.modal.open) return;
       this.cleanup?.(); this.cleanup = undefined; this.input.reset();
-      if (this.game.phase === 'paused' || this.game.phase === 'playing') { this.game.resume(); this.view.canvas.focus(); }
+      if (this.game.phase === 'paused' || this.game.phase === 'playing') { this.game.resume(); this.input.touch.setPlaying(true); this.audio.unlock(); this.view.canvas.focus(); }
       else if (this.returnFocus?.isConnected) this.returnFocus.focus();
       else this.app.querySelector<HTMLButtonElement>('[data-action="start"]')?.focus();
     });
@@ -76,6 +76,7 @@ export class Interface {
     clearTimeout(this.noticeTimer); this.noticeTimer = window.setTimeout(() => notice.classList.remove('show'), 3600);
   }
   showGarage(): void {
+    this.input.touch.setPlaying(false);
     const scoreKey = `${this.mode}:${this.mode === 'campaign' ? this.missionIndex + 1 : 0}:${this.preferences.difficulty}`;
     const previousScroll = this.app.querySelector('.fleet-track')?.scrollLeft ?? 0;
     this.app.innerHTML = garageMarkup(this.game.player.spec, this.mode, this.missionIndex, this.progress.completed,
@@ -110,6 +111,7 @@ export class Interface {
     if (training) this.game.beginTraining();
     this.app.innerHTML = hudMarkup(this.game, this.preferences.bindings);
     document.body.classList.add('in-battle'); this.view.canvas.focus();
+    this.input.touch.setPlaying(true);
   }
   completeTraining(): void {
     if (this.progress.trainingComplete) return;
@@ -151,6 +153,7 @@ export class Interface {
     this.open(`${dialogHeader('SIMULATION PAUSED', '演習暫停')}<p class="dialog-intro">炮彈、車輛和倒數計時均已暫停。關閉視窗或按 Esc 繼續演習。</p><div class="pause-menu"><button class="btn btn-primary" data-action="close">繼續演習</button><button class="btn" data-action="settings">遊戲設定</button><button class="btn" data-action="controller">HOTAS 控制設定</button><button class="btn" data-action="guide">操作指南</button><button class="btn" data-action="return">返回車庫</button></div>`, 'pause');
   }
   private open(content: string, page = 'other'): void {
+    this.input.touch.setPlaying(false);
     this.cleanup?.(); this.cleanup = undefined;
     if (!this.modal.open) this.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.game.pause(); this.input.reset(); this.audio.stop(); this.modal.innerHTML = content; this.modal.dataset['page'] = page;
@@ -275,6 +278,7 @@ export class Interface {
     document.body.style.setProperty('--hud-scale', String(this.preferences.hudScale));
   }
   private applyComfort(): void {
+    this.input.touch.configure(this.preferences);
     this.input.scopeSensitivity = this.preferences.scopeSensitivity;
     this.view.chaseDistance = this.preferences.chaseDistance; this.view.chaseFov = this.preferences.chaseFov;
     this.view.shakeStrength = this.preferences.shakeStrength; this.view.diagnosticsEnabled = this.preferences.diagnostics;
@@ -369,6 +373,6 @@ export class Interface {
   }
   private async fullscreen(): Promise<void> {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
-    catch { this.notify('此視窗未允許全螢幕，請按 F11 或在 Edge／Chrome 開啟。'); }
+    catch { this.notify('此瀏覽器未允許全螢幕，可繼續使用目前畫面；手機橫向可獲得較闊視野。'); }
   }
 }
