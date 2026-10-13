@@ -23,6 +23,8 @@ export class GameAudio {
   private echo: GainNode | null = null;
   private limiter: DynamicsCompressorNode | null = null;
   private night = false;
+  private battleGain: GainNode | null = null;
+  private effectsVolume = 1; private engineVolume = 1; private alertsVolume = 1;
 
   unlock(): void {
     if (typeof AudioContext !== 'function') return;
@@ -36,13 +38,14 @@ export class GameAudio {
       this.master.connect(limiter).connect(this.context.destination);
       this.setNightMode(this.night);
       this.field = this.context.createGain(); this.field.gain.value = 0; this.field.connect(this.master);
+      this.battleGain = this.context.createGain(); this.battleGain.gain.value = this.effectsVolume; this.battleGain.connect(this.field);
       this.soundtrack = new Soundtrack(this.context, this.master); this.soundtrack.setVolume(this.musicVolume);
       this.echo = this.context.createGain(); this.echo.gain.value = .2;
       const delay = this.context.createDelay(.5), tail = this.context.createDelay(.5);
       const damping = this.context.createBiquadFilter(), decay = this.context.createGain();
       delay.delayTime.value = .13; tail.delayTime.value = .21; decay.gain.value = .28;
       damping.type = 'lowpass'; damping.frequency.value = 1600;
-      this.echo.connect(delay).connect(damping).connect(this.field);
+      this.echo.connect(delay).connect(damping).connect(this.battleGain);
       damping.connect(tail).connect(decay).connect(delay);
       const oscillator = this.context.createOscillator();
       const filter = this.context.createBiquadFilter();
@@ -100,6 +103,11 @@ export class GameAudio {
     this.musicVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
     this.soundtrack?.setVolume(this.musicVolume);
   }
+  setMix(effects: number, engine: number, alerts: number): void {
+    const level = (value: number): number => Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+    this.effectsVolume = level(effects); this.engineVolume = level(engine); this.alertsVolume = level(alerts);
+    if (this.context && this.battleGain) this.battleGain.gain.setTargetAtTime(this.effectsVolume, this.context.currentTime, .05);
+  }
 
   atmosphere(threat: number, dt: number): void { this.soundtrack?.update(threat, dt); }
 
@@ -109,8 +117,8 @@ export class GameAudio {
     const now = this.context.currentTime;
     this.field?.gain.setTargetAtTime(1, now, .025);
     this.engineOscillator.frequency.setTargetAtTime(34 + power * 48, now, 0.16);
-    this.engineGain.gain.setTargetAtTime(0.035 + power * 0.065, now, 0.16);
-    this.trackGain?.gain.setTargetAtTime(power * .5, now, .12);
+    this.engineGain.gain.setTargetAtTime((0.035 + power * 0.065) * this.engineVolume, now, 0.16);
+    this.trackGain?.gain.setTargetAtTime(power * .5 * this.engineVolume, now, .12);
     this.trackFilter?.frequency.setTargetAtTime(240 + power * 1100, now, .12);
   }
 
@@ -135,8 +143,8 @@ export class GameAudio {
     if (!this.context || !this.master || this.context.state !== 'running' || this.voices >= 16) return;
     const oscillator = this.context.createOscillator(), gain = this.context.createGain();
     const time = this.context.currentTime + delay;
-    oscillator.frequency.value = frequency; gain.gain.setValueAtTime(volume, time);
-    gain.gain.exponentialRampToValueAtTime(.001, time + duration);
+    oscillator.frequency.value = frequency; gain.gain.setValueAtTime(volume * this.alertsVolume, time);
+    gain.gain.linearRampToValueAtTime(0, time + duration);
     oscillator.connect(gain).connect(this.master); this.voices++;
     oscillator.start(time); oscillator.stop(time + duration);
     oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); this.voices--; };
@@ -149,7 +157,7 @@ export class GameAudio {
     const boomGain = this.context.createGain();
     const panner = this.context.createStereoPanner(), filter = this.context.createBiquadFilter();
     panner.pan.value = mix.pan; filter.type = 'lowpass'; filter.frequency.value = mix.cutoff;
-    filter.connect(panner).connect(this.field ?? this.master);
+    filter.connect(panner).connect(this.battleGain ?? this.field ?? this.master);
     if (this.echo) panner.connect(this.echo);
     oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(frequency, now);

@@ -15,7 +15,7 @@ await page.context().setOffline(true);
 await page.addInitScript(() => localStorage.setItem('kowloon-armor-settings', JSON.stringify({ quality:'low', volume:0, lighting:'dusk', highContrast:true, reducedMotion:true })));
 try {
   await page.goto(pathToFileURL(resolve('九龍裝甲行動.html')).href);
-  assert.match(await page.locator('.garage-footer').innerText(), /v1.5/);
+  assert.match(await page.locator('.garage-footer').innerText(), /v1.6/);
   await page.locator('[data-mode="drive"]').click(); await page.locator('[data-action="start"]').click();
   await page.locator('#tour-toggle').click();
   await page.waitForFunction(() => document.querySelector('#tour-toggle')?.getAttribute('aria-pressed') === 'true');

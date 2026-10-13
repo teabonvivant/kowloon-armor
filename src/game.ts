@@ -11,7 +11,7 @@ import { TANKS } from './data/tanks';
 import type { TankSpec } from './data/tanks';
 import { Effects } from './effects';
 import type { InputFrame } from './input';
-import { angleDelta, wallFraction } from './math';
+import { angleDelta, blocked, wallFraction } from './math';
 import type { WorldData } from './render/world';
 import { disposeTank, showTankDamage } from './render/tank';
 import type { Impact } from './armor';
@@ -43,6 +43,9 @@ export class Game {
   tour = new LandmarkTour();
   report = { dealt: 0, received: 0, flankingHits: 0, distance: 0 };
   repairingTracks = false;
+  waypoint: { x: number; z: number } | null = null;
+  challenge: 'none' | 'precision' | 'mobile' | 'armor' = 'none';
+  readonly journal: { time: number; message: string }[] = [];
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
   private readonly actors: Actor[] = [];
@@ -50,11 +53,12 @@ export class Game {
   constructor(private readonly scene: Scene, readonly world: WorldData, private readonly events: GameEvents) {
     this.player = createActor(firstTank(), 0, 100); scene.add(this.player.visual.root);
     this.effects = new Effects(scene);
-    this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; events.shot(); },
+    this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; this.log('主炮發射'); events.shot(); },
       cannon: (position, enemy) => events.cannon?.(position, enemy),
       hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++;
           this.report.dealt += damage; if (impact.face !== 'front') this.report.flankingHits++; }
         else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; this.report.received += damage; }
+        this.log(`${enemy ? killed ? '擊破敵車' : '命中敵車' : '裝甲受擊'} · ${damage}`);
         events.hit(damage, killed, enemy, impact); } });
   }
   select(spec: TankSpec): void {
@@ -71,6 +75,7 @@ export class Game {
     this.objective = createObjectiveState(); this.supply = 'repair'; this.damageTimer = 0;
     this.observing = false; this.observationYaw = 0; this.dustTimer = 0;
     this.training = null;
+    this.waypoint = null; this.journal.length = 0; this.challenge = 'none';
     this.tour = new LandmarkTour(); this.report = { dealt: 0, received: 0, flankingHits: 0, distance: 0 }; this.repairingTracks = false;
     const mission = this.mission;
     if (mode === 'campaign' && mission) this.player.visual.root.position.set(mission.spawn[0], 0, mission.spawn[1]);
@@ -91,6 +96,14 @@ export class Game {
     return true;
   }
   pause(): void { if (this.phase === 'playing') this.phase = 'paused'; }
+  setWaypoint(x: number, z: number): boolean {
+    if (!Number.isFinite(x) || !Number.isFinite(z) || Math.abs(x) > 210 || Math.abs(z) > 210 || blocked(x, z, this.world.obstacles)) return false;
+    this.waypoint = { x, z }; return true;
+  }
+  private log(message: string): void {
+    this.journal.push({ time: this.elapsed, message });
+    if (this.journal.length > 40) this.journal.shift();
+  }
   resume(): void { if (this.phase === 'paused') this.phase = 'playing'; }
   cycleCamera(): void {
     const modes: readonly CameraMode[] = ['chase', 'driver', 'gunner'];
@@ -112,6 +125,9 @@ export class Game {
     const previousX = this.player.visual.root.position.x, previousZ = this.player.visual.root.position.z;
     drivePlayer(this.player, this.observing ? { ...input, aimX: 0, aimY: 0, pointerX: 0, pointerY: 0 } : input, dt, this.world.obstacles, actors);
     this.report.distance += Math.hypot(this.player.visual.root.position.x - previousX, this.player.visual.root.position.z - previousZ);
+    if (this.waypoint && Math.hypot(this.player.visual.root.position.x - this.waypoint.x, this.player.visual.root.position.z - this.waypoint.z) < 10) {
+      this.waypoint = null; this.events.notify('已抵達自訂航點');
+    }
     this.repairingTracks = Math.abs(this.player.speed) < .4 && (input.brake || Math.abs(input.throttle) < .04);
     if (this.mode === 'drive' && !this.training) {
       const visited = this.tour.update(this.player, dt);

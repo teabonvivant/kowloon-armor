@@ -46,6 +46,14 @@ function boot(): void {
         updateEnemyMarkers(game, view.camera);
         const resolution = document.getElementById('render-scale');
         if (resolution) resolution.textContent = `3D ${Math.round(view.renderScale * 100)}%`;
+        const meter = document.getElementById('performance-meter');
+        if (meter) {
+          meter.hidden = !view.diagnosticsEnabled;
+          if (view.diagnosticsEnabled) {
+            const frames = view.frameDiagnostics.summary(), render = view.renderer.info.render;
+            meter.textContent = `中位 ${frames.median.toFixed(1)} / P95 ${frames.p95.toFixed(1)} ms\n${render.calls} calls · ${Math.round(render.triangles / 1000)}k 三角形 · ${frames.count} 幀`;
+          }
+        }
       } else {
         const status = document.getElementById('pad-status');
         if (status) status.textContent = input.devices.length ? `HOTAS 已連接 (${input.devices.length})` : 'HOTAS 控制設定';

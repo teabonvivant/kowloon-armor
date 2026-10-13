@@ -12,13 +12,16 @@ import { districtAt } from './render/districts';
 import { LANDMARKS } from './render/hong-kong';
 import { FACE_NAMES, ZONE_NAMES } from './armor';
 import { navigationHint } from './field';
+import { ballisticEstimate } from './operations';
 
 export function hudMarkup(game: Game, bindings: KeyBindings = DEFAULT_BINDINGS): string {
   return `<div class="battle-hud"><div class="combat-vignette"></div><div class="driver-frame" id="driver-frame" hidden></div>
     <div class="hud-top"><div class="operation-tag"><span class="live-dot"></span><span>${MODE_NAMES[game.mode]} <small>${game.mode === 'campaign' ? game.mission?.area : '九龍 · 封閉演習區'}${game.mode !== 'drive' ? ` / ${DIFFICULTIES[game.difficulty].name}` : ''}</small></span></div><div class="compass"><span id="compass-direction">北 N</span><b id="heading">000°</b></div><div class="hud-tools"><button class="icon-button" data-action="camera" aria-label="切換視角">${icon('camera')}</button><button class="icon-button" data-action="pause" aria-label="暫停遊戲">${icon('pause')}</button></div></div>
     <section class="objective"><span class="small-label" id="district-label">${game.mode === 'drive' ? '自由探索' : '作戰目標'}</span><strong id="objective-title">${game.mode === 'drive' ? '探索九龍街道' : objectiveName(game.mode === 'campaign' ? game.mission?.objective : undefined)}</strong><div><span id="objective-count">0 / ${game.totalEnemies}</span><span id="mission-time">00:00</span></div><p id="zone-status" hidden></p><p id="zone-location" hidden></p><progress id="zone-progress" max="100" value="0" aria-label="任務進度" hidden></progress><p id="wave-status" ${game.mode === 'survival' ? '' : 'hidden'}></p></section>
     ${game.training ? `<section class="training-hud" aria-label="基礎訓練"><span class="small-label" id="training-step">基礎訓練 · 1 / 4</span><strong id="training-title">向前行駛 15 米</strong><progress id="training-progress" max="4" value="0" aria-label="訓練完成步驟"></progress><p data-training-hint="0">按住 ${keyLabel(bindings.forward)} 前進，或推動已校準的 HOTAS 油門。</p><p data-training-hint="1" hidden>放開油門，按住 ${keyLabel(bindings.brake)} 煞車，停穩約 1 秒。</p><p data-training-hint="2" hidden>右鍵拖動，或按 ${keyLabel(bindings.turretLeft)} / ${keyLabel(bindings.turretRight)}，把炮塔從目前方向轉動 30°。只轉車身不計算。</p><p data-training-hint="3" hidden>按 ${keyLabel(bindings.fire)}、滑鼠左鍵或 HOTAS 開火。等主炮就緒才可射擊。</p><p data-training-hint="4" hidden>四步已完成。可繼續自由駕駛，或返回車庫開始戰役。</p><button class="text-button" id="training-return" data-action="training-return" hidden>返回車庫 →</button></section>` : ''}
-    <div class="bearing-instrument"><span id="hull-heading">車頭 000°</span><span id="turret-bearing">炮塔 0°</span><span id="observation-status" hidden>獨立觀察</span><span id="threat-alert" hidden></span></div>
+    <output id="performance-meter" hidden></output>
+    <div class="bearing-instrument"><span id="hull-heading">車頭 000°</span><span id="turret-bearing">炮塔 0°</span><span id="observation-status" hidden>獨立觀察</span><span id="threat-alert" hidden></span><span id="waypoint-hint" hidden></span></div>
+    <div id="target-analysis" hidden></div>
     ${game.mode === 'drive' && !game.training ? '<section class="tour-panel" aria-label="九龍巡遊"><button class="text-button" data-action="tour" id="tour-toggle" aria-pressed="false">開始六站巡遊</button><strong id="tour-destination">到街邊觀景點停穩兩秒</strong><p id="tour-navigation">可隨時暫停 · 到訪紀錄只保留本回合</p><progress id="tour-progress" max="6" value="0" aria-label="巡遊到訪進度"></progress></section>' : ''}
     <div class="incoming-indicator" id="incoming-indicator" hidden><i></i><span>受擊方向</span></div>
     <div class="reticle" id="reticle"><svg class="reload-ring" viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="43"/></svg><div class="reticle-h"></div><div class="reticle-v"></div><i></i><span id="reticle-range">APFSDS</span><b id="reload-label">就緒</b><em id="hit-confirm" aria-live="off"></em><small id="fire-solution"></small></div>
@@ -28,13 +31,26 @@ export function hudMarkup(game: Game, bindings: KeyBindings = DEFAULT_BINDINGS):
     <div class="minimap-wrap"><div class="minimap-heading"><span>九龍戰術地圖</span><b>N ↑</b></div><canvas id="minimap" width="240" height="240" aria-label="敵我位置小地圖"></canvas><div class="map-key"><i></i> 我方 <i></i> 敵方 <span id="render-scale">3D 100%</span></div></div>
     <div class="ammo-panel"><span class="shell-icon"></span><div><b>APFSDS</b><small>${game.player.spec.gun} mm 穿甲彈</small></div><strong>∞</strong><div class="reload-track"><i id="reload-fill"></i></div><span id="ammo-status">可以開火</span></div>
     <section class="supply-panel" id="supply-panel" aria-label="波間整備選擇" hidden><strong>下一波整備 <span id="supply-countdown"></span></strong><div><button data-supply="repair" aria-pressed="true">修復<small>35% 車體及兩側履帶</small></button><button data-supply="reload" aria-pressed="false">快裝補給<small>4 發 · 裝填時間 −32%</small></button></div><p>倒數結束時套用 · 預設修復</p></section>
-    <div class="battle-keybar"><span><kbd>${keyLabel(bindings.forward)} ${keyLabel(bindings.left)} ${keyLabel(bindings.reverse)} ${keyLabel(bindings.right)}</kbd> 駕駛</span><span><kbd>右鍵 / ${keyLabel(bindings.pointer)}</kbd> 瞄準</span><span><kbd>${keyLabel(bindings.recentre)}</kbd> 回正</span><span><kbd>${keyLabel(bindings.fire)}</kbd> 開炮</span><span><kbd>${keyLabel(bindings.scope)}</kbd> 瞄準鏡</span><span><kbd>${keyLabel(bindings.observe)}</kbd> 觀察</span><button data-action="controller"><kbd>${keyLabel(bindings.controls)}</kbd> HOTAS</button><button data-action="guide">操作指南</button></div>
+    <div class="battle-keybar"><span><kbd>${keyLabel(bindings.forward)} ${keyLabel(bindings.left)} ${keyLabel(bindings.reverse)} ${keyLabel(bindings.right)}</kbd> 駕駛</span><span><kbd>右鍵 / ${keyLabel(bindings.pointer)}</kbd> 瞄準</span><span><kbd>${keyLabel(bindings.recentre)}</kbd> 回正</span><span><kbd>${keyLabel(bindings.fire)}</kbd> 開炮</span><span><kbd>${keyLabel(bindings.scope)}</kbd> 瞄準鏡</span><span><kbd>${keyLabel(bindings.observe)}</kbd> 觀察</span><button data-action="controller"><kbd>${keyLabel(bindings.controls)}</kbd> HOTAS</button><button class="operations-toggle" data-action="tactical">戰術地圖</button><button data-action="guide">操作指南</button></div>
   </div>`;
 }
 const setText = (id: string, value: string): void => { const e = document.getElementById(id); if (e && e.textContent !== value) e.textContent = value; };
 export function updateHud(game: Game): void {
   const p = game.player;
   const solution = game.fireSolution, target = solution.target;
+  const waypoint = document.getElementById('waypoint-hint');
+  if (waypoint) {
+    waypoint.hidden = !game.waypoint;
+    if (game.waypoint) setText('waypoint-hint', `航點 · ${navigationHint(p, game.waypoint.x, game.waypoint.z)}`);
+  }
+  const analysis = document.getElementById('target-analysis');
+  if (analysis) {
+    analysis.hidden = !target || game.observing || game.cameraMode === 'driver' && !game.scope;
+    if (target) {
+      const estimate = ballisticEstimate(solution.distance, p, target);
+      setText('target-analysis', `耐久 ${Math.round(target.hp)} / ${target.maxHp} (${Math.round(target.hp / target.maxHp * 100)}%)\n估算 ${estimate.seconds.toFixed(2)} s · 下墜 ${estimate.drop.toFixed(1)} m\n提前 ${estimate.lead >= 0 ? '右' : '左'} ${Math.abs(estimate.lead).toFixed(1)} m · 勻速假設`);
+    }
+  }
   const threats = game.threats;
   const threatAlert = document.getElementById('threat-alert');
   if (threatAlert) { threatAlert.hidden = threats === 0; setText('threat-alert', `⚠ ${threats} 輛敵車即將開火 · 尋找掩護`); }
@@ -176,6 +192,11 @@ function drawMap(game: Game): void {
     ctx.fillRect(-3,-3,6,6); ctx.restore();
   }
   const p = game.player.visual.root.position;
+  if (game.waypoint) {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(120 + p.x * .49, 120 + p.z * .49); ctx.lineTo(120 + game.waypoint.x * .49, 120 + game.waypoint.z * .49); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(120 + game.waypoint.x * .49, 120 + game.waypoint.z * .49, 5, 0, Math.PI * 2); ctx.stroke();
+  }
   ctx.save(); ctx.translate(120 + p.x * .49, 120 + p.z * .49); ctx.rotate(-game.player.yaw);
   ctx.fillStyle = highContrast ? '#64e5ff' : '#b7e8d8'; ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(5,5); ctx.lineTo(0,3); ctx.lineTo(-5,5); ctx.closePath(); ctx.fill();
   ctx.restore();

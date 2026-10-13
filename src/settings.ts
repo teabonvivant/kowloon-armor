@@ -15,6 +15,8 @@ interface SettingsActions {
 const tabs: readonly [SettingsTab, string][] = [['display', '畫面'], ['controls', '操作'], ['audio', '聲音'], ['records', '戰績']];
 const selected = (condition: boolean): string => condition ? 'selected' : '';
 const checked = (condition: boolean): string => condition ? 'checked' : '';
+const rangeField = (id: string, label: string, value: number, min: number, max: number, step: number): string =>
+  `<label class="settings-field">${label} <output id="${id}-value">${value}</output><input data-comfort="true" id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"></label>`;
 
 function recordsMarkup(progress: Progress, status: ProgressStatus | 'unsaved'): string {
   const messages = {
@@ -76,6 +78,19 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
     </section>
     <section id="panel-records" class="settings-section" role="tabpanel" aria-labelledby="tab-records" tabindex="0" ${initialTab === 'records' ? '' : 'hidden'}>${recordsMarkup(actions.getProgress(), actions.getStatus())}</section>
     <p class="fine-print" id="settings-save-status" role="status">設定會即時套用，並自動儲存於目前瀏覽器。</p>`;
+  modal.querySelector('#panel-display .settings-grid')!.insertAdjacentHTML('beforeend',
+    rangeField('chaseDistance', '追尾距離（米）', preferences.chaseDistance, 12, 22, 1) +
+    rangeField('chaseFov', '追尾視野（度）', preferences.chaseFov, 45, 75, 5) +
+    rangeField('shakeStrength', '開炮震動（0–1）', preferences.shakeStrength, 0, 1, .1) +
+    rangeField('reticleWidth', '準星線條（px）', preferences.reticleWidth, 1, 3, 1) +
+    `<label class="settings-field">準星顏色<select id="reticleColor" data-comfort="true">${[['white', '白色'], ['cyan', '青色'], ['amber', '琥珀']].map(([id, label]) => `<option value="${id}" ${selected(preferences.reticleColor === id)}>${label}</option>`).join('')}</select></label>
+    <div class="settings-field"><label><input id="lowFlash" data-comfort="true" type="checkbox" ${checked(preferences.lowFlash)}> 低閃光 · 保留受擊方向</label></div>
+    <div class="settings-field"><label><input id="diagnostics" data-comfort="true" type="checkbox" ${checked(preferences.diagnostics)}> 顯示效能儀表</label><small>最近 120 個活躍畫面樣本，中位／P95 幀時間及繪圖負載；窄螢幕收起，不代表其他電腦表現。</small></div>`);
+  modal.querySelector('#panel-controls .settings-grid')!.insertAdjacentHTML('beforeend', rangeField('scopeSensitivity', '瞄準鏡滑鼠倍率', preferences.scopeSensitivity, .25, 1.5, .05));
+  modal.querySelector('#panel-audio .settings-grid')!.insertAdjacentHTML('beforeend',
+    rangeField('effectsVolume', '炮聲／爆炸（0–1）', preferences.effectsVolume, 0, 1, .05) +
+    rangeField('engineVolume', '引擎／履帶（0–1）', preferences.engineVolume, 0, 1, .05) +
+    rangeField('alertsVolume', '裝填提示（0–1）', preferences.alertsVolume, 0, 1, .05));
   const selectTab = (tab: SettingsTab, focus: boolean): void => {
     for (const [id] of tabs) {
       const button = modal.querySelector<HTMLButtonElement>(`#tab-${id}`);
@@ -91,6 +106,15 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
     const field = event.target;
     if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement) || field.type === 'file') return;
     let key: keyof Preferences | undefined;
+    if (field.dataset['comfort']) {
+      const numeric = ['scopeSensitivity', 'chaseDistance', 'chaseFov', 'shakeStrength', 'reticleWidth', 'effectsVolume', 'engineVolume', 'alertsVolume'] as const;
+      for (const name of numeric) if (field.id === name) {
+        preferences[name] = Number(field.value); key = name;
+        modal.querySelector(`#${name}-value`)!.textContent = field.value;
+      }
+      if (field.id === 'reticleColor' && ['white', 'cyan', 'amber'].includes(field.value)) { preferences.reticleColor = field.value as Preferences['reticleColor']; key = 'reticleColor'; }
+      if (field instanceof HTMLInputElement && (field.id === 'lowFlash' || field.id === 'diagnostics')) { preferences[field.id] = field.checked; key = field.id; }
+    }
     switch (field.id) {
       case 'quality': preferences.quality = field.value as Preferences['quality']; key = 'quality'; break;
       case 'lighting': preferences.lighting = field.value === 'dusk' ? 'dusk' : 'day'; key = 'lighting'; break;

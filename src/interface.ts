@@ -17,6 +17,8 @@ import type { Impact } from './armor';
 import { mountKeyboardSettings } from './keyboard-settings';
 import { mountSettings } from './settings';
 import type { SettingsTab } from './settings';
+import { comparison, preparationMarkup, tacticalMarkup, mountTactical } from './operations-ui';
+import { CHALLENGES, parseSeed, operationReport } from './operations';
 
 export class Interface {
   private readonly app = required('#app', HTMLElement);
@@ -28,6 +30,8 @@ export class Interface {
   private noticeTimer = 0; private returnFocus: HTMLElement | null = null;
   private hitTimer = 0;
   private preferences = loadPreferences();
+  private sortieSeed: number | undefined;
+  private sortieChallenge: Game['challenge'] = 'none';
   constructor(private readonly game: Game, private readonly input: Input, private readonly view: View, private readonly audio: GameAudio) {
     const stored = readProgress(); this.progress = stored.progress; this.storageStatus = stored.status;
     this.mode = this.preferences.mode;
@@ -94,10 +98,15 @@ export class Interface {
       }
     });
   }
-  start(training = false): void {
+  start(training = false, replay = false): void {
+    const seed = replay ? this.game.seed : this.sortieSeed;
+    const challenge = replay ? this.game.challenge : this.sortieChallenge;
+    const difficulty = replay ? this.game.difficulty : this.preferences.difficulty;
+    if (replay) { this.mode = this.game.mode; this.missionIndex = (this.game.mission?.id ?? 1) - 1; }
     if (training) this.mode = 'drive';
     this.rememberDeployment(); this.close(); this.audio.unlock(); this.audio.setVolume(this.preferences.volume); this.input.reset();
-    this.game.start(this.mode, this.missionIndex, this.preferences.difficulty);
+    this.game.start(this.mode, this.missionIndex, difficulty, seed);
+    this.game.challenge = this.mode === 'drive' ? 'none' : challenge;
     if (training) this.game.beginTraining();
     this.app.innerHTML = hudMarkup(this.game, this.preferences.bindings);
     document.body.classList.add('in-battle'); this.view.canvas.focus();
@@ -149,6 +158,7 @@ export class Interface {
     if (document.pointerLockElement) document.exitPointerLock();
     if (!this.modal.open) this.modal.showModal();
     else this.modal.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
+    if (page === 'pause') this.modal.querySelector('.pause-menu')?.insertAdjacentHTML('beforeend', '<button class="btn" data-action="tactical">戰術地圖與戰況</button>');
   }
   private close(): void { this.cleanup?.(); this.cleanup = undefined; if (this.modal.open) this.modal.close(); }
   private dismiss(): void { if (this.game.phase === 'victory' || this.game.phase === 'defeat') this.returnGarage(); else this.close(); }
@@ -174,23 +184,60 @@ export class Interface {
     this.open(`${dialogHeader('ARMOURED COLLECTION', '選擇你的戰車')}<label class="search-field">${icon('search')}<input id="tank-search" type="search" placeholder="搜尋型號、國家或定位…" aria-label="搜尋戰車" autocomplete="off"></label>
       <div class="roster-toolbar"><label>車重<select id="tank-filter"><option value="all">全部戰車</option><option value="mobile">55 t 或以下</option><option value="balanced">超過 55 至 65 t</option><option value="heavy">超過 65 t</option></select></label><label>排序<select id="tank-sort"><option value="catalogue">預設次序</option><option value="speed">最高速度</option><option value="armor">正面防護</option><option value="reload">最快裝填</option></select></label><output id="roster-count" role="status"></output></div>
       <div id="roster-grid" class="roster-grid"></div><p class="fine-print">選擇後返回車庫。性能為遊戲平衡設定，並非真實戰力排名。</p>`, 'roster');
+    this.modal.querySelector('.roster-toolbar')!.insertAdjacentHTML('beforeend', '<label><input id="favorites-only" type="checkbox"> 只看收藏</label><button class="btn" id="random-tank">從結果隨機選車</button>');
     const search = required('#tank-search', HTMLInputElement), filter = required('#tank-filter', HTMLSelectElement), sort = required('#tank-sort', HTMLSelectElement);
+    const favorites = required('#favorites-only', HTMLInputElement), random = required('#random-tank', HTMLButtonElement);
+    let candidates: typeof TANKS = [];
     const render = (): void => {
       const query = search.value.trim().toLocaleLowerCase();
       const items = TANKS.filter(tank => `${tank.name} ${tank.country} ${tank.role}`.toLocaleLowerCase().includes(query)
+        && (!favorites.checked || this.preferences.favorites.includes(tank.id))
         && (filter.value === 'mobile' ? tank.weight <= 55 : filter.value === 'balanced' ? tank.weight > 55 && tank.weight <= 65 : filter.value === 'heavy' ? tank.weight > 65 : true));
       if (sort.value === 'speed' || sort.value === 'armor') { const field = sort.value; items.sort((first, second) => second[field] - first[field]); }
       if (sort.value === 'reload') items.sort((first, second) => first.reload - second.reload);
       required('#roster-grid', HTMLElement).innerHTML = items.length ? items.map(tank => tankCard(tank, this.game.player.spec.id)).join('')
         : '<div class="empty-state"><p>找不到符合的戰車。請調整型號、國家或車重篩選。</p><button class="text-button" data-action="clear-search">清除搜尋及篩選</button></div>';
       required('#roster-count', HTMLElement).textContent = `${items.length} / 30 款`;
+      candidates = items; random.disabled = items.length === 0;
     };
+    favorites.addEventListener('change', render);
+    random.addEventListener('click', () => {
+      const spec = candidates[Math.floor(Math.random() * candidates.length)];
+      if (!spec || this.game.phase !== 'garage') return;
+      this.game.select(spec); this.rememberDeployment(); this.close(); this.showGarage();
+    });
     search.addEventListener('input', render); filter.addEventListener('change', render); sort.addEventListener('change', render); render(); search.focus();
+  }
+  private preparation(): void {
+    this.open(preparationMarkup(this.game, this.preferences.favorites, this.sortieSeed, this.sortieChallenge), 'preparation');
+    const select = this.modal.querySelector<HTMLSelectElement>('#compare-tank')!;
+    select.addEventListener('change', () => {
+      const other = TANKS.find(tank => tank.id === select.value);
+      if (other) this.modal.querySelector('#comparison')!.innerHTML = comparison(this.game.player.spec, other);
+    });
+    this.modal.querySelector('#apply-sortie')!.addEventListener('click', () => {
+      const seed = parseSeed(this.modal.querySelector<HTMLInputElement>('#sortie-seed')!.value);
+      const status = this.modal.querySelector('#sortie-status')!;
+      if (seed === null) { status.textContent = '種子須為 0–4294967295 的整數，或留空隨機。'; return; }
+      const challenge = this.modal.querySelector<HTMLSelectElement>('#sortie-challenge')!.value;
+      if (!Object.hasOwn(CHALLENGES, challenge)) return;
+      this.sortieSeed = seed; this.sortieChallenge = challenge as Game['challenge'];
+      status.textContent = `已套用：${seed === undefined ? '隨機配置' : `種子 ${seed}`} · ${CHALLENGES[this.sortieChallenge]}`;
+    });
+  }
+  private exportReport(): void {
+    try {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(operationReport(this.game), null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a'); link.href = url; link.download = `九龍裝甲-戰報-${this.game.seed}.json`;
+      document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      this.notify('戰報已準備下載，請確認 JSON 已保存；這不是戰績備份。');
+    } catch { this.notify('未能匯出戰報，請檢查瀏覽器下載權限。'); }
   }
   private settings(tab: SettingsTab = 'display'): void {
     this.open('', 'settings');
     this.cleanup = mountSettings(this.modal, this.preferences, {
       changed: key => {
+        this.applyComfort();
         if (key === 'quality') this.view.quality(this.preferences.quality);
         if (key === 'lighting') this.view.lighting(this.preferences.lighting);
         if (key === 'adaptiveResolution') this.view.adaptive(this.preferences.adaptiveResolution);
@@ -217,6 +264,7 @@ export class Interface {
     }, tab, this.game.phase === 'paused');
   }
   private applyPreferences(): void {
+    this.applyComfort();
     this.view.quality(this.preferences.quality); this.view.reduceMotion(this.preferences.reducedMotion);
     this.view.lighting(this.preferences.lighting); this.view.adaptive(this.preferences.adaptiveResolution);
     this.view.highContrast = this.preferences.highContrast; document.body.classList.toggle('high-contrast', this.preferences.highContrast);
@@ -225,6 +273,15 @@ export class Interface {
     this.audio.setMusicVolume(this.preferences.musicVolume);
     this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode); this.view.scopeZoom = this.preferences.scopeZoom;
     document.body.style.setProperty('--hud-scale', String(this.preferences.hudScale));
+  }
+  private applyComfort(): void {
+    this.input.scopeSensitivity = this.preferences.scopeSensitivity;
+    this.view.chaseDistance = this.preferences.chaseDistance; this.view.chaseFov = this.preferences.chaseFov;
+    this.view.shakeStrength = this.preferences.shakeStrength; this.view.diagnosticsEnabled = this.preferences.diagnostics;
+    this.audio.setMix(this.preferences.effectsVolume, this.preferences.engineVolume, this.preferences.alertsVolume);
+    document.body.classList.toggle('low-flash', this.preferences.lowFlash);
+    document.body.style.setProperty('--reticle-color', { white: '#f2f2e9', cyan: '#64e5ff', amber: '#ffcf5a' }[this.preferences.reticleColor]);
+    document.body.style.setProperty('--reticle-width', `${this.preferences.reticleWidth}px`);
   }
   private storePreferences(): void {
     const saved = savePreferences(this.preferences);
@@ -271,6 +328,19 @@ export class Interface {
       return;
     }
     switch (button.dataset['action']) {
+      case 'preparation': if (this.game.phase === 'garage') this.preparation(); break;
+      case 'favorite': {
+        if (this.game.phase !== 'garage') break;
+        const id = this.game.player.spec.id, favorites = this.preferences.favorites;
+        this.preferences.favorites = favorites.includes(id) ? favorites.filter(value => value !== id) : [...favorites, id];
+        this.storePreferences();
+        button.setAttribute('aria-pressed', String(this.preferences.favorites.includes(id)));
+        button.textContent = this.preferences.favorites.includes(id) ? '★ 已收藏 · 按此取消' : '☆ 收藏目前戰車';
+        break;
+      }
+      case 'tactical': if (this.game.phase === 'playing' || this.game.phase === 'paused') { this.open(tacticalMarkup(this.game), 'tactical'); mountTactical(this.modal, this.game); } break;
+      case 'replay': if (this.game.phase === 'victory' || this.game.phase === 'defeat') this.start(false, true); break;
+      case 'export-report': this.exportReport(); break;
       case 'start': case 'retry': this.start(); break;
       case 'tour': if (this.game.toggleTour()) { this.notify(this.game.tour.active ? '六站九龍巡遊 · 跟隨方位到觀景點停穩兩秒' : '已暫停巡遊 · 本回合到訪紀錄保留'); this.view.canvas.focus(); } break;
       case 'training': this.start(true); break;

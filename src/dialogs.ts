@@ -10,6 +10,7 @@ import { briefingMap, operationBrief } from './briefing';
 import type { GameMode } from './game';
 import type { Difficulty } from './challenges';
 import type { TankSpec } from './data/tanks';
+import { challengeStatus, coaching } from './operations';
 
 export function dialogHeader(eyebrow: string, title: string): string {
   return `<div class="dialog-header"><div><span class="eyebrow">${eyebrow}</span><h2 id="modal-title">${title}</h2></div><button class="icon-button" data-action="close" aria-label="關閉視窗">${icon('close')}</button></div>`;
@@ -57,6 +58,7 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
   const stars = victory ? health > .7 ? 3 : health > .35 ? 2 : 1 : 0;
   const survival = game.mode === 'survival';
   const accuracy = game.shots ? Math.round(game.hits / game.shots * 100) : 0;
+  const challenge = challengeStatus(game);
   const brief = operationBrief(game.mode, (game.mission?.id ?? 1) - 1);
   const objective = game.mode === 'campaign' ? game.mission?.objective : undefined;
   const advice = victory ? game.mode === 'campaign' ? completed === 6 ? '六關演習已完成。可改用其他戰車，或提高難度再挑戰。' : '下一關已解鎖。先查看任務條件，再決定出擊。' : '完成清場。可更換戰車或難度，練習不同戰術。'
@@ -74,6 +76,9 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
     <div class="debrief-line"><span>有效傷害 <b>${game.report.dealt}</b></span><span>承受傷害 <b>${game.report.received}</b></span><span>側後命中 <b>${game.report.flankingHits}</b> 次</span><span>行駛 <b>${Math.round(game.report.distance)}</b> m</span></div>
     <div class="debrief-objective">${brief.objective}<small>${objective && objective.kind !== 'clear' ? `控制時間 ${Math.floor(game.objective.progress)} / ${objective.seconds} 秒${objective.kind === 'defend' ? ` · 防線 ${Math.ceil(game.objective.integrity)}%` : ''}` : `擊破 ${game.kills} 輛 · ${brief.area}`}</small></div>
     <p class="dialog-intro">${advice}</p>
+    ${game.challenge !== 'none' ? `<section class="challenge-result"><h3>${challenge.complete ? '✓ 挑戰達成' : '挑戰未達成'} · ${challenge.title}</h3><p>${challenge.progress}</p></section>` : ''}
+    <p class="training-tip"><strong>下一次練習</strong><br>${coaching(game)}</p>
+    <div class="dialog-buttons"><button class="btn" data-action="replay">相同配置重賽</button><button class="btn" data-action="export-report">匯出本回合戰報</button></div>
     <p class="fine-print">${previousBest ? `上次最佳 ${previousBest.toLocaleString()} 分${victory || survival ? ` · 本次 ${game.score >= previousBest ? '+' : '−'}${Math.abs(game.score - previousBest).toLocaleString()} 分` : ' · 本回合未完成，不列入最高分'}` : victory || survival ? '首次完成紀錄。' : '完成演習後才會記錄最高分。'} ${saved ? '戰績已儲存於目前瀏覽器。' : '尚未成功儲存，請在離開前匯出備份。'}</p>
     <div class="dialog-buttons">${victory && game.mode === 'campaign' && (game.mission?.id ?? 6) < 6 ? '<button class="btn btn-primary" data-action="next">下一關 →</button>' : '<button class="btn btn-primary" data-action="retry">再次演習</button>'}<button class="btn" data-action="return">返回車庫</button><button class="btn" data-action="records">查看／備份戰績</button></div>`;
 }

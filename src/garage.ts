@@ -40,6 +40,7 @@ export function garageMarkup(tank: TankSpec, mode: GameMode, missionIndex: numbe
       <aside class="vehicle-panel" aria-label="戰車資料"><div class="eyebrow">${tank.country}<span class="country-chip">${tank.flag}</span></div><h2>${tank.name}</h2><div class="vehicle-tags">${tank.role}<span>／</span>${tank.status}</div><p>${tank.description}</p>
         <div class="vehicle-stats">${[['主炮口徑', tank.gun, 'mm', tank.gun / 1.4], ['正面防護', tank.armor, '', tank.armor], ['最高速度', tank.speed, 'km/h', tank.speed / .8], ['裝填時間', tank.reload, 's', 100 - tank.reload * 9]].map(([label, value, unit, width]) => `<div class="stat-row"><div><span>${label}</span><b>${value}<small>${unit}</small></b></div><div class="stat-track"><i style="width:${width}%"></i></div></div>`).join('')}</div>
         <div class="vehicle-specs"><div><small>戰鬥全重</small><strong>${tank.weight}<span> t</span></strong></div><div><small>車體耐久</small><strong>${tank.hp}</strong></div></div>
+        <button class="text-button" data-action="preparation">收藏／比較／整備工具 ${icon('chevron', 14)}</button>
         <button class="text-button" data-action="about">遊戲數值與型號資料 ${icon('chevron', 14)}</button>
       </aside>
     </div>
@@ -49,6 +50,6 @@ export function garageMarkup(tank: TankSpec, mode: GameMode, missionIndex: numbe
       <button class="deploy-button" data-action="start"><span>開始${mode === 'campaign' ? '任務' : mode === 'drive' ? '駕駛' : mode === 'survival' ? '挑戰' : '對戰'}<small>${tank.name}</small></span>${icon('arrow', 26)}</button>
     </section>
     <section class="fleet" aria-label="戰車選擇"><div class="fleet-heading"><h3>戰車庫 <span>30 款 · 全部可用</span></h3><div><button class="fleet-arrow" data-fleet="-1" aria-label="查看前面的戰車">←</button><button class="fleet-arrow" data-fleet="1" aria-label="查看後面的戰車">→</button><button data-action="roster">${icon('search', 16)} 搜尋戰車</button></div></div><div class="fleet-track">${TANKS.map(item => tankCard(item, tank.id)).join('')}</div></section>
-    <footer class="garage-footer"><span>九龍巡遊 <b>v1.5</b></span><span>鍵盤 · 滑鼠 · HOTAS <i>／</i>本機戰績</span><button data-action="fullscreen">${icon('fullscreen', 14)} 全螢幕</button></footer>
+    <footer class="garage-footer"><span>作戰工作台 <b>v1.6</b></span><span>鍵盤 · 滑鼠 · HOTAS <i>／</i>本機戰績</span><button data-action="fullscreen">${icon('fullscreen', 14)} 全螢幕</button></footer>
   </div>`;
 }

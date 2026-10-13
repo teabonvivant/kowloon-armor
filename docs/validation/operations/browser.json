@@ -1,0 +1,113 @@
+{
+  "artifactSha256": "991eca0f9bbee9ef67ea0c822424f86c62fa180d3ff6ae27f7b98363158626b3",
+  "sourceOnly": false,
+  "checks": [
+    {
+      "name": "production favorites persist, comparison, invalid seed and filtered random selection",
+      "result": true
+    },
+    {
+      "name": "production comfort settings persist and apply after reload",
+      "result": {
+        "quality": "low",
+        "volume": 0,
+        "musicVolume": 0.35,
+        "lighting": "day",
+        "adaptiveResolution": false,
+        "nightAudio": false,
+        "highContrast": false,
+        "favorites": [
+          "leopard2a8"
+        ],
+        "scopeSensitivity": 0.5,
+        "chaseDistance": 22,
+        "chaseFov": 75,
+        "shakeStrength": 0.3,
+        "reticleColor": "cyan",
+        "reticleWidth": 3,
+        "lowFlash": true,
+        "diagnostics": true,
+        "effectsVolume": 0.4,
+        "engineVolume": 0.4,
+        "alertsVolume": 0.4,
+        "sensitivity": 1,
+        "invertY": false,
+        "reducedMotion": true,
+        "difficulty": "standard",
+        "bindings": {
+          "forward": "KeyW",
+          "reverse": "KeyS",
+          "left": "KeyA",
+          "right": "KeyD",
+          "turretLeft": "KeyQ",
+          "turretRight": "KeyE",
+          "elevate": "ArrowUp",
+          "lower": "ArrowDown",
+          "fire": "Space",
+          "brake": "KeyB",
+          "scope": "ShiftLeft",
+          "observe": "KeyC",
+          "camera": "KeyV",
+          "recentre": "KeyF",
+          "pointer": "KeyM",
+          "controls": "KeyH"
+        },
+        "scopeMode": "hold",
+        "scopeZoom": 2,
+        "hudScale": 1,
+        "tankId": "leopard2a8",
+        "mode": "campaign",
+        "missionIndex": 0,
+        "deploymentSet": true
+      }
+    },
+    {
+      "name": "production seeded challenge, map, invalid waypoint preservation, HUD, fire journal and clear",
+      "result": true
+    },
+    {
+      "name": "source target analysis stays clear of reticle at three viewports",
+      "result": true
+    },
+    {
+      "name": "source camera distance, FOV, unchanged scope zoom and real map click",
+      "result": {
+        "fov": 75,
+        "distance": 21.999998824820878,
+        "scoped": 25
+      }
+    },
+    {
+      "name": "source integration target analysis, challenge result, real report download and same-seed replay",
+      "result": {
+        "seed": 1309618374,
+        "shots": 0,
+        "challenge": "precision",
+        "phase": "playing"
+      }
+    },
+    {
+      "name": "offline audio render isolates three buses and pause silence",
+      "result": {
+        "muted": {
+          "peak": 0,
+          "tail": 0
+        },
+        "effects": {
+          "peak": 0.4814038574695587,
+          "tail": 0
+        },
+        "engine": {
+          "peak": 0.15287819504737854,
+          "tail": 0
+        },
+        "alerts": {
+          "peak": 0.10325685143470764,
+          "tail": 0
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

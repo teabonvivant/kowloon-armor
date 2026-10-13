@@ -28,6 +28,7 @@ export class Input {
   private readonly abort = new AbortController();
   private focused = true;
   private persistenceStatus = '設定會自動儲存在這部電腦。';
+  scopeSensitivity = 1;
 
   constructor(element: HTMLElement) {
     this.local = new LocalControls(element);
@@ -81,7 +82,8 @@ export class Input {
       scope: keyboard.scope || gamepad.scope,
       toggleCamera: keyboard.toggleCamera || gamepad.toggleCamera,
       pause: keyboard.pause || gamepad.pause,
-      pointerX: keyboard.pointerX ?? 0, pointerY: keyboard.pointerY ?? 0, observe: keyboard.observe ?? false,
+      pointerX: (keyboard.pointerX ?? 0) * ((keyboard.scope || gamepad.scope) && !keyboard.observe ? this.scopeSensitivity : 1),
+      pointerY: (keyboard.pointerY ?? 0) * ((keyboard.scope || gamepad.scope) && !keyboard.observe ? this.scopeSensitivity : 1), observe: keyboard.observe ?? false,
     };
   }
 

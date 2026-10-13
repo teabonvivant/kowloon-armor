@@ -1,0 +1,31 @@
+{
+  "format": "kowloon-armor-battle-report",
+  "version": "1.6",
+  "createdAt": "2026-10-13T05:37:21.540Z",
+  "mode": "battle",
+  "mission": 1,
+  "difficulty": "standard",
+  "tank": "leopard2a8",
+  "seed": 1309618374,
+  "phase": "victory",
+  "seconds": 0,
+  "score": 2900,
+  "shots": 10,
+  "hits": 8,
+  "kills": 0,
+  "wave": 0,
+  "statistics": {
+    "dealt": 0,
+    "received": 0,
+    "flankingHits": 0,
+    "distance": 0
+  },
+  "challenge": {
+    "id": "precision",
+    "title": "精準射手 · 至少 6 發、命中率 ≥70%",
+    "progress": "10 / 6 發 · 命中 80% / 70%",
+    "complete": true
+  },
+  "events": [],
+  "advice": "下次沿平行街道換位，嘗試在敵車側面或後方取得一次命中。"
+}

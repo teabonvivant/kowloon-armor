@@ -4,12 +4,16 @@ import type { Game } from './game';
 import { wallFraction } from './math';
 import { createWorld } from './render/world';
 import { AdaptiveResolution } from './resolution';
+import { FrameDiagnostics } from './operations';
 
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
   readonly renderer: WebGLRenderer; readonly world = createWorld();
   scopeZoom = 2;
   highContrast = false;
+  chaseDistance = 15; chaseFov = 50; shakeStrength = 1;
+  diagnosticsEnabled = false;
+  readonly frameDiagnostics = new FrameDiagnostics();
   private adaptiveEnabled = false;
   private readonly resolution = new AdaptiveResolution();
   private baseRatio = 1;
@@ -63,7 +67,7 @@ export class View {
     this.reducedMotion = enabled || matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.body.classList.toggle('reduce-motion', this.reducedMotion);
   }
-  recoil(): void { if (!this.reducedMotion) this.shake = 0.28; }
+  recoil(): void { if (!this.reducedMotion) this.shake = 0.28 * this.shakeStrength; }
   lighting(preset: 'day' | 'dusk'): void {
     const dusk = preset === 'dusk', sky = dusk ? 0x666a85 : 0x8cabb8;
     this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky, dusk ? .0038 : .0033);
@@ -74,6 +78,7 @@ export class View {
     this.adaptiveEnabled = enabled; this.resolution.reset(); this.renderer.setPixelRatio(this.baseRatio);
   }
   sampleFrame(seconds: number, playing: boolean): void {
+    this.frameDiagnostics.sample(seconds, playing && this.diagnosticsEnabled);
     if (this.adaptiveEnabled && playing && this.resolution.sample(seconds)) this.renderer.setPixelRatio(this.baseRatio * this.resolution.scale);
   }
   get renderScale(): number { return this.resolution.scale; }
@@ -92,7 +97,7 @@ export class View {
     const actor = game.player, p = actor.visual.root.position;
     const desired = this.desired, look = this.look;
     game.getAimPoint(this.aim);
-    let fov = 50;
+    let fov = this.chaseFov;
     const inGarage = game.phase === 'garage';
     if (this.framingDirty || inGarage !== this.cameraInGarage) {
       if (inGarage) this.camera.setViewOffset(innerWidth, innerHeight, this.garageOffset.horizontal, this.garageOffset.vertical, innerWidth, innerHeight);
@@ -116,7 +121,7 @@ export class View {
       look.set(-Math.sin(actor.yaw) * 100, 1.5, -Math.cos(actor.yaw) * 100).add(p); fov = 70;
     } else {
       const yaw = game.observing ? game.observationYaw : actor.aim;
-      desired.set(Math.sin(yaw) * 15, 8.2, Math.cos(yaw) * 15).add(p);
+      desired.set(Math.sin(yaw) * this.chaseDistance, 8.2, Math.cos(yaw) * this.chaseDistance).add(p);
       const distance = wallFraction(p.x, p.z, desired.x - p.x, desired.z - p.z, game.world.obstacles);
       if (distance < 1) { desired.x = p.x + (desired.x - p.x) * Math.max(0.15, distance - 0.07);
         desired.z = p.z + (desired.z - p.z) * Math.max(0.15, distance - 0.07); }

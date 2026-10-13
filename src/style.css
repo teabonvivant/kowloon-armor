@@ -425,3 +425,19 @@ input::placeholder { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+.tactical-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; margin-block: 20px; }
+#tactical-map { width: 100%; display: block; cursor: crosshair; border: 1px solid var(--line); }
+.tactical-summary p { color: var(--secondary); margin-block: 6px; }
+.tactical-summary h3 { margin-block: 14px 8px; font-size: 15px; }
+.event-log { max-height: 170px; overflow: auto; padding-left: 22px; font-size: 12px; color: var(--secondary); }
+.event-log time { color: var(--accent-hover); font-variant-numeric: tabular-nums; }
+.waypoint-form, .landmark-shortcuts { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 16px; align-items: end; }
+.waypoint-form label { flex: 1 1 100px; }
+.waypoint-form input, #sortie-seed { width: 100%; min-height: 40px; padding: 8px; color: var(--text); background: var(--deep); border: 1px solid var(--line); border-radius: 4px; }
+.landmark-shortcuts .btn { min-height: 44px; font-size: 12px; }
+#sortie-status, #waypoint-status { color: var(--accent-hover); min-height: 24px; }
+#comparison { overflow-x: auto; margin-block: 16px; }
+#comparison th, #comparison td { overflow-wrap: anywhere; }
+.challenge-result { padding-block: 16px; border-block: 1px solid var(--line); margin-block: 16px; }
+.roster-toolbar { flex-wrap: wrap; }
+@media (max-width: 600px) { .tactical-layout { grid-template-columns: 1fr; } #comparison th, #comparison td { padding: 8px 4px; font-size: 12px; } }
