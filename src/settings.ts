@@ -65,9 +65,10 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
       <div class="dialog-buttons"><button class="btn btn-primary" data-action="keyboard">鍵盤按鍵設定</button><button class="btn" data-action="controller">HOTAS 設定</button></div>
     </section>
     <section id="panel-audio" class="settings-section" role="tabpanel" aria-labelledby="tab-audio" tabindex="0" ${initialTab === 'audio' ? '' : 'hidden'}>
-      <h3>聽清射擊與裝填</h3><p>炮聲按方向與距離改變；短提示音表示主炮裝填完成。</p>
+      <h3>九龍戰場聲景</h3><p>分層炮聲、建築遮擋與街谷回響；原創配樂隨附近敵軍及受擊升溫。短提示音表示裝填完成。</p>
       <div class="settings-grid"><label class="settings-field">遊戲音量 <output id="volume-value" for="volume">${Math.round(preferences.volume * 100)}%</output><input id="volume" type="range" min="0" max="1" step=".05" value="${preferences.volume}"></label>
-      <div class="settings-field settings-help"><button class="btn" id="test-audio">試聽裝填完成提示</button><small>音量為 0 時保持靜音。</small></div></div>
+      <label class="settings-field">配樂音量 <output id="music-volume-value" for="music-volume">${Math.round(preferences.musicVolume * 100)}%</output><input id="music-volume" type="range" min="0" max="1" step=".05" value="${preferences.musicVolume}"></label>
+      <div class="settings-field settings-help"><button class="btn" id="test-audio">試聽裝填完成提示</button><small>遊戲音量為總音量；配樂設為 0 只關閉音樂。全部聲音為原創軟件合成。</small></div></div>
     </section>
     <section id="panel-records" class="settings-section" role="tabpanel" aria-labelledby="tab-records" tabindex="0" ${initialTab === 'records' ? '' : 'hidden'}>${recordsMarkup(actions.getProgress(), actions.getStatus())}</section>
     <p class="fine-print" id="settings-save-status" role="status">設定會即時套用，並自動儲存於目前瀏覽器。</p>`;
@@ -92,6 +93,7 @@ export function mountSettings(modal: HTMLDialogElement, preferences: Preferences
       case 'scope-mode': preferences.scopeMode = field.value === 'toggle' ? 'toggle' : 'hold'; key = 'scopeMode'; break;
       case 'scope-zoom': preferences.scopeZoom = Number(field.value) as 2 | 3 | 4; key = 'scopeZoom'; break;
       case 'volume': preferences.volume = Number(field.value); key = 'volume'; modal.querySelector('#volume-value')!.textContent = `${Math.round(preferences.volume * 100)}%`; break;
+      case 'music-volume': preferences.musicVolume = Number(field.value); key = 'musicVolume'; modal.querySelector('#music-volume-value')!.textContent = `${Math.round(preferences.musicVolume * 100)}%`; break;
       case 'sensitivity': preferences.sensitivity = Number(field.value); key = 'sensitivity'; modal.querySelector('#sensitivity-value')!.textContent = `${preferences.sensitivity.toFixed(1)}×`; break;
       case 'invert-y': if (field instanceof HTMLInputElement) { preferences.invertY = field.checked; key = 'invertY'; } break;
       case 'reduce-motion': if (field instanceof HTMLInputElement) { preferences.reducedMotion = field.checked; key = 'reducedMotion'; } break;

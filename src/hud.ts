@@ -9,6 +9,7 @@ import { objectiveName } from './objectives';
 import { DEFAULT_BINDINGS, keyLabel } from './key-bindings';
 import type { KeyBindings } from './key-bindings';
 import { districtAt } from './render/districts';
+import { LANDMARKS } from './render/hong-kong';
 
 export function hudMarkup(game: Game, bindings: KeyBindings = DEFAULT_BINDINGS): string {
   return `<div class="battle-hud"><div class="combat-vignette"></div><div class="driver-frame" id="driver-frame" hidden></div>
@@ -124,7 +125,7 @@ export function updateEnemyMarkers(game: Game, camera: Camera): void {
     marker.style.top = `${(-markerPosition.y * .5 + .5) * 100}%`;
     const distance = marker.firstElementChild;
     if (distance) distance.textContent = `◇ ${Math.round(position.distanceTo(player))} m`;
-    const name = marker.children[1]; if (name) name.textContent = enemy.spec.name;
+    const name = marker.children[1]; if (name) name.textContent = `${enemy.role} · ${enemy.spec.name}`;
     marker.style.setProperty('--health', `${enemy.hp / enemy.maxHp * 100}%`);
   });
 }
@@ -139,6 +140,12 @@ function drawMap(game: Game): void {
   }
   ctx.fillStyle = '#647571'; ctx.font = '10px Microsoft JhengHei';
   ctx.fillText('旺角', 150, 36); ctx.fillText('佐敦', 36, 154); ctx.fillText('彌敦道', 123, 203);
+  ctx.fillStyle = '#e8c58e'; ctx.font = '8px Microsoft JhengHei';
+  for (const landmark of LANDMARKS) {
+    const horizontal = 120 + landmark.x * .49, vertical = 120 + landmark.z * .49;
+    ctx.fillRect(horizontal - 2, vertical - 2, 4, 4);
+    ctx.fillText(landmark.kind === 'icc' ? 'ICC' : landmark.name.slice(0, 3), Math.max(4, horizontal - 10), vertical - 5);
+  }
   const goal = game.mode === 'campaign' ? game.mission?.objective : undefined;
   if (goal && goal.kind !== 'clear') {
     ctx.strokeStyle = game.objective.contested ? '#ff8b7d' : '#ffd18b'; ctx.lineWidth = 2;

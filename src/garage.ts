@@ -49,6 +49,6 @@ export function garageMarkup(tank: TankSpec, mode: GameMode, missionIndex: numbe
       <button class="deploy-button" data-action="start"><span>開始${mode === 'campaign' ? '任務' : mode === 'drive' ? '駕駛' : mode === 'survival' ? '挑戰' : '對戰'}<small>${tank.name}</small></span>${icon('arrow', 26)}</button>
     </section>
     <section class="fleet" aria-label="戰車選擇"><div class="fleet-heading"><h3>戰車庫 <span>30 款 · 全部可用</span></h3><div><button class="fleet-arrow" data-fleet="-1" aria-label="查看前面的戰車">←</button><button class="fleet-arrow" data-fleet="1" aria-label="查看後面的戰車">→</button><button data-action="roster">${icon('search', 16)} 搜尋戰車</button></div></div><div class="fleet-track">${TANKS.map(item => tankCard(item, tank.id)).join('')}</div></section>
-    <footer class="garage-footer"><span>單人離線 <b>v1.3</b></span><span>鍵盤 · 滑鼠 · HOTAS <i>／</i>本機戰績</span><button data-action="fullscreen">${icon('fullscreen', 14)} 全螢幕</button></footer>
+    <footer class="garage-footer"><span>九龍街景 <b>v1.4</b></span><span>鍵盤 · 滑鼠 · HOTAS <i>／</i>本機戰績</span><button data-action="fullscreen">${icon('fullscreen', 14)} 全螢幕</button></footer>
   </div>`;
 }

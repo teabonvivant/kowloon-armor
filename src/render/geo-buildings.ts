@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { facadeMaterial, GeometryBatch, metalMaterial, unitPlane } from './materials';
+import { facadeMaterial, GeometryBatch, metalMaterial, plasterMaterial, unitPlane } from './materials';
 
 export interface CityBlock {
   readonly x: number;
@@ -25,7 +25,7 @@ export function createBuildings(blocks: readonly CityBlock[]): THREE.Group {
   const group = new THREE.Group();
   group.name = 'Kowloon concrete towers';
   const concrete = new GeometryBatch();
-  const structures = new GeometryBatch();
+  const structures = new GeometryBatch(plasterMaterial);
   const glass = new GeometryBatch(facadeMaterial);
   const metal = new GeometryBatch(metalMaterial);
   for (const block of blocks) {
@@ -37,6 +37,20 @@ export function createBuildings(blocks: readonly CityBlock[]): THREE.Group {
       const tower: Tower = { x: block.x + side * (width / 2 + 0.65), z: block.z + ((index % 3) - 1) * 1.5, width, depth: block.depth - 5, height: 22 + (index * 17 % 38), index };
       addTower(tower, concrete, glass, structures);
       addRooftop(tower, concrete, metal);
+      if (index % 5 === 0) {
+        const facade = tower.z + tower.depth / 2 + .5;
+        for (let floor = 1; floor < Math.floor(tower.height / 3.15); floor++) {
+          const y = 7.3 + floor * 3.15;
+          concrete.box({ position: [tower.x, y, facade], scale: [tower.width - 2, .16, 1.1] }, 0xb9b19e);
+          metal.box({ position: [tower.x, y + .8, facade + .48], scale: [tower.width - 2, .055, .05] }, 0x667669);
+          for (let post = -tower.width / 2 + 2; post < tower.width / 2 - 1; post += 1.5) metal.box({ position: [tower.x + post, y + .4, facade + .48], scale: [.05, .8, .05] }, 0x667669);
+        }
+      }
+      if (index % 11 === 0) {
+        const facade = tower.z - tower.depth / 2 - .75;
+        for (let pole = -tower.width / 2; pole <= tower.width / 2; pole += 2.5) metal.cylinder({ position: [tower.x + pole, tower.height / 2 + 6, facade], scale: [.055, tower.height + 2, .055] }, 0x9c9467);
+        for (let y = 7; y < tower.height + 7; y += 2.8) metal.box({ position: [tower.x, y, facade], scale: [tower.width + 1, .09, .09] }, 0x9c9467);
+      }
     }
   }
   structures.finish(group);

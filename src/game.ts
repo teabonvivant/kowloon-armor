@@ -13,7 +13,7 @@ import { Effects } from './effects';
 import type { InputFrame } from './input';
 import { angleDelta, wallFraction } from './math';
 import type { WorldData } from './render/world';
-import { disposeTank } from './render/tank';
+import { disposeTank, showTankDamage } from './render/tank';
 import type { Impact } from './armor';
 import { createObjectiveState, updateObjective } from './objectives';
 import { createTraining, updateTraining } from './training';
@@ -126,6 +126,10 @@ export class Game {
     if (this.dustTimer >= .15) {
       this.dustTimer = 0;
       for (const actor of actors) if (actor.alive && Math.abs(actor.speed) > 3) this.effects.dust(actor.visual.root.position, actor.yaw, actor.speed);
+      for (const actor of actors) {
+        showTankDamage(actor.visual, actor.hp / actor.maxHp);
+        if (actor.hp < actor.maxHp * .35) this.effects.damage(actor.visual.root.position, !actor.alive);
+      }
     }
     this.effects.update(dt);
     if (goal) updateObjective(this.objective, goal, this.player, this.enemies, dt);

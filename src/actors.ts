@@ -8,8 +8,11 @@ import type { Obstacle } from './render/world';
 import { roadWaypoint, tacticalGoal } from './tactics';
 import type { Tactic } from './tactics';
 import type { Difficulty } from './challenges';
+import { addEnemyDetails, enemyRole } from './render/enemy-details';
+import type { EnemyRole } from './render/enemy-details';
 
 export interface Actor {
+  readonly role: EnemyRole;
   readonly spec: TankSpec; readonly visual: TankVisual; readonly enemy: boolean;
   hp: number; maxHp: number; speed: number; yaw: number; aim: number; pitch: number;
   cooldown: number; alive: boolean; waypoint: Vector3; stuck: number;
@@ -18,9 +21,11 @@ export interface Actor {
 }
 export function createActor(spec: TankSpec, x: number, z: number, enemy = false): Actor {
   const visual = createTank(spec);
+  const role = enemyRole(spec);
+  if (enemy) addEnemyDetails(visual, role);
   visual.root.position.set(x, 0, z);
   const maxHp = enemy ? Math.round(spec.hp * 0.5) : spec.hp;
-  return { spec, visual, enemy, hp: maxHp, maxHp, speed: 0, yaw: enemy ? Math.PI : 0,
+  return { spec, visual, enemy, role, hp: maxHp, maxHp, speed: 0, yaw: enemy ? Math.PI : 0,
     aim: enemy ? Math.PI : 0, pitch: 0, cooldown: enemy ? 4 : 0,
     alive: true, waypoint: new Vector3(x, 0, z), stuck: 0,
     leftTrack: 0, rightTrack: 0, rapidShots: 0, reloadDuration: spec.reload,

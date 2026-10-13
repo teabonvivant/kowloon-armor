@@ -194,6 +194,7 @@ export class Interface {
         if (key === 'quality') this.view.quality(this.preferences.quality);
         if (key === 'reducedMotion') this.view.reduceMotion(this.preferences.reducedMotion);
         if (key === 'volume') { this.audio.unlock(); this.audio.setVolume(this.preferences.volume); }
+        if (key === 'musicVolume') this.audio.setMusicVolume(this.preferences.musicVolume);
         if (key === 'sensitivity' || key === 'invertY') this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY);
         if (key === 'scopeMode') this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode);
         if (key === 'scopeZoom') this.view.scopeZoom = this.preferences.scopeZoom;
@@ -214,6 +215,7 @@ export class Interface {
   private applyPreferences(): void {
     this.view.quality(this.preferences.quality); this.view.reduceMotion(this.preferences.reducedMotion);
     this.audio.setVolume(this.preferences.volume); this.input.setPointer(this.preferences.sensitivity, this.preferences.invertY);
+    this.audio.setMusicVolume(this.preferences.musicVolume);
     this.input.setKeyboard(this.preferences.bindings, this.preferences.scopeMode); this.view.scopeZoom = this.preferences.scopeZoom;
     document.body.style.setProperty('--hud-scale', String(this.preferences.hudScale));
   }

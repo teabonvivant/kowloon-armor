@@ -5,6 +5,7 @@ import { TANKS } from './data/tanks';
 const schema = z.object({
   quality: z.enum(['low', 'medium', 'high']).default('medium'),
   volume: z.number().min(0).max(1).default(.4),
+  musicVolume: z.number().min(0).max(1).default(.35),
   sensitivity: z.number().min(.3).max(2.5).default(1),
   invertY: z.boolean().default(false),
   reducedMotion: z.boolean().default(false),

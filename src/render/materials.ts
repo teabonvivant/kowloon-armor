@@ -9,6 +9,19 @@ export const metalMaterial = new THREE.MeshStandardMaterial({ roughness: 0.4, me
 export const windowMaterial = new THREE.MeshStandardMaterial({ roughness: 0.32, metalness: 0.5 });
 export const glowMaterial = new THREE.MeshStandardMaterial({ roughness: 0.65, emissive: 0xffffff, emissiveIntensity: 0.6 });
 
+const plasterPixels = new Uint8Array(128 * 128 * 4);
+for (let row = 0; row < 128; row++) for (let column = 0; column < 128; column++) {
+  const grain = (row * 113 + column * 197) % 21;
+  const streak = column % 23 < 3 ? Math.max(0, 22 - row % 64 / 3) : 0;
+  const value = Math.round(229 + grain - streak), offset = (row * 128 + column) * 4;
+  plasterPixels[offset] = value; plasterPixels[offset + 1] = value; plasterPixels[offset + 2] = value - 3; plasterPixels[offset + 3] = 255;
+}
+const plasterTexture = new THREE.DataTexture(plasterPixels, 128, 128, THREE.RGBAFormat);
+plasterTexture.colorSpace = THREE.SRGBColorSpace; plasterTexture.magFilter = THREE.LinearFilter;
+plasterTexture.minFilter = THREE.LinearMipmapLinearFilter; plasterTexture.generateMipmaps = true; plasterTexture.anisotropy = 4;
+plasterTexture.wrapS = plasterTexture.wrapT = THREE.RepeatWrapping; plasterTexture.repeat.set(3, 3); plasterTexture.needsUpdate = true;
+export const plasterMaterial = new THREE.MeshStandardMaterial({ map: plasterTexture, bumpMap: plasterTexture, bumpScale: .04, roughness: .94 });
+
 function createFacadeMaterial(): THREE.MeshStandardMaterial {
   const pixels = new Uint8Array(64 * 64 * 4);
   for (let row = 0; row < 64; row++) for (let column = 0; column < 64; column++) {

@@ -24,7 +24,7 @@ export class View {
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
-    this.scene.background = new Color(0x899a9e); this.scene.fog = new FogExp2(0x899a9e, 0.005);
+    this.scene.background = new Color(0x8cabb8); this.scene.fog = new FogExp2(0x8cabb8, 0.0033);
     this.scene.add(new HemisphereLight(0xb7d3df, 0x514734, 2.6));
     const fill = new DirectionalLight(0xc4d5e3, 1.4);
     fill.position.set(12, 18, -30); this.scene.add(fill);

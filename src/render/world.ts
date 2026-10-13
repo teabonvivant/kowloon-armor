@@ -6,6 +6,7 @@ import { createParkedVehicles } from './geo-vehicles';
 import { createAsphaltMaterial, GeometryBatch } from './materials';
 import { createStreetProps } from './street-props';
 import { createDistrictLandmarks } from './districts';
+import { createHongKong, isLandmarkBlock, landmarkObstacles } from './hong-kong';
 
 export interface Obstacle {
   readonly x: number;
@@ -28,7 +29,8 @@ export function createWorld(): WorldData {
   group.name = '九龍 · Kowloon';
   const paving = new GeometryBatch();
   const markings = new GeometryBatch();
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), createAsphaltMaterial());
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 850), createAsphaltMaterial());
+  ground.position.z = -175;
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
@@ -38,7 +40,7 @@ export function createWorld(): WorldData {
     const width = Math.abs(x) > 180 ? 37 : 58;
     const depth = Math.abs(z) > 180 ? 37 : 58;
     blocks.push({ x, z, width, depth, index: blocks.length });
-    obstacles.push({ x, z, halfX: width / 2, halfZ: depth / 2 });
+    obstacles.push(...(landmarkObstacles({ x, z, width, depth, index: blocks.length - 1 }) ?? [{ x, z, halfX: width / 2, halfZ: depth / 2 }]));
     paving.box({ position: [x, 0.05, z], scale: [width + 4.8, 0.19, depth + 4.8] }, 0x989b8c);
     for (const side of [-1, 1]) {
       paving.box({ position: [x + side * (width / 2 + 2.3), 0.18, z], scale: [0.25, 0.18, depth + 4.8] }, 0xb7b6a5);
@@ -73,7 +75,8 @@ export function createWorld(): WorldData {
   }
   paving.finish(group);
   markings.finish(group, false, 84);
-  group.add(createBuildings(blocks), createCityDetails(blocks), createBackdrop(), createDistrictLandmarks());
+  const ordinary = blocks.filter(block => !isLandmarkBlock(block));
+  group.add(createBuildings(ordinary), createCityDetails(ordinary), createBackdrop(), createDistrictLandmarks(), createHongKong(blocks));
   obstacles.push(...createParkedVehicles(group));
   const props = createStreetProps(); group.add(props.group); obstacles.push(...props.obstacles);
   group.updateMatrixWorld(true);

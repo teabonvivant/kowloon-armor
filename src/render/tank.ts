@@ -142,6 +142,20 @@ export function createTank(spec: TankSpec): TankVisual {
   return visual;
 }
 const wheelTransform = new THREE.Object3D();
+const damageColor = new THREE.Color();
+export function showTankDamage(visual: TankVisual, health: number): void {
+  const shade = health <= 0 ? .3 : health < .35 ? .7 : 1;
+  const previous = Number(visual.root.userData['damageShade'] ?? 1);
+  if (shade === previous) return;
+  visual.root.traverse(node => {
+    if (!(node instanceof THREE.InstancedMesh) || !node.instanceColor) return;
+    for (let index = 0; index < node.count; index++) {
+      node.getColorAt(index, damageColor); damageColor.multiplyScalar(shade / previous); node.setColorAt(index, damageColor);
+    }
+    node.instanceColor.needsUpdate = true;
+  });
+  visual.root.userData['damageShade'] = shade;
+}
 export function rotateWheels(visual: TankVisual, leftTravel: number, rightTravel = leftTravel): void {
   if (Math.abs(leftTravel) + Math.abs(rightTravel) < .0001) return;
   visual.wheelPhase -= leftTravel / .52; visual.rightWheelPhase -= rightTravel / .52;

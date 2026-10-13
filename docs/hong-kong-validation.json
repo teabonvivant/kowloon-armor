@@ -1,0 +1,69 @@
+{
+  "artifactSha256": "905b57a07b5616acafe50f635201959678f4bc765c5e258467ba3d4ae7bf7949",
+  "scenes": [
+    {
+      "name": "尖沙咀鐘樓",
+      "calls": 191,
+      "triangles": 410168
+    },
+    {
+      "name": "油麻地舊警署",
+      "calls": 156,
+      "triangles": 365144
+    },
+    {
+      "name": "廟街牌樓",
+      "calls": 128,
+      "triangles": 333070
+    },
+    {
+      "name": "旺角市集",
+      "calls": 75,
+      "triangles": 221976
+    },
+    {
+      "name": "深水埗唐樓",
+      "calls": 69,
+      "triangles": 178352
+    },
+    {
+      "name": "環球貿易廣場",
+      "calls": 97,
+      "triangles": 257176
+    }
+  ],
+  "combat": {
+    "phase": "playing",
+    "shots": 1,
+    "calls": 184,
+    "triangles": 324524,
+    "frameMs": {
+      "median": 3.299999998882413,
+      "p95": 169.30000000074506,
+      "samples": 12
+    },
+    "roles": [
+      "突擊",
+      "突擊",
+      "突擊",
+      "側襲"
+    ],
+    "damagePool": 128
+  },
+  "audio": {
+    "peak": 0.6855102181434631,
+    "rms": 0.06471434320494351,
+    "silentTailPeak": 0,
+    "stereoDifference": 0.011320672283269119
+  },
+  "errors": [],
+  "requests": [],
+  "checks": [
+    "six source-rendered landmarks",
+    "combat shots and bounded smoke",
+    "offline rendered stereo audio / peak / pause silence",
+    "production music preference",
+    "three production viewports",
+    "production fire and pause"
+  ]
+}

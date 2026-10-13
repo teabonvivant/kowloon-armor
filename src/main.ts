@@ -12,7 +12,7 @@ function boot(): void {
   const view = new View(canvas), audio = new GameAudio(), input = new Input(canvas);
   const game = new Game(view.scene, view.world, { shot: () => view.recoil(),
     cannon: position => audio.fire(position), ready: () => audio.ready(), trained: () => ui.completeTraining(),
-    hit: (damage, killed, enemy, impact) => ui.hit(damage, killed, enemy, impact),
+    hit: (damage, killed, enemy, impact) => { ui.hit(damage, killed, enemy, impact); if (impact) audio.impact(impact.position, killed); },
     finish: victory => ui.finish(victory), notify: message => ui.notify(message) });
   const ui = new Interface(game, input, view, audio);
   let last = performance.now(), uiElapsed = 0;
@@ -20,9 +20,9 @@ function boot(): void {
   document.getElementById('boot')?.remove();
   document.addEventListener('graphics-lost', () => { ui.pause(); ui.notify('繪圖裝置已重設，請重新開啟遊戲。'); });
   function frame(now: number): void {
-    if (document.hidden) { last = now; clock.reset(); requestAnimationFrame(frame); return; }
+    if (document.hidden) { audio.stop(); last = now; clock.reset(); requestAnimationFrame(frame); return; }
     const dt = Math.min((now - last) / 1000, .1); last = now; uiElapsed += dt;
-    audio.listen(game.player.visual.root.position, game.observing ? game.observationYaw : game.cameraMode === 'driver' && !game.scope ? game.player.yaw : game.player.aim);
+    audio.listen(game.player.visual.root.position, game.observing ? game.observationYaw : game.cameraMode === 'driver' && !game.scope ? game.player.yaw : game.player.aim, game.world.obstacles);
     if (game.phase === 'playing') {
       clock.advance(dt, step => {
         const control = input.sample(step);
@@ -30,8 +30,12 @@ function boot(): void {
         game.update(step, control);
         return game.phase === 'playing';
       });
-      audio.engine(Math.abs(game.player.speed));
-    } else clock.reset();
+      if (game.phase === 'playing') {
+        audio.engine(Math.abs(game.player.speed));
+        const nearby = game.enemies.reduce((threat, enemy) => enemy.alive ? Math.max(threat, 1 - enemy.visual.root.position.distanceTo(game.player.visual.root.position) / 180) : threat, 0);
+        audio.atmosphere(Math.max(nearby, game.damageTimer > 0 ? 1 : 0), dt);
+      } else audio.stop();
+    } else { clock.reset(); audio.stop(); }
     view.render(game, dt);
     if (uiElapsed > .1) {
       uiElapsed = 0;
