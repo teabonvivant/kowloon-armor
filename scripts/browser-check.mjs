@@ -9,6 +9,14 @@ await mkdir(evidence, { recursive: true });
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--disable-gpu-sandbox'] });
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
 await context.setOffline(true);
+const captureRendering = process.env.EFFECTS_FUNCTIONAL_RENDER === '1';
+if (captureRendering) await context.addInitScript(() => {
+  window.functionalPaint = false;
+  for (const key of ['clear', 'drawElements', 'drawElementsInstanced', 'drawArrays', 'drawArraysInstanced']) {
+    const original = WebGL2RenderingContext.prototype[key];
+    WebGL2RenderingContext.prototype[key] = function (...args) { if (window.functionalPaint) return original.apply(this, args); };
+  }
+});
 const page = await context.newPage();
 page.setDefaultTimeout(60000);
 const errors = [], requests = [], checks = [];
@@ -17,13 +25,23 @@ page.on('request', request => requests.push(request.url()));
 const click = selector => page.locator(selector).first().click({ force: true });
 const text = selector => page.locator(selector).textContent();
 const check = (name, details = true) => { checks.push({ name, details }); console.log(name, JSON.stringify(details)); };
-async function capture(name) { await page.screenshot({ path: `${evidence}/release-${name}.png`, timeout: 120000 }); }
+async function capture(name) {
+  if (captureRendering) await page.evaluate(async () => {
+    window.functionalPaint = true; await new Promise(requestAnimationFrame); window.functionalPaint = false;
+    const gl = document.querySelector('#world').getContext('webgl2');
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+  });
+  await page.screenshot({ path: `${evidence}/release-${name}.png`, timeout: 120000 });
+}
 async function waitValue(id, predicate, timeout = 90000) {
   await page.waitForFunction(({ id, predicate }) => new Function('value', `return ${predicate}`)(document.getElementById(id)?.textContent), { id, predicate }, { timeout, polling: 200 });
 }
 async function returnGarage() {
-  await page.keyboard.press('Escape'); await click('#modal [data-action="return"]');
+  const runningTime = await text('#mission-time');
+  await waitValue('mission-time', `value !== ${JSON.stringify(runningTime)}`);
+  await page.keyboard.press('Escape'); await page.locator('#modal[open]').waitFor(); await click('#modal [data-action="return"]');
   await click('#modal [data-action="confirm-return"]');
+  await page.locator('.garage').waitFor();
 }
 try {
   await page.goto(pathToFileURL(resolve('九龍裝甲行動.html')).href, { waitUntil: 'domcontentloaded' });
@@ -113,7 +131,7 @@ try {
   }
   await page.keyboard.down('Shift'); await waitValue('camera-label', 'value === "瞄準鏡"'); await capture('scope');
   await page.keyboard.up('Shift');
-  await page.keyboard.press('Space'); await waitValue('reload-label', 'value.startsWith("裝填")');
+  await page.keyboard.down('Space'); await waitValue('reload-label', 'value.startsWith("裝填")'); await page.keyboard.up('Space');
   await capture('driving');
   check('three cameras, scope and shell reload');
   await page.keyboard.press('m');
@@ -132,7 +150,9 @@ try {
   assert.match(await text('.device-readouts'), /未|沒有|按/);
   await page.getByRole('button', { name: 'Xbox 手掣預設', exact: true }).click({ force: true });
   await page.getByRole('button', { name: 'HOTAS 預設', exact: true }).click({ force: true });
+  const controllerPausedTime = await text('#mission-time');
   await page.getByRole('button', { name: '關閉控制設定', exact: true }).click({ force: true });
+  await waitValue('mission-time', `value !== ${JSON.stringify(controllerPausedTime)}`);
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await page.waitForSelector('#modal[open]');
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
@@ -153,7 +173,7 @@ try {
   await page.waitForSelector('#modal[open] .result-medal', { state: 'attached', timeout: 600000 });
   await page.keyboard.up('Space');
   assert.equal(await text('#modal-title'), '任務完成');
-  assert.match(await text('.debrief-line'), /命中率/);
+  assert.match(await page.locator('.debrief-line').first().textContent(), /命中率/);
   await capture('victory');
   const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('kowloon-armor-progress')));
   assert.equal(progress.completed, 1);
@@ -174,6 +194,7 @@ try {
   throw error;
 } finally {
   await writeFile(`${evidence}/browser-check.json`, JSON.stringify({ browser: browser.version(), checks, errors, requests,
+    rendering: captureRendering ? 'Functional input/UI suite: normal simulation clock, GPU draws only for captured frames with synchronous readback. Not continuous-render performance.' : 'Normal continuous rendering.',
     limitations: ['Linux headless Chromium / SwiftShader; no physical HOTAS.', 'Wave transitions also have deterministic simulation coverage.'] }, null, 2));
   await browser.close();
 }

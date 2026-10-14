@@ -1,0 +1,49 @@
+{
+  "version": "1.8.0",
+  "offlineVerifiedAt": "2026-10-14T01:09:11Z",
+  "baseCommit": "8e059c053c56af7e2ca2f404439e6cc60cfb5f82",
+  "baselineSha256": "2499143dc2f8c921bcdf47549482ee292308e129a8ca1266367d29fbd8ae9e69",
+  "artifact": "九龍裝甲行動.html",
+  "artifactBytes": 1136831,
+  "artifactSha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "audit": { "items": 100, "confirmedBugs": 21, "enhancementGaps": 79, "verified": 99, "publicationPending": 1 },
+  "validation": {
+    "check": "passed",
+    "build": "passed",
+    "ruleChecks": 125,
+    "nodeTests": 116,
+    "newEffectTests": 46,
+    "simulationChecks": 9,
+    "inputOnlyCampaignVictories": 6,
+    "offlineAudioCases": 17,
+    "sourceRendererGroups": 11,
+    "artifactViewports": 5,
+    "touchInputGroups": 9,
+    "touchLayoutGroups": 9,
+    "tacticalBrowserGroups": 8,
+    "legacyArtifactGroups": 20,
+    "legacyTouchGroups": 8,
+    "stableRestartRounds": 8,
+    "stableRendererResources": { "geometries": 19, "textures": 28, "programs": 14 },
+    "stressSimulationSteps": 72000,
+    "stressSimulationSeconds": 1200
+  },
+  "reports": [
+    "rules.json", "audio.json", "renderer.json", "artifact.json",
+    "touch-input.json", "touch-layout.json", "tactical.json", "legacy-browser.json", "legacy-touch.json",
+    "scene-budget-baseline.json", "scene-budget-final.json", "artifact-budget-baseline.json", "artifact-budget-final.json"
+  ],
+  "rawLogs": ".omo/evidence/effects/",
+  "publication": { "status": "pending", "url": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html" },
+  "execution": { "soleExecutor": true, "delegatedAgents": 0, "otherModelInvocations": 0, "usage": null, "usageNote": "CLI/model token usage telemetry unavailable; no estimates." },
+  "limits": [
+    "Chromium 141 and SwiftShader software WebGL; not physical-device FPS or Safari validation.",
+    "Source renderer fixtures control targets and HP for exact effect moments; campaign victories use input only.",
+    "Artifact effect captures use a stepped test clock and draw only the last batch frame. Legacy desktop regression draws for captures only.",
+    "Stress run is accelerated simulation with sparse rendering, not 20 minutes of continuous real-time rendering.",
+    "Audio validated numerically at 48 kHz stereo; no claim of human listening or speaker testing.",
+    "Procedural graphics, non-volumetric smoke and simplified collision surfaces; decal fit is approximate on detailed geometry.",
+    "No physical phone, tablet, HOTAS or long human play-session validation.",
+    "An initial legacy touch reload assertion failed and was not reproduced by the isolated probe or full normal-render rerun; logs and timing precondition changes are documented."
+  ]
+}

@@ -34,7 +34,7 @@ const bundle = await build({ stdin: { resolveDir: resolve('.'), contents: `
     speed: game.player.speed, aim: game.player.aim, yaw: game.player.yaw, camera: game.cameraMode, scope: game.scope, fov: view.camera.fov,
     objective: { ...game.objective }, position: game.player.visual.root.position.toArray(), seed: game.seed }; }
   function memory() { return { ...view.renderer.info.memory, calls: view.renderer.info.render.calls, triangles: view.renderer.info.render.triangles,
-    points: view.renderer.info.render.points, smoke: view.scene.children.filter(child => child.name === 'combat-smoke').length,
+    points: view.renderer.info.render.points, smoke: game.effectStats().smoke,
     dust: view.scene.getObjectByName('track-dust')?.geometry.attributes.position.count, heap: performance.memory?.usedJSHeapSize ?? null }; }
   window.qa = {
     state, memory, render,

@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import type { TankSpec } from './data/tanks';
 import type { InputFrame } from './input';
 import { angleDelta, blocked, clamp, forward, wallFraction } from './math';
-import { createTank, rotateWheels } from './render/tank';
+import { createTank, rotateWheels, updateTankMotion } from './render/tank';
 import type { TankVisual } from './render/tank';
 import type { Obstacle } from './render/world';
 import { roadWaypoint, tacticalGoal } from './tactics';
@@ -18,6 +18,7 @@ export interface Actor {
   cooldown: number; alive: boolean; waypoint: Vector3; stuck: number;
   leftTrack: number; rightTrack: number; rapidShots: number; reloadDuration: number;
   tactic: Tactic; think: number; aiAge: number; nextRetreat: number; retreatUntil: number; nextFlank: number;
+  reducedMotion: boolean;
 }
 export function createActor(spec: TankSpec, x: number, z: number, enemy = false): Actor {
   const visual = createTank(spec);
@@ -29,13 +30,14 @@ export function createActor(spec: TankSpec, x: number, z: number, enemy = false)
     aim: enemy ? Math.PI : 0, pitch: 0, cooldown: enemy ? 4 : 0,
     alive: true, waypoint: new Vector3(x, 0, z), stuck: 0,
     leftTrack: 0, rightTrack: 0, rapidShots: 0, reloadDuration: spec.reload,
-    tactic: 'advance', think: 0, aiAge: 0, nextRetreat: 0, retreatUntil: 0, nextFlank: 0 };
+    tactic: 'advance', think: 0, aiAge: 0, nextRetreat: 0, retreatUntil: 0, nextFlank: 0, reducedMotion: false };
 }
 export function moveActor(actor: Actor, throttle: number, steer: number, brake: boolean,
   dt: number, obstacles: readonly Obstacle[], actors: readonly Actor[]): void {
   const mobility = actor.leftTrack > 0 && actor.rightTrack > 0 ? .14 : actor.leftTrack > 0 || actor.rightTrack > 0 ? .28 : 1;
   const agility = clamp(63 / actor.spec.weight, .8, 1.5);
   const previousYaw = actor.yaw;
+  const previousSpeed = actor.speed;
   const target = throttle * (throttle >= 0 ? actor.spec.speed : actor.spec.reverse) / 3.6 * mobility;
   const acceleration = brake ? 26 * Math.sqrt(agility) : Math.abs(throttle) < 0.04 ? 5 : 6 * agility * Math.sqrt(mobility);
   actor.speed += clamp((brake ? 0 : target) - actor.speed, -acceleration * dt, acceleration * dt);
@@ -53,8 +55,7 @@ export function moveActor(actor: Actor, throttle: number, steer: number, brake: 
   actor.visual.root.rotation.y = actor.yaw;
   actor.visual.turret.rotation.y = actor.aim - actor.yaw;
   actor.visual.barrel.rotation.x = actor.pitch;
-  actor.visual.recoil = Math.max(0, actor.visual.recoil - dt * 1.8);
-  actor.visual.barrel.position.z = -1.42 + actor.visual.recoil;
+  updateTankMotion(actor.visual, dt, actor.pitch, dt > 0 ? (actor.speed - previousSpeed) / dt : 0, actor.reducedMotion);
   const pivotTravel = (actor.yaw - previousYaw) * 1.73;
   rotateWheels(actor.visual, actor.leftTrack > 0 ? 0 : actor.speed * dt - pivotTravel,
     actor.rightTrack > 0 ? 0 : actor.speed * dt + pivotTravel);

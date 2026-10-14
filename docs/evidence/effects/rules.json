@@ -1,0 +1,257 @@
+{
+  "command": "pnpm check && pnpm build && pnpm test",
+  "artifactSha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "nodeTestGroups": {
+    "upgrade": 10,
+    "tactical": 21,
+    "deployment": 7,
+    "hong-kong": 5,
+    "field": 10,
+    "operations": 10,
+    "touch": 7,
+    "effects": 46
+  },
+  "nodeTests": 116,
+  "simulationChecks": 9,
+  "totalRuleChecks": 125,
+  "effectTests": [
+    "M01 calibre profiles scale force, length and time within bounded ranges",
+    "M02 recoil has fast compression, slower recovery and exact resting endpoint",
+    "M03 flash ignition and tail end quickly; particle fade reaches zero",
+    "M04 view and scope attenuate camera force and reduced motion cancels it",
+    "M05 tracer is capped, never longer than travelled segment; ground contact interpolates",
+    "M06 wall normals point out of the contacted face without changing collision boxes",
+    "M07 impact direction reflects away from a surface at glancing incidence",
+    "M08 quality and mobile budgets are monotonically bounded",
+    "M09 every tank muzzle follows the actual barrel world transform",
+    "M10 recoil moves along pitched barrel while physics root and tracks remain fixed",
+    "M11 reduced motion removes suspension and repeated impulse cannot exceed cap",
+    "P01 firing uses stable scene objects and all emission types remain within pools",
+    "P02 smoke grows and fades, debris stays above ground, zero dt is inert",
+    "P03 clear drops anchors and pending effects; dispose is idempotent",
+    "P04 damage severity, cooling and range change emissions without immortal wreck smoke",
+    "P05 low flash reduces radiance; quality changes clear excess particles",
+    "P06 armour marks follow an anchor, release it after expiry and have bounded life",
+    "C01 shell timeout has no false contact or explosion",
+    "C02 wall and ground contacts publish exact position, kind and outward normal",
+    "C03 muzzle obstruction emits one contact, no escaping shell",
+    "C04 projectile pool saturates safely, clear reuses slots and disposes GPU resources",
+    "C05 ordinary armour contact and lethal destruction are distinct, damage remains original formula",
+    "C06 pause freezes all effects and restart clears old anchors, projectiles and recoil",
+    "A01 calibre and material sound profiles are distinct and finite",
+    "P07 road mark sits on the asphalt rather than at projectile centre height",
+    "P08 low quality submits only its point and instance limits",
+    "P09 muzzle axes, delayed smoke and side jets follow an elevated sideways gun",
+    "P10 distinct contact materials produce different spark to dust proportions",
+    "P11 emitted sparks stay in the surface outward hemisphere",
+    "P12 distance reduces emissions and removes distant detailed debris",
+    "P13 track damage suppresses one side dust and speed changes scale",
+    "P14 independently aged particles grow, fade and cool with depth-tested materials",
+    "P15 reset reproduces procedural emissions without affecting global random",
+    "M12 recoil sampling at 30, 60 and 144 Hz has the same absolute pose",
+    "C07 pooled bodies and bounded tracers align to the shell current velocity",
+    "C08 touch fallback changes live limits without resetting the game",
+    "M13 muzzle direction follows nonuniform family transforms independently of physics aim",
+    "P16 spark streaks turn with their falling velocity",
+    "P17 a larger calibre has a longer bounded muzzle pulse",
+    "A02 UI hit notification does not duplicate the spatial contact sound",
+    "A03 inactive audio maintenance has a separate path from explicit cancellation",
+    "C09 lethal ignition vents above the turret envelope instead of inside opaque armour",
+    "M14 mass attenuates suspension and acceleration has bounded visual inertia only",
+    "P18 trails expire promptly and are omitted on mobile, low quality and distant shots",
+    "P19 firing ground cues are delayed, local and share resources without adding lights",
+    "C10 pooled shells preserve newest-first resolution for simultaneous lethal contacts"
+  ],
+  "inputOnlyCampaigns": {
+    "results": [
+      {
+        "mission": 1,
+        "vehicle": "leopard2a8",
+        "kind": "clear",
+        "phase": "victory",
+        "elapsed": 16.850000000000325,
+        "hp": 1002,
+        "kills": 2,
+        "shots": 4,
+        "hits": 4,
+        "objective": {
+          "progress": 0,
+          "integrity": 100,
+          "contested": false,
+          "inside": false
+        },
+        "position": [
+          -1.1642593365624369e-15,
+          0,
+          65.46746828896553
+        ],
+        "enemies": []
+      },
+      {
+        "mission": 2,
+        "vehicle": "leopard2a8",
+        "kind": "capture",
+        "phase": "victory",
+        "elapsed": 79.86666666666342,
+        "hp": 936,
+        "kills": 3,
+        "shots": 9,
+        "hits": 6,
+        "objective": {
+          "progress": 20,
+          "integrity": 100,
+          "contested": false,
+          "inside": true
+        },
+        "position": [
+          18.16546924961408,
+          0,
+          2.525886613053101
+        ],
+        "enemies": []
+      },
+      {
+        "mission": 3,
+        "vehicle": "leopard2a8",
+        "kind": "clear",
+        "phase": "victory",
+        "elapsed": 65.5833333333309,
+        "hp": 656,
+        "kills": 4,
+        "shots": 11,
+        "hits": 11,
+        "objective": {
+          "progress": 0,
+          "integrity": 100,
+          "contested": false,
+          "inside": false
+        },
+        "position": [
+          0.1773485726583003,
+          0,
+          58.39359506541064
+        ],
+        "enemies": []
+      },
+      {
+        "mission": 4,
+        "vehicle": "leopard2a8",
+        "kind": "defend",
+        "phase": "victory",
+        "elapsed": 45.016666666665394,
+        "hp": 752,
+        "kills": 4,
+        "shots": 9,
+        "hits": 8,
+        "objective": {
+          "progress": 45,
+          "integrity": 100,
+          "contested": false,
+          "inside": true
+        },
+        "position": [
+          84,
+          0,
+          100
+        ],
+        "enemies": [
+          {
+            "position": [
+              63.258521786312905,
+              0,
+              2.199451241948484
+            ],
+            "hp": 353,
+            "tactic": "advance"
+          }
+        ]
+      },
+      {
+        "mission": 5,
+        "vehicle": "leopard2a8",
+        "kind": "capture",
+        "phase": "victory",
+        "elapsed": 124.14999999999424,
+        "hp": 567,
+        "kills": 6,
+        "shots": 16,
+        "hits": 14,
+        "objective": {
+          "progress": 30,
+          "integrity": 100,
+          "contested": false,
+          "inside": true
+        },
+        "position": [
+          -81.49337130324763,
+          0,
+          -65.91410761746334
+        ],
+        "enemies": []
+      },
+      {
+        "mission": 6,
+        "vehicle": "leopard2a8",
+        "kind": "defend",
+        "phase": "victory",
+        "elapsed": 68.41666666666407,
+        "hp": 160,
+        "kills": 4,
+        "shots": 12,
+        "hits": 11,
+        "objective": {
+          "progress": 60,
+          "integrity": 32.79999999999833,
+          "contested": false,
+          "inside": true
+        },
+        "position": [
+          5.734315752776847,
+          0,
+          12.369390857480742
+        ],
+        "enemies": [
+          {
+            "position": [
+              -81.27292023841422,
+              0,
+              8.202816986267635
+            ],
+            "hp": 401,
+            "tactic": "flank"
+          },
+          {
+            "position": [
+              68.89607217251499,
+              0,
+              1.8585635750576492
+            ],
+            "hp": 126,
+            "tactic": "cover"
+          },
+          {
+            "position": [
+              -64.23090923605973,
+              0,
+              9.125360801861676
+            ],
+            "hp": 345,
+            "tactic": "cover"
+          },
+          {
+            "position": [
+              -54.77714444778373,
+              0,
+              8.879609274641028
+            ],
+            "hp": 206,
+            "tactic": "advance"
+          }
+        ]
+      }
+    ],
+    "method": "All six missions in full city obstacles, training difficulty, fixed 60 Hz, Leopard 2 A8 input-only pilot. Final defence patrols four points with 5-second orders. Every step checks real building clearance. No health, cooldown, position or outcome overrides."
+  },
+  "zeroTestFailures": true,
+  "rawLog": ".omo/evidence/effects/rules-final.log"
+}

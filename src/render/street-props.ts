@@ -20,7 +20,7 @@ export function createStreetProps(): { group: Group; obstacles: Obstacle[] } {
     signs.add(unitPlane, { position: [x - side * 1.08, 2.82, z], scale: [4.6, .6, 1], rotation: [0, -side * Math.PI / 2, 0] }, 0xffffff);
     surfaces.box({ position: [x, .65, z + 5], scale: [.64, 1.22, .7] }, 0x3b735a);
     structure.box({ position: [x - side * .34, .98, z + 5], scale: [.025, .17, .44] }, 0x202d29);
-    obstacles.push({ x, z, halfX: 1, halfZ: 3.7 }, { x, z: z + 5, halfX: .35, halfZ: .4 });
+    obstacles.push({ x, z, halfX: 1, halfZ: 3.7, surface: 'metal' }, { x, z: z + 5, halfX: .35, halfZ: .4, surface: 'metal' });
     structure.cylinder({ position: [road + side * 7, .029, row + 16], scale: [.57, .022, .57] }, 0x444b43);
     for (let slot = -2; slot <= 2; slot++) wear.box({ position: [road + side * 7 + slot * .17, .043, row + 16], scale: [.045, .005, .72] }, 0x232f2b);
   }

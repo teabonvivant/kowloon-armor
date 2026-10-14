@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "8 HUD states at 320x568",
+    "8 HUD states at 390x844",
+    "8 HUD states at 568x320",
+    "8 HUD states at 844x390",
+    "8 HUD states at 768x1024",
+    "8 HUD states at 1024x768",
+    "8 HUD states at 1366x1024",
+    "actual settings controls persist and desktop full HUD remains available",
+    "touch overrides full HUD, correct training copy and single control root after repeated restarts"
+  ],
+  "errors": []
+}

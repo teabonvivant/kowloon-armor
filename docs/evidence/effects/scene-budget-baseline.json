@@ -1,0 +1,195 @@
+{
+  "label": "baseline",
+  "browser": "141.0.7390.37",
+  "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "viewport": [
+    1280,
+    800
+  ],
+  "dpr": 1,
+  "seed": 71439,
+  "samples": [
+    {
+      "quality": "low",
+      "scene": "idle",
+      "shots": 0,
+      "hits": 0,
+      "render": {
+        "frame": 14,
+        "calls": 264,
+        "triangles": 426860,
+        "points": 0,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 9,
+        "textures": 26
+      },
+      "medianMs": 1310.5,
+      "p95Ms": 1612,
+      "samples": 12
+    },
+    {
+      "quality": "low",
+      "scene": "firing",
+      "shots": 1,
+      "hits": 0,
+      "render": {
+        "frame": 28,
+        "calls": 267,
+        "triangles": 427036,
+        "points": 32,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 12,
+        "textures": 27
+      },
+      "medianMs": 1037.300000000745,
+      "p95Ms": 1357.8999999985099,
+      "samples": 12
+    },
+    {
+      "quality": "low",
+      "scene": "contact",
+      "shots": 1,
+      "hits": 1,
+      "render": {
+        "frame": 42,
+        "calls": 268,
+        "triangles": 427140,
+        "points": 64,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 13,
+        "textures": 27
+      },
+      "medianMs": 973.9000000003725,
+      "p95Ms": 1605.5999999996275,
+      "samples": 12
+    },
+    {
+      "quality": "medium",
+      "scene": "idle",
+      "shots": 0,
+      "hits": 0,
+      "render": {
+        "frame": 56,
+        "calls": 264,
+        "triangles": 426860,
+        "points": 0,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 11,
+        "textures": 28
+      },
+      "medianMs": 1038.4000000003725,
+      "p95Ms": 1182.199999999255,
+      "samples": 12
+    },
+    {
+      "quality": "medium",
+      "scene": "firing",
+      "shots": 1,
+      "hits": 0,
+      "render": {
+        "frame": 70,
+        "calls": 267,
+        "triangles": 427036,
+        "points": 32,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 12,
+        "textures": 28
+      },
+      "medianMs": 1085.199999999255,
+      "p95Ms": 1165.9000000003725,
+      "samples": 12
+    },
+    {
+      "quality": "medium",
+      "scene": "contact",
+      "shots": 1,
+      "hits": 1,
+      "render": {
+        "frame": 84,
+        "calls": 268,
+        "triangles": 427140,
+        "points": 64,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 13,
+        "textures": 28
+      },
+      "medianMs": 1124.3999999985099,
+      "p95Ms": 1281.199999999255,
+      "samples": 12
+    },
+    {
+      "quality": "high",
+      "scene": "idle",
+      "shots": 0,
+      "hits": 0,
+      "render": {
+        "frame": 98,
+        "calls": 264,
+        "triangles": 426860,
+        "points": 0,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 11,
+        "textures": 28
+      },
+      "medianMs": 1108.5,
+      "p95Ms": 1173.2000000011176,
+      "samples": 12
+    },
+    {
+      "quality": "high",
+      "scene": "firing",
+      "shots": 1,
+      "hits": 0,
+      "render": {
+        "frame": 112,
+        "calls": 267,
+        "triangles": 427036,
+        "points": 32,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 12,
+        "textures": 28
+      },
+      "medianMs": 1246.8999999985099,
+      "p95Ms": 1721.5,
+      "samples": 12
+    },
+    {
+      "quality": "high",
+      "scene": "contact",
+      "shots": 1,
+      "hits": 1,
+      "render": {
+        "frame": 126,
+        "calls": 268,
+        "triangles": 427140,
+        "points": 64,
+        "lines": 0
+      },
+      "memory": {
+        "geometries": 13,
+        "textures": 28
+      },
+      "medianMs": 1146.199999999255,
+      "p95Ms": 1609.7999999988824,
+      "samples": 12
+    }
+  ],
+  "errors": [],
+  "method": "Same source harness, fixed poses, seed and shot step. Twelve repeated renders with synchronous readPixels of frozen idle/17ms firing/217ms contact states after warmup. Software WebGL timing, not physical-device or continuous-game FPS."
+}

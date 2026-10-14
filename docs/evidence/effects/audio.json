@@ -1,0 +1,434 @@
+{
+  "sampleRate": 48000,
+  "channels": 2,
+  "secondsPerCase": 4,
+  "cases": [
+    {
+      "name": "105",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.4003765881061554,
+      "rms": 0.026753463159938717,
+      "early": 248.8865856182344,
+      "tail": 0,
+      "resumed": 0.16205234825611115,
+      "finite": true,
+      "leftEnergy": 137.42357588163804,
+      "rightEnergy": 137.42357588163804
+    },
+    {
+      "name": "152",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.4867785573005676,
+      "rms": 0.03830148476252764,
+      "early": 461.16586385930526,
+      "tail": 0,
+      "resumed": 0.24463842809200287,
+      "finite": true,
+      "leftEnergy": 281.6647171227143,
+      "rightEnergy": 281.6647171227143
+    },
+    {
+      "name": "nearby",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.4574662744998932,
+      "rms": 0.026727235280662426,
+      "early": 174.01547536346754,
+      "tail": 0,
+      "resumed": 0.37427982687950134,
+      "finite": true,
+      "leftEnergy": 1.028492213714717e-30,
+      "rightEnergy": 274.30852060718837
+    },
+    {
+      "name": "distant",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.18100179731845856,
+      "rms": 0.011237517445256572,
+      "early": 0,
+      "tail": 0,
+      "resumed": 0.18100179731845856,
+      "finite": true,
+      "leftEnergy": 1.8181666817122293e-31,
+      "rightEnergy": 48.49221055965918
+    },
+    {
+      "name": "occluded",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.21960274875164032,
+      "rms": 0.014269313710572785,
+      "early": 45.93652052308753,
+      "tail": 0,
+      "resumed": 0.19184207916259766,
+      "finite": true,
+      "leftEnergy": 2.9315621695617093e-31,
+      "rightEnergy": 78.18751248796434
+    },
+    {
+      "name": "armor",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.2609781324863434,
+      "rms": 0.007277544450510888,
+      "early": 19.095485245658967,
+      "tail": 0,
+      "resumed": 0.10618305951356888,
+      "finite": true,
+      "leftEnergy": 7.625400674907286e-32,
+      "rightEnergy": 20.337658839998138
+    },
+    {
+      "name": "track",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.24987351894378662,
+      "rms": 0.007281319704104182,
+      "early": 19.107121524252328,
+      "tail": 0,
+      "resumed": 0.10575849562883377,
+      "finite": true,
+      "leftEnergy": 7.633314141327521e-32,
+      "rightEnergy": 20.35876478721631
+    },
+    {
+      "name": "building",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.2325255125761032,
+      "rms": 0.009539775654393666,
+      "early": 30.18471254722291,
+      "tail": 0,
+      "resumed": 0.1473836600780487,
+      "finite": true,
+      "leftEnergy": 1.3102955299423282e-31,
+      "rightEnergy": 34.94681070188625
+    },
+    {
+      "name": "road",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.24582286179065704,
+      "rms": 0.009459888589643748,
+      "early": 29.915718029103004,
+      "tail": 0,
+      "resumed": 0.14474573731422424,
+      "finite": true,
+      "leftEnergy": 1.2884423145960784e-31,
+      "rightEnergy": 34.36396497733324
+    },
+    {
+      "name": "night",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.21879583597183228,
+      "rms": 0.022909715700866994,
+      "early": 131.03324142330905,
+      "tail": 0,
+      "resumed": 0.18179038166999817,
+      "finite": true,
+      "leftEnergy": 100.77217411095393,
+      "rightEnergy": 100.77217411095393
+    },
+    {
+      "name": "salvo",
+      "active": {
+        "voices": 24,
+        "maxVoices": 24,
+        "events": 6,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 24,
+        "maxVoices": 24,
+        "events": 6,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.9126666784286499,
+      "rms": 0.1064456697972124,
+      "early": 2416.2581624529926,
+      "tail": 0,
+      "resumed": 0.7789742946624756,
+      "finite": true,
+      "leftEnergy": 2175.490678766818,
+      "rightEnergy": 2175.490678766818
+    },
+    {
+      "name": "full-mix",
+      "active": {
+        "voices": 24,
+        "maxVoices": 24,
+        "events": 6,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 24,
+        "maxVoices": 24,
+        "events": 6,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0.9043365120887756,
+      "rms": 0.12268642221777237,
+      "early": 2551.9750233277045,
+      "tail": 0,
+      "resumed": 0.7983366847038269,
+      "finite": true,
+      "leftEnergy": 2889.975973746722,
+      "rightEnergy": 2889.975973746722
+    },
+    {
+      "name": "pause",
+      "active": {
+        "voices": 3,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": false
+      },
+      "peak": 0,
+      "rms": 0,
+      "early": 0,
+      "tail": 0,
+      "resumed": 0,
+      "finite": true,
+      "leftEnergy": 0,
+      "rightEnergy": 0
+    },
+    {
+      "name": "resume-tail",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 4,
+        "disposed": false
+      },
+      "peak": 0.4867785573005676,
+      "rms": 0.024143111843132403,
+      "early": 223.82970219648007,
+      "tail": 0,
+      "resumed": 0,
+      "finite": true,
+      "leftEnergy": 111.91485109824004,
+      "rightEnergy": 111.91485109824004
+    },
+    {
+      "name": "preview",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 2,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 4,
+        "disposed": false
+      },
+      "peak": 0.15862709283828735,
+      "rms": 0.01163086532790909,
+      "early": 48.80900892303244,
+      "tail": 0,
+      "resumed": 0.12700437009334564,
+      "finite": true,
+      "leftEnergy": 25.973189428983897,
+      "rightEnergy": 25.973189428983897
+    },
+    {
+      "name": "dispose",
+      "active": {
+        "voices": 4,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 4,
+        "disposed": true
+      },
+      "peak": 0,
+      "rms": 0,
+      "early": 0,
+      "tail": 0,
+      "resumed": 0,
+      "finite": true,
+      "leftEnergy": 0,
+      "rightEnergy": 0
+    },
+    {
+      "name": "muted",
+      "active": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "stopped": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "peak": 0,
+      "rms": 0,
+      "early": 0,
+      "tail": 0,
+      "resumed": 0,
+      "finite": true,
+      "leftEnergy": 0,
+      "rightEnergy": 0
+    }
+  ],
+  "errors": [],
+  "limitations": "Deterministic OfflineAudioContext numerical rendering; no human listening, physical speakers or headphones."
+}

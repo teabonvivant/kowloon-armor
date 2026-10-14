@@ -1,0 +1,113 @@
+{
+  "artifactSha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "browser": "141.0.7390.37",
+  "checks": [
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "touch": false,
+      "drawnBefore": 325,
+      "drawnAfter": 493,
+      "journal": "0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash"
+      ]
+    },
+    {
+      "viewport": [
+        1280,
+        577
+      ],
+      "touch": false,
+      "drawnBefore": 343,
+      "drawnAfter": 517,
+      "journal": "0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash"
+      ]
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "touch": true,
+      "drawnBefore": 340,
+      "drawnAfter": 514,
+      "journal": "0:07 主炮發射\n0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash",
+        "three CDP touches drive/aim/fire",
+        "release brakes",
+        "clear touch aim centre"
+      ]
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "drawnBefore": 254,
+      "drawnAfter": 385,
+      "journal": "0:07 主炮發射\n0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash",
+        "three CDP touches drive/aim/fire",
+        "release brakes",
+        "clear touch aim centre"
+      ]
+    },
+    {
+      "viewport": [
+        1024,
+        768
+      ],
+      "touch": true,
+      "drawnBefore": 304,
+      "drawnAfter": 464,
+      "journal": "0:07 主炮發射\n0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash",
+        "three CDP touches drive/aim/fire",
+        "release brakes",
+        "clear touch aim centre"
+      ]
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "method": "Final standalone HTML, offline unless publicURL. Test-only rAF clock freezes exact firing moments, drawing only the last frame of each accelerated input batch; no production game debug interface. CDP touch input; not physical devices, continuous rendering or a benchmark."
+}

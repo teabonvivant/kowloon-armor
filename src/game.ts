@@ -1,8 +1,11 @@
 import { Vector3 } from 'three';
-import type { Scene } from 'three';
+import type { PerspectiveCamera, Scene } from 'three';
 import { advanceEnemy, createActor, drivePlayer } from './actors';
 import type { Actor } from './actors';
 import { Combat } from './combat';
+import type { Contact } from './combat';
+import { DEFAULT_EFFECTS } from './effect-math';
+import type { EffectOptions } from './effect-math';
 import { DIFFICULTIES, encounterSpawns, waveSize } from './challenges';
 import type { Difficulty } from './challenges';
 import { MISSIONS } from './data/missions';
@@ -25,7 +28,8 @@ export type GamePhase = 'garage' | 'playing' | 'paused' | 'victory' | 'defeat';
 export type CameraMode = 'chase' | 'driver' | 'gunner';
 export interface GameEvents {
   readonly shot: () => void; readonly hit: (damage: number, killed: boolean, enemy: boolean, impact?: Impact) => void;
-  readonly cannon?: (position: Vector3, enemy: boolean) => void; readonly ready?: () => void;
+  readonly cannon?: (position: Vector3, enemy: boolean, calibre: number) => void; readonly ready?: () => void;
+  readonly contact?: (contact: Contact) => void;
   readonly trained?: () => void;
   readonly finish: (victory: boolean) => void; readonly notify: (message: string) => void;
 }
@@ -48,13 +52,16 @@ export class Game {
   readonly journal: { time: number; message: string }[] = [];
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
+  private effectOptions: EffectOptions = { ...DEFAULT_EFFECTS };
+  private readonly exhaust = new Vector3();
   private readonly actors: Actor[] = [];
   private readonly effects: Effects; private readonly combat: Combat;
   constructor(private readonly scene: Scene, readonly world: WorldData, private readonly events: GameEvents) {
     this.player = createActor(firstTank(), 0, 100); scene.add(this.player.visual.root);
     this.effects = new Effects(scene);
     this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; this.log('主炮發射'); events.shot(); },
-      cannon: (position, enemy) => events.cannon?.(position, enemy),
+      cannon: (position, enemy, calibre) => events.cannon?.(position, enemy, calibre),
+      contact: contact => events.contact?.(contact),
       hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++;
           this.report.dealt += damage; if (impact.face !== 'front') this.report.flankingHits++; }
         else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; this.report.received += damage; }
@@ -111,6 +118,7 @@ export class Game {
   }
   update(dt: number, input: InputFrame): void {
     if (this.phase !== 'playing') return;
+    this.effects.observe(this.player.visual.root.position);
     this.elapsed += dt; this.scope = input.scope && !input.observe;
     this.damageTimer = Math.max(0, this.damageTimer - dt);
     if (input.observe) {
@@ -121,6 +129,8 @@ export class Game {
     if (input.toggleCamera) this.cycleCamera();
     const actors = this.actors;
     actors.length = 0; actors.push(this.player, ...this.enemies);
+    for (const actor of actors) { actor.reducedMotion = this.effectOptions.reducedMotion;
+      if (!actor.alive) actor.visual.wreckAge += dt; }
     const previousCooldown = this.player.cooldown;
     const previousX = this.player.visual.root.position.x, previousZ = this.player.visual.root.position.z;
     drivePlayer(this.player, this.observing ? { ...input, aimX: 0, aimY: 0, pointerX: 0, pointerY: 0 } : input, dt, this.world.obstacles, actors);
@@ -159,10 +169,13 @@ export class Game {
     this.dustTimer += dt;
     if (this.dustTimer >= .15) {
       this.dustTimer = 0;
-      for (const actor of actors) if (actor.alive && Math.abs(actor.speed) > 3) this.effects.dust(actor.visual.root.position, actor.yaw, actor.speed);
+      for (const actor of actors) if (actor.alive && Math.abs(actor.speed) > 3) this.effects.dust(actor.visual.root.position, actor.yaw, actor.speed, actor.leftTrack <= 0, actor.rightTrack <= 0);
       for (const actor of actors) {
         showTankDamage(actor.visual, actor.hp / actor.maxHp);
-        if (actor.hp < actor.maxHp * .35) this.effects.damage(actor.visual.root.position, !actor.alive);
+        if (actor.hp < actor.maxHp * .65) {
+          this.exhaust.set(Math.sin(actor.yaw) * 2, 2.1, Math.cos(actor.yaw) * 2).add(actor.visual.root.position);
+          this.effects.damage(this.exhaust, actor.hp / actor.maxHp, actor.visual.wreckAge);
+        }
       }
     }
     this.effects.update(dt);
@@ -209,6 +222,11 @@ export class Game {
     this.supply = choice; return true;
   }
   private clearEnemies(): void { for (const enemy of this.enemies) { this.scene.remove(enemy.visual.root); disposeTank(enemy.visual); } this.enemies.length = 0; }
+  configureEffects(options: EffectOptions): void { this.effectOptions = { ...options }; this.effects.configure(options); this.combat.lowFlash(options.lowFlash); }
+  touchEffects(mobile: boolean): void { if (this.effectOptions.mobile !== mobile) this.configureEffects({ ...this.effectOptions, mobile }); }
+  prepareEffects(camera: PerspectiveCamera, height: number): void { this.effects.prepare(camera, height, !this.observing && (this.scope || this.cameraMode !== 'chase')); }
+  effectStats(): ReturnType<Effects['stats']> & { projectiles: number } { return { ...this.effects.stats(), projectiles: this.combat.stats().active }; }
+  dispose(): void { this.clearEnemies(); this.combat.dispose(); this.effects.dispose(); this.player.visual.root.removeFromParent(); disposeTank(this.player.visual); }
   get fireSolution(): ReturnType<typeof fireSolution> { return fireSolution(this.player, this.enemies, this.world.obstacles); }
   get target(): Actor | undefined { return this.fireSolution.target; }
   get threats(): number { return imminentThreats(this.player, this.enemies, this.world.obstacles); }

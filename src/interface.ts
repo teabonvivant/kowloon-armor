@@ -132,7 +132,6 @@ export class Interface {
     else { this.storageStatus = 'unsaved'; this.notify('戰績未能寫入瀏覽器，離開前可到「戰績」匯出備份。'); }
   }
   hit(damage: number, killed: boolean, enemy: boolean, impact?: Impact): void {
-    this.audio.hit(impact?.zone.endsWith('Track'));
     if (enemy) {
       const location = impact ? `${FACE_NAMES[impact.face]}${ZONE_NAMES[impact.zone]}` : '裝甲';
       this.notify(killed ? `擊破敵方坦克 · ${location}` : `${location}命中 · ${damage} 傷害${impact?.zone.endsWith('Track') ? ' · 履帶受損' : ''}`);
@@ -279,6 +278,8 @@ export class Interface {
   }
   private applyComfort(): void {
     this.input.touch.configure(this.preferences);
+    this.game.configureEffects({ quality: this.preferences.quality, mobile: this.input.touch.enabled,
+      reducedMotion: this.preferences.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches, lowFlash: this.preferences.lowFlash });
     this.input.scopeSensitivity = this.preferences.scopeSensitivity;
     this.view.chaseDistance = this.preferences.chaseDistance; this.view.chaseFov = this.preferences.chaseFov;
     this.view.shakeStrength = this.preferences.shakeStrength; this.view.diagnosticsEnabled = this.preferences.diagnostics;

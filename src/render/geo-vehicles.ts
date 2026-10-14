@@ -73,7 +73,7 @@ export function createParkedVehicles(group: THREE.Group): readonly Obstacle[] {
     trim.finish(visual);
     group.add(visual);
     const rotated = Math.abs(Math.sin(vehicle.yaw)) > 0.5;
-    obstacles.push({ x: vehicle.x, z: vehicle.z, halfX: (rotated ? size[2] : size[0]) / 2, halfZ: (rotated ? size[0] : size[2]) / 2 });
+    obstacles.push({ x: vehicle.x, z: vehicle.z, halfX: (rotated ? size[2] : size[0]) / 2, halfZ: (rotated ? size[0] : size[2]) / 2, surface: 'metal' });
   }
   return obstacles;
 }

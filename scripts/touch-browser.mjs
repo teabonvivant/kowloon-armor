@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 
 const evidence = '.omo/evidence/touch';
 const framing = process.argv.includes('--framing');
+const captureRendering = process.env.EFFECTS_FUNCTIONAL_RENDER === '1';
 await mkdir(evidence, { recursive: true });
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--disable-gpu-sandbox'] });
 const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1, reducedMotion: 'reduce' });
@@ -14,11 +15,26 @@ await context.setOffline(true);
 await context.addInitScript(() => {
   if (!localStorage.getItem('kowloon-armor-settings')) localStorage.setItem('kowloon-armor-settings', JSON.stringify({ quality: 'low', volume: 0, reducedMotion: true }));
 });
+if (captureRendering) await context.addInitScript(() => {
+  window.functionalPaint = false;
+  for (const key of ['clear', 'drawElements', 'drawElementsInstanced', 'drawArrays', 'drawArraysInstanced']) {
+    const original = WebGL2RenderingContext.prototype[key];
+    WebGL2RenderingContext.prototype[key] = function (...args) { if (window.functionalPaint) return original.apply(this, args); };
+  }
+});
 const page = await context.newPage(); page.setDefaultTimeout(120000);
 const errors = [], requests = [], checks = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => { if (/^https?:/.test(request.url())) requests.push(request.url()); });
 const check = (name, data = true) => { checks.push({ name, data }); console.log(name, JSON.stringify(data)); };
+async function capture(name) {
+  if (captureRendering) await page.evaluate(async () => {
+    window.functionalPaint = true; await new Promise(requestAnimationFrame); window.functionalPaint = false;
+    const gl = document.querySelector('#world').getContext('webgl2');
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+  });
+  await page.screenshot({ path: `${evidence}/${name}.png` });
+}
 const cdp = await context.newCDPSession(page);
 const fingers = new Map();
 async function touch(type, id, x, y) {
@@ -30,7 +46,10 @@ async function center(selector) {
   const box = await page.locator(selector).boundingBox(); assert.ok(box, selector);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2, box };
 }
-async function resume() { if (await page.locator('#modal').evaluate(modal => modal.open)) await page.locator('#modal [data-action="close"]').first().tap(); }
+async function resume() {
+  if (await page.locator('#modal').evaluate(modal => modal.open)) await page.locator('#modal [data-action="close"]').first().tap();
+  await page.locator('#touch-controls').waitFor();
+}
 try {
   await page.goto(pathToFileURL(resolve('九龍裝甲行動.html')).href);
   await page.locator('.garage').waitFor();
@@ -41,7 +60,7 @@ try {
   assert.equal(await page.locator('.battle-keybar').isVisible(), false);
   assert.equal(await page.locator('.ammo-panel').isVisible(), false);
   check('offline phone automatically selects touch and removes redundant HUD');
-  await page.screenshot({ path: `${evidence}/initial-landscape.png` });
+  await capture('initial-landscape');
   if (!framing) {
   await page.locator('.compact-map').tap();
   assert.equal(await page.locator('#touch-controls').isVisible(), false);
@@ -88,7 +107,7 @@ try {
     for (const [index, first] of layout.rectangles.entries()) for (const second of layout.rectangles.slice(index + 1)) {
       assert.ok(first.x + first.width <= second.x || second.x + second.width <= first.x || first.y + first.height <= second.y || second.y + second.height <= first.y, `${first.selector} overlaps ${second.selector}`);
     }
-    await page.screenshot({ path: `${evidence}/touch-${width}x${height}.png` }); layouts.push(layout);
+    await capture(`touch-${width}x${height}`); layouts.push(layout);
   }
   check('seven phone/tablet viewports: clear center, controls >=44px, no overlapping controls or overflow', layouts);
   if (!framing) {
@@ -98,12 +117,15 @@ try {
   check('touch settings panel accepts handedness change');
   await page.locator('#touchInvert').check(); await page.locator('#touchAutoBrake').uncheck();
   await page.locator('#touchSensitivity').press('End');
+  const savedBeforeReload = await page.evaluate(() => ({ settings: JSON.parse(localStorage.getItem('kowloon-armor-settings')), status: document.querySelector('#settings-save-status')?.textContent }));
+  console.log('saved touch settings before reload', JSON.stringify({ ...savedBeforeReload, errors }));
+  assert.equal(savedBeforeReload.settings.touchHand, 'left');
   await page.reload(); await page.locator('.garage').waitFor();
   const settings = await page.evaluate(() => JSON.parse(localStorage.getItem('kowloon-armor-settings')));
   assert.equal(settings.touchHand,'left'); assert.equal(settings.touchInvert,true); assert.equal(settings.touchAutoBrake,false); assert.equal(settings.touchSensitivity,2);
   await page.locator('[data-mode="drive"]').tap(); await page.locator('[data-action="start"]').tap();
   assert.ok((await center('#touch-fire')).x < (await center('#touch-stick')).x);
-  await page.screenshot({ path: `${evidence}/left-handed.png` });
+  await capture('left-handed');
   check('left-handed controls and independent touch settings survive reload', settings);
   await page.setViewportSize({ width:390,height:844 });
   await page.locator('#modal[open]').waitFor(); assert.equal(await page.locator('#touch-controls').isVisible(), false);
@@ -135,5 +157,6 @@ try {
   assert.deepEqual(errors, []); assert.deepEqual(requests, []);
   check('no JavaScript errors or external asset requests');
   const sha256 = createHash('sha256').update(await readFile('九龍裝甲行動.html')).digest('hex');
-  await writeFile(`${evidence}/${framing ? 'framing' : 'browser'}.json`, JSON.stringify({ sha256, checks, errors, requests },null,2));
+  await writeFile(`${evidence}/${framing ? 'framing' : 'browser'}.json`, JSON.stringify({ sha256, checks, errors, requests,
+    rendering: captureRendering ? 'Normal simulation clock; WebGL submits only for screenshots with synchronous readback. Functional regression, not continuous-render performance.' : 'Normal continuous WebGL rendering.' },null,2));
 } finally { await browser.close(); }

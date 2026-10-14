@@ -1,0 +1,1147 @@
+{
+  "browser": "141.0.7390.37",
+  "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "checks": [
+    {
+      "id": "R1",
+      "name": "actual cannon emits aligned muzzle, projectile and immediate recoil",
+      "data": {
+        "effects": {
+          "active": 10,
+          "smoke": 3,
+          "dust": 2,
+          "flash": 4,
+          "sparks": 0,
+          "debris": 0,
+          "marks": 0,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 1000,
+          "radiance": 2.14,
+          "projectiles": 1
+        },
+        "contacts": [],
+        "root": [
+          0,
+          0,
+          100
+        ],
+        "barrel": [
+          0,
+          0.28,
+          -1.2491706099081639
+        ],
+        "body": [
+          0,
+          0,
+          0,
+          "XYZ"
+        ],
+        "camera": [
+          0.0000921631853003646,
+          8.199998771157528,
+          115
+        ],
+        "render": {
+          "frame": 2,
+          "calls": 196,
+          "triangles": 373760,
+          "points": 0,
+          "lines": 0
+        },
+        "memory": {
+          "geometries": 14,
+          "textures": 26,
+          "programs": 12
+        },
+        "hp": 525
+      }
+    },
+    {
+      "id": "R2",
+      "name": "ordinary swept armour contact has sparks, mark and no lethal flag",
+      "data": {
+        "effects": {
+          "active": 21,
+          "smoke": 6,
+          "dust": 2,
+          "flash": 0,
+          "sparks": 10,
+          "debris": 2,
+          "marks": 1,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 1,
+          "markX": 4.923423981996022e-18,
+          "minDebrisY": 2.7122040269003453,
+          "radiance": 0,
+          "projectiles": 0
+        },
+        "contacts": [
+          {
+            "kind": "armor",
+            "destroyed": false,
+            "position": [
+              0,
+              2.4888004399057353,
+              66.9505223880597
+            ],
+            "normal": [
+              3.2162452993532727e-16,
+              0,
+              1
+            ]
+          }
+        ],
+        "root": [
+          0,
+          0,
+          100
+        ],
+        "barrel": [
+          0,
+          0.28,
+          -1.0562181145474587
+        ],
+        "body": [
+          0.005567013417780764,
+          0,
+          0,
+          "XYZ"
+        ],
+        "camera": [
+          0.0000921631853003646,
+          8.199998771157528,
+          115
+        ],
+        "render": {
+          "frame": 4,
+          "calls": 197,
+          "triangles": 373704,
+          "points": 80,
+          "lines": 0
+        },
+        "memory": {
+          "geometries": 19,
+          "textures": 26,
+          "programs": 14
+        },
+        "hp": 337
+      }
+    },
+    {
+      "id": "R3",
+      "name": "pause freezes particles, projectiles, camera and recoil",
+      "data": {
+        "active": 21,
+        "smoke": 6,
+        "dust": 2,
+        "flash": 0,
+        "sparks": 10,
+        "debris": 2,
+        "marks": 1,
+        "capacity": {
+          "smoke": 48,
+          "sparks": 32,
+          "debris": 16,
+          "marks": 16,
+          "flash": 12,
+          "dust": 32
+        },
+        "resources": 14,
+        "anchors": 1,
+        "markX": 4.923423981996022e-18,
+        "minDebrisY": 2.7122040269003453,
+        "radiance": 0,
+        "projectiles": 0
+      }
+    },
+    {
+      "id": "R4",
+      "name": "lethal contact, staged fire/smoke and eventual wreck cooling",
+      "data": {
+        "destroyed": {
+          "effects": {
+            "active": 48,
+            "smoke": 15,
+            "dust": 2,
+            "flash": 6,
+            "sparks": 16,
+            "debris": 7,
+            "marks": 2,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 1,
+            "markX": -0.00522974470801107,
+            "minDebrisY": 2.6959840736958625,
+            "radiance": 4,
+            "projectiles": 0
+          },
+          "contacts": [
+            {
+              "kind": "armor",
+              "destroyed": true,
+              "position": [
+                0,
+                2.4887997782019347,
+                66.94973661479666
+              ],
+              "normal": [
+                0.00010680570641484337,
+                0,
+                0.9999999942962705
+              ]
+            }
+          ],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.0679848734948896
+          ],
+          "body": [
+            0.005008233920528777,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            3.9507329989397176e-10,
+            8.199999999994732,
+            115
+          ],
+          "render": {
+            "frame": 11,
+            "calls": 198,
+            "triangles": 374472,
+            "points": 80,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 26,
+            "programs": 14
+          },
+          "hp": 0
+        },
+        "cooled": {
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          },
+          "contacts": [
+            {
+              "kind": "armor",
+              "destroyed": true,
+              "position": [
+                0,
+                2.4887997782019347,
+                66.94973661479666
+              ],
+              "normal": [
+                0.00010680570641484337,
+                0,
+                0.9999999942962705
+              ]
+            }
+          ],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.42
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            3.9507329989397176e-10,
+            8.199999999994732,
+            115
+          ],
+          "render": {
+            "frame": 13,
+            "calls": 192,
+            "triangles": 371432,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 26,
+            "programs": 14
+          },
+          "hp": 0
+        }
+      }
+    },
+    {
+      "id": "R5",
+      "name": "material-specific oriented contacts use fixed spark/debris/mark pools",
+      "data": [
+        {
+          "kind": "track",
+          "active": 14,
+          "smoke": 2,
+          "dust": 0,
+          "flash": 0,
+          "sparks": 6,
+          "debris": 5,
+          "marks": 1,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 2.6136089695963913,
+          "radiance": 0,
+          "projectiles": 0
+        },
+        {
+          "kind": "road",
+          "active": 15,
+          "smoke": 5,
+          "dust": 0,
+          "flash": 0,
+          "sparks": 3,
+          "debris": 6,
+          "marks": 1,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 0.7288944435455098,
+          "radiance": 0,
+          "projectiles": 0
+        },
+        {
+          "kind": "building",
+          "active": 15,
+          "smoke": 5,
+          "dust": 0,
+          "flash": 0,
+          "sparks": 3,
+          "debris": 6,
+          "marks": 1,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 2.6200834287873658,
+          "radiance": 0,
+          "projectiles": 0
+        },
+        {
+          "kind": "metal",
+          "active": 15,
+          "smoke": 2,
+          "dust": 0,
+          "flash": 0,
+          "sparks": 10,
+          "debris": 2,
+          "marks": 1,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 14,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 2.721218824384083,
+          "radiance": 0,
+          "projectiles": 0
+        }
+      ]
+    },
+    {
+      "id": "R6",
+      "name": "actual swept shots hit building, road and a track at their calculated contacts",
+      "data": [
+        {
+          "kind": "building",
+          "effects": {
+            "active": 23,
+            "smoke": 8,
+            "dust": 2,
+            "flash": 2,
+            "sparks": 3,
+            "debris": 6,
+            "marks": 1,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": -12.965,
+            "minDebrisY": 2.609672488707218,
+            "radiance": 1.5,
+            "projectiles": 0
+          },
+          "contacts": [
+            {
+              "kind": "building",
+              "destroyed": false,
+              "position": [
+                -13,
+                2.499421052631579,
+                100
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.003214737805938
+          ],
+          "body": [
+            -7.680176112462913e-19,
+            0,
+            0.012040972259263233,
+            "XYZ"
+          ],
+          "camera": [
+            11.949926576662376,
+            8.2,
+            100.0000921631853
+          ],
+          "render": {
+            "frame": 21,
+            "calls": 127,
+            "triangles": 255640,
+            "points": 80,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "kind": "road",
+          "effects": {
+            "active": 21,
+            "smoke": 8,
+            "dust": 2,
+            "flash": 0,
+            "sparks": 3,
+            "debris": 6,
+            "marks": 1,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 0.7387401045113365,
+            "radiance": 0,
+            "projectiles": 0
+          },
+          "contacts": [
+            {
+              "kind": "road",
+              "destroyed": false,
+              "position": [
+                0,
+                0.2,
+                80.94559023965087
+              ],
+              "normal": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.3280275960760932,
+            -1.0216929833348745
+          ],
+          "body": [
+            -0.0016487110128594992,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            4.5112580621261503e-10,
+            8.2,
+            114.99999999943374
+          ],
+          "render": {
+            "frame": 25,
+            "calls": 197,
+            "triangles": 373704,
+            "points": 80,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "kind": "track",
+          "effects": {
+            "active": 22,
+            "smoke": 5,
+            "dust": 2,
+            "flash": 2,
+            "sparks": 6,
+            "debris": 5,
+            "marks": 1,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 1,
+            "markX": 2.036666666666663,
+            "minDebrisY": 1.1597543970447763,
+            "radiance": 1.5,
+            "projectiles": 0
+          },
+          "contacts": [
+            {
+              "kind": "track",
+              "destroyed": false,
+              "position": [
+                2.036666666666663,
+                1.0616958411684227,
+                88.25
+              ],
+              "normal": [
+                -1.2246467991473532e-16,
+                0,
+                1
+              ]
+            }
+          ],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.3298942837027422,
+            -1.0062119923971173
+          ],
+          "body": [
+            -0.012358402646314217,
+            0,
+            -0.0020564382003466857,
+            "XYZ"
+          ],
+          "camera": [
+            -2.561785112790618,
+            8.2,
+            114.77962166005425
+          ],
+          "render": {
+            "frame": 29,
+            "calls": 192,
+            "triangles": 369960,
+            "points": 80,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 442
+        }
+      ]
+    },
+    {
+      "id": "R7",
+      "name": "reduced motion, low flash and mobile budgets apply to actual firing",
+      "data": {
+        "before": [
+          -0.000015740151736665098,
+          8.2,
+          114.99999864594868
+        ],
+        "after": {
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0.3852,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -0.000008638378426967403,
+            8.2,
+            114.99999925688088
+          ],
+          "render": {
+            "frame": 32,
+            "calls": 196,
+            "triangles": 373760,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        }
+      }
+    },
+    {
+      "id": "R8",
+      "name": "five view contexts retain readable aim with bounded directional kick",
+      "data": [
+        {
+          "mode": "chase",
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 2.14,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -2.6593076663259865e-16,
+            8.26986391101944,
+            115.03143875995875
+          ],
+          "render": {
+            "frame": 35,
+            "calls": 196,
+            "triangles": 373760,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "mode": "driver",
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 2.14,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -8.18662590884175e-27,
+            1.5244859383624352,
+            97.6110907464927
+          ],
+          "render": {
+            "frame": 38,
+            "calls": 172,
+            "triangles": 357666,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "mode": "gunner",
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 2.14,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -2.5202365495211002e-37,
+            2.6598087549120244,
+            94.20450564163725
+          ],
+          "render": {
+            "frame": 41,
+            "calls": 158,
+            "triangles": 348526,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "mode": "scope",
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 2.14,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -7.758498234024206e-48,
+            2.654219642065872,
+            94.20199054073588
+          ],
+          "render": {
+            "frame": 44,
+            "calls": 137,
+            "triangles": 312768,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        },
+        {
+          "mode": "observe",
+          "effects": {
+            "active": 10,
+            "smoke": 3,
+            "dust": 2,
+            "flash": 4,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 48,
+              "sparks": 32,
+              "debris": 16,
+              "marks": 16,
+              "flash": 12,
+              "dust": 32
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 2.14,
+            "projectiles": 1
+          },
+          "contacts": [],
+          "root": [
+            0,
+            0,
+            100
+          ],
+          "barrel": [
+            0,
+            0.28,
+            -1.2491706099081639
+          ],
+          "body": [
+            0,
+            0,
+            0,
+            "XYZ"
+          ],
+          "camera": [
+            -2.3884382939638166e-58,
+            8.269863910848585,
+            115.03143875931843
+          ],
+          "render": {
+            "frame": 47,
+            "calls": 196,
+            "triangles": 373760,
+            "points": 0,
+            "lines": 0
+          },
+          "memory": {
+            "geometries": 19,
+            "textures": 28,
+            "programs": 14
+          },
+          "hp": 525
+        }
+      ]
+    },
+    {
+      "id": "R9",
+      "name": "eight real firing/destruction/restart cycles have stable warmed renderer resources",
+      "data": [
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        },
+        {
+          "geometries": 19,
+          "textures": 28,
+          "programs": 14
+        }
+      ]
+    },
+    {
+      "id": "R10",
+      "name": "opaque wall depth-occludes smoke/flame in framebuffer",
+      "data": {
+        "before": [
+          19,
+          42,
+          48,
+          255
+        ],
+        "after": [
+          19,
+          42,
+          48,
+          255
+        ]
+      }
+    },
+    {
+      "id": "R11",
+      "name": "dispose releases all transient render objects idempotently",
+      "data": {
+        "effects": {
+          "active": 0,
+          "smoke": 0,
+          "dust": 0,
+          "flash": 0,
+          "sparks": 0,
+          "debris": 0,
+          "marks": 0,
+          "capacity": {
+            "smoke": 48,
+            "sparks": 32,
+            "debris": 16,
+            "marks": 16,
+            "flash": 12,
+            "dust": 32
+          },
+          "resources": 0,
+          "anchors": 0,
+          "markX": 0,
+          "minDebrisY": 1000,
+          "radiance": 0,
+          "projectiles": 0
+        },
+        "remaining": []
+      }
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "method": "Offline source harness uses actual Game/Combat/Effects/View; controlled targets/HP for exact contact and destruction captures. Material gallery and occlusion probes directly invoke Effects. Not gameplay difficulty or physical-device validation."
+}

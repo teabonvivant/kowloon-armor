@@ -5,6 +5,7 @@ import { wallFraction } from './math';
 import { createWorld } from './render/world';
 import { AdaptiveResolution } from './resolution';
 import { FrameDiagnostics } from './operations';
+import { cameraKick } from './effect-math';
 
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
@@ -24,7 +25,10 @@ export class View {
   private readonly desired = new Vector3();
   private readonly look = new Vector3();
   private readonly aim = new Vector3();
-  private orbit = 0; private shake = 0; private elapsed = 0;
+  private orbit = 0; private shotAge = 2; private elapsed = 0;
+  private readonly stablePosition = new Vector3(15, 8, 115);
+  private lastView = '';
+  private lastElapsed = 0;
   private garageOffset = { horizontal: 0, vertical: 0 };
   private garageFov = 48;
   private framingDirty = true; private cameraInGarage = false;
@@ -67,7 +71,7 @@ export class View {
     this.reducedMotion = enabled || matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.body.classList.toggle('reduce-motion', this.reducedMotion);
   }
-  recoil(): void { if (!this.reducedMotion) this.shake = 0.28 * this.shakeStrength; }
+  recoil(): void { this.shotAge = 0; }
   lighting(preset: 'day' | 'dusk'): void {
     const dusk = preset === 'dusk', sky = dusk ? 0x666a85 : 0x8cabb8;
     this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky, dusk ? .0038 : .0033);
@@ -93,6 +97,7 @@ export class View {
     this.resize();
   }
   render(game: Game, dt: number): void {
+    if (game.phase === 'paused' || game.phase === 'victory' || game.phase === 'defeat') dt = 0;
     this.elapsed += dt;
     const actor = game.player, p = actor.visual.root.position;
     const desired = this.desired, look = this.look;
@@ -137,14 +142,22 @@ export class View {
     }
     const stop = game.mode === 'drive' && !game.training && game.phase !== 'garage' ? game.tour.destination : undefined;
     if (stop) { this.zone.visible = true; this.zone.position.set(stop.x, .06, stop.z); this.zone.scale.setScalar(10); this.zone.material.color.setHex(0xffd18b); }
-    this.camera.position.lerp(desired, game.phase === 'garage' ? 1 - Math.exp(-dt * 4) : 1 - Math.exp(-dt * 12));
-    this.shake = Math.max(0, this.shake - dt);
-    if (this.shake > 0) this.camera.position.y += (Math.random() - 0.5) * this.shake;
+    const viewKey = `${game.cameraMode}/${game.scope}/${game.observing}/${inGarage}`;
+    if (viewKey !== this.lastView || game.elapsed < this.lastElapsed) { this.shotAge = 2; this.lastView = viewKey; }
+    this.lastElapsed = game.elapsed;
+    this.stablePosition.lerp(desired, game.phase === 'garage' ? 1 - Math.exp(-dt * 4) : 1 - Math.exp(-dt * 12));
+    this.camera.position.copy(this.stablePosition);
+    this.shotAge = Math.min(2, this.shotAge + dt);
+    const kick = cameraKick(this.shotAge, game.cameraMode, game.scope, this.scopeZoom, this.shakeStrength, this.reducedMotion);
+    this.camera.position.y += kick;
+    this.camera.position.x += Math.sin(actor.aim) * kick * .45;
+    this.camera.position.z += Math.cos(actor.aim) * kick * .45;
     this.camera.lookAt(look);
     if (Math.abs(fov - this.camera.fov) > .01) {
       this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * 10); this.camera.updateProjectionMatrix();
     }
     this.sun.position.set(p.x - 45, 85, p.z + 65); this.sun.target.position.copy(p);
+    game.prepareEffects(this.camera, this.renderer.domElement.height);
     this.renderer.render(this.scene, this.camera);
   }
 }

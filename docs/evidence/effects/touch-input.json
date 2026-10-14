@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "scene drag aims without firing; displacement consumed once",
+    "three fingers independently drive/aim/fire; actual simulation fires once then auto-brakes",
+    "reverse and OS touch cancellation do not leave stuck throttle",
+    "reset while held clears fire and allows a fresh gesture after resume",
+    "quick native fire tap survives release until the next simulation sample",
+    "external keyboard overrides release braking and retains reverse",
+    "actual touch input completes all four training stages through simulation, no forced completion",
+    "desktop override disables touch without breaking right-mouse aim",
+    "orientation change pauses and clears active control"
+  ],
+  "errors": []
+}

@@ -3,9 +3,11 @@ import type { TankSpec } from '../data/tanks';
 import { FAMILY_SHAPES, slopedHull, trackGeometry, wheelGeometry, wheelMaterial } from './geo-tank';
 import { GeometryBatch, glowMaterial, metalMaterial, unitSphere, unitBox } from './materials';
 import { addTankDetails, tankPaint } from './tank-details';
+import { gunProfile, recoilEnvelope } from '../effect-math';
 
 export interface TankVisual {
   readonly root: THREE.Group;
+  readonly body: THREE.Group;
   readonly turret: THREE.Group;
   readonly barrel: THREE.Group;
   readonly wheels: THREE.InstancedMesh;
@@ -15,6 +17,7 @@ export interface TankVisual {
   leftTreadPhase: number;
   rightTreadPhase: number;
   recoil: number;
+  shotAge: number; stroke: number; force: number; shotBearing: number; motionPitch: number; wreckAge: number;
 }
 
 export function disposeTank(visual: TankVisual): void {
@@ -29,6 +32,11 @@ const turretForms = {
   merkava: { geometry: slopedHull, scale: 1, armor: 0.88, rack: 1.45 },
   futuristic: { geometry: slopedHull, scale: 1, armor: 0.9, rack: 1.25 },
 } as const;
+
+const groundGeometry = new THREE.PlaneGeometry(5.6, 8);
+const groundMaterial = new THREE.ShaderMaterial({ transparent: true, depthWrite: false,
+  vertexShader: 'varying vec2 vUV;void main(){vUV=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader: 'varying vec2 vUV;void main(){float a=pow(max(0.,1.-length(vUV*2.-1.)),.65)*.26;gl_FragColor=vec4(.07,.075,.06,a);}' });
 
 export function createTank(spec: TankSpec): TankVisual {
   const root = new THREE.Group();
@@ -136,10 +144,42 @@ export function createTank(spec: TankSpec): TankVisual {
   root.add(turret);
   addTankDetails(root, turret, spec);
   root.scale.z = shape.lengthScale;
+  const body = new THREE.Group(); body.name = 'suspended-body';
+  for (const child of [...root.children]) if (child !== wheels && child !== treads) body.add(child);
+  root.add(body);
+  const grounding = new THREE.Mesh(groundGeometry, groundMaterial); grounding.name = 'contact-shadow';
+  grounding.rotation.x = -Math.PI / 2; grounding.position.y = .04; root.add(grounding);
   wheels.computeBoundingSphere();
-  const visual = { root, turret, barrel, wheels, treads, wheelPhase: 0, rightWheelPhase: 0, leftTreadPhase: 0, rightTreadPhase: 0, recoil: 0 };
+  const visual = { root, body, turret, barrel, wheels, treads, wheelPhase: 0, rightWheelPhase: 0, leftTreadPhase: 0, rightTreadPhase: 0,
+    recoil: 0, shotAge: 2, stroke: .42, force: 1, shotBearing: 0, motionPitch: 0, wreckAge: 0 };
   updateTreads(visual); treads.computeBoundingSphere();
   return visual;
+}
+export function muzzlePosition(visual: TankVisual, target: THREE.Vector3): THREE.Vector3 {
+  visual.root.updateMatrixWorld(true);
+  return visual.barrel.localToWorld(target.set(0, 0, -3.745));
+}
+export function muzzleDirection(visual: TankVisual, target: THREE.Vector3): THREE.Vector3 {
+  visual.root.updateMatrixWorld(true);
+  return target.set(0, 0, -1).transformDirection(visual.barrel.matrixWorld);
+}
+export function kickTank(visual: TankVisual, calibre: number, weight: number, bearing: number): void {
+  const profile = gunProfile(calibre, weight);
+  const residual = recoilEnvelope(visual.shotAge);
+  visual.force = Math.min(1.6, profile.force + visual.force * residual * .25);
+  visual.stroke = Math.min(.65, profile.stroke + visual.stroke * residual * .08);
+  visual.shotAge = .012; visual.shotBearing = bearing;
+  updateTankMotion(visual, 0, visual.barrel.rotation.x, 0, true);
+}
+export function updateTankMotion(visual: TankVisual, dt: number, pitch: number, acceleration: number, reduced: boolean): void {
+  visual.shotAge = Math.min(2, visual.shotAge + dt);
+  visual.recoil = visual.stroke * recoilEnvelope(visual.shotAge);
+  visual.barrel.position.set(0, .28 - Math.sin(pitch) * visual.recoil, -1.42 + Math.cos(pitch) * visual.recoil);
+  const bounce = visual.shotAge < .9 ? Math.sin(visual.shotAge * 23) * Math.exp(-visual.shotAge * 7) * visual.force : 0;
+  visual.motionPitch += (Math.max(-.018, Math.min(.018, -acceleration * .0014)) - visual.motionPitch) * (1 - Math.exp(-dt * 8));
+  visual.body.rotation.x = reduced ? 0 : -bounce * .025 * Math.cos(visual.shotBearing) + visual.motionPitch;
+  visual.body.rotation.z = reduced ? 0 : bounce * .024 * Math.sin(visual.shotBearing);
+  visual.body.position.y = reduced ? 0 : -Math.abs(bounce) * .045;
 }
 const wheelTransform = new THREE.Object3D();
 const damageColor = new THREE.Color();

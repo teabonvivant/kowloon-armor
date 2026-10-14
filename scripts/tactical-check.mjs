@@ -313,19 +313,19 @@ test('pivoting animates opposite track directions without adding a draw for each
   api.disposeTank(tank); assert.equal(released, true);
 });
 
-test('bursts and track dust remain bounded and clear releases transient resources', () => {
+test('bursts and track dust remain bounded, clear reuses pools and dispose releases resources', () => {
   const scene = new api.Scene(), effects = new api.Effects(scene);
   assert.equal(typeof effects.dust, 'function');
   for (let burst = 0; burst < 100; burst++) { effects.burst(new api.Vector3(), true); effects.dust(new api.Vector3(), 0, 12); }
-  const smoke = scene.children.filter(node => node.name === 'combat-smoke');
-  assert.ok(smoke.length <= 20);
+  assert.ok(effects.stats().smoke > 0 && effects.stats().smoke <= effects.stats().capacity.smoke);
   const dust = scene.children.find(node => node.name === 'track-dust');
   assert.equal(dust.geometry.getAttribute('position').count, 96);
   let disposed = 0;
-  for (const particle of smoke) particle.geometry.addEventListener('dispose', () => disposed++);
-  effects.clear(); assert.equal(disposed, smoke.length);
-  assert.equal(scene.children.filter(node => node.name === 'combat-smoke').length, 0);
+  const pooled = scene.children.filter(node => node.geometry);
+  for (const particle of pooled) particle.geometry.addEventListener('dispose', () => disposed++);
+  effects.clear(); assert.equal(disposed, 0); assert.equal(effects.stats().active, 0);
   assert.equal(dust.visible, false);
+  effects.dispose(); assert.equal(disposed, pooled.length);
 });
 
 test('spatial sound uses listener orientation and distance, including coincident sounds', () => {

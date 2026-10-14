@@ -28,5 +28,5 @@ export function addEnemyDetails(visual: TankVisual, role: EnemyRole): void {
       markings.box({ position: [side * 1.25, 4.3, 2.55], scale: [.26, .15, .03] }, color);
     }
   }
-  fittings.finish(group, false); markings.finish(group, false); visual.root.add(group);
+  fittings.finish(group, false); markings.finish(group, false); visual.body.add(group);
 }

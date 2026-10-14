@@ -13,6 +13,7 @@ export interface Obstacle {
   readonly z: number;
   readonly halfX: number;
   readonly halfZ: number;
+  readonly surface?: 'building' | 'metal';
 }
 
 export interface WorldData {
