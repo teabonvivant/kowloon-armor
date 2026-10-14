@@ -1,6 +1,6 @@
 # v1.8 炮火、衝力與接觸特效
 
-基線：`8e059c0`（v1.7）。本文件先於實作建立。目前 99 項已取得指定證據；第 100 項發布待核對。100 項是具體審核／驗收項目（21 項已確認缺陷、79 項表現／驗證缺口），**不是聲稱有 100 個程式錯誤**。B＝已由程式路徑確認的缺陷；E＝表現或驗證缺口。P＝待實作驗證；V＝有指定驗證證據；L＝仍有限制。所有舊證據指此基線的檔案／函式。
+基線：`8e059c0`（v1.7）。本文件先於實作建立。100 項均已取得下列指定證據，包括正常 Pages 網址 SHA256 及開炮；實機等驗收限制另載於驗收紀錄。100 項是具體審核／驗收項目（21 項已確認缺陷、79 項表現／驗證缺口），**不是聲稱有 100 個程式錯誤**。B＝已由程式路徑確認的缺陷；E＝表現或驗證缺口。P＝待實作驗證；V＝有指定驗證證據；L＝仍有限制。所有舊證據指此基線的檔案／函式。
 
 設計：保留 `Combat` 的 190 m/s、重力、射線、裝甲、傷害、裝填和任務規則；視覺炮口與原彈道分離。新增確定性特效數學、固定容量粒子／實例批次、可取消的分層音效。車身反應只改子物件，不推動碰撞根物件。沒有外部素材、全屏炮火閃光、新即時光源或額外陰影貼圖。低畫質及觸控減少發射量；減少動態關閉鏡頭及懸掛震動，低閃光限制局部亮度。
 
@@ -14,7 +14,7 @@
 - [x] `src/render/tank.ts`、`actors.ts`、`combat.ts`、`game.ts`、`view.ts` 接駁後座、彈體、碰撞事件、懸掛及偏好。
 - [x] `src/effect-audio.ts`、`audio.ts`、`main.ts` 接駁口徑／材質音層及取消；OfflineAudioContext 數值驗證。
 - [x] 沿用 Playwright 離線來源／成品模式，建立 `scripts/effects-browser.mjs`、`effects-artifact.mjs`；截取仍在生效的炮口／接觸／毀壞畫面，回歸觸控。
-- [ ] 最終重建後 `pnpm check`、`pnpm build`、`pnpm test` 及適用瀏覽器套件；相同場景基準、資源重複測試、差異自審、SHA256、提交及 Pages 核對。
+- [x] 最終重建後 `pnpm check`、`pnpm build`、`pnpm test` 及適用瀏覽器套件；相同場景基準、資源重複測試、差異自審、SHA256、提交及 Pages 核對。
 
 驗證代碼（完成時記錄實際結果，不能以 build 代替）：M＝effects-check 數學；P＝池及生命週期；C＝Combat／Game 整合；R＝來源瀏覽器渲染；A＝離線音訊；F＝正式 HTML；T＝舊遊戲／觸控／戰役回歸。證據保存 `docs/evidence/effects/`，原始日誌 `.omo/evidence/effects/`。測試採用本機 Chromium／軟件 WebGL；不是實機 FPS、Safari 或真人聆聽驗收。
 
@@ -119,6 +119,6 @@
 | 97 | E | 既有煙霧上限測試不查重開後 renderer memory → 多輪射擊／重開穩定資源 | scripts/effects-browser | R9（八輪） | V |
 | 98 | E | 既有截圖常於效果已消失後 → 固定 17/67/200 ms 等特效時刻截圖 | scripts/effects-browser/artifact | R1/R2/R4/F 截圖 | V |
 | 99 | E | 舊成品 smoke 測試沒有五種 VFX 視窗 → 桌面1440、短桌面、手機橫直、平板 | scripts/effects-artifact | F 五視窗；T 9 組 | V |
-| 100 | E | 缺 effects 專用發布校驗 → 最終 HTML 離線／公開正常 URL 開炮及 SHA256 一致 | evidence/release verification | F 離線；待公開 SHA/開炮 | P |
+| 100 | E | 缺 effects 專用發布校驗 → 最終 HTML 離線／公開正常 URL 開炮及 SHA256 一致 | scripts/effects-artifact.mjs; effects-public-smoke.mjs | F 離線；public.json / public-normal.json / pages.json | V |
 
 驗證欄的完整測試名稱、報告及限制見 [驗收紀錄](effects-validation.md)。`effects`、`combat` 等實作簡寫均指 `src/` 同名 `.ts`；池位於 `src/render/effect-pools.ts`。尚未通過的項目不以「已完成」計數。

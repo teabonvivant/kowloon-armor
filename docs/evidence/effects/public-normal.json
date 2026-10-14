@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-10-14T01:12:51.646Z",
+  "url": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html",
+  "localHash": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "publicHash": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "browser": "141.0.7390.37",
+  "viewport": [
+    1440,
+    900
+  ],
+  "checks": [
+    "normal public URL returns final HTML SHA256",
+    "v1.8 garage boots",
+    "native keyboard input fires and starts reload",
+    "normal continuous browser renderer",
+    "no JavaScript/console errors or external asset requests"
+  ],
+  "reload": "裝填 4.9 s",
+  "errors": [],
+  "requests": [
+    "https://teabonvivant.github.io/kowloon-armor/%E4%B9%9D%E9%BE%8D%E8%A3%9D%E7%94%B2%E8%A1%8C%E5%8B%95.html"
+  ],
+  "method": "Fresh normal browser context, native rAF and unmodified WebGL submission. Low quality, motion enabled, audio muted. Screenshot shows post-shot gameplay; precise flash captures are in public-muzzle-1440x900.png. Software WebGL, not physical hardware."
+}

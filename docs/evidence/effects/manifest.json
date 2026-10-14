@@ -6,7 +6,7 @@
   "artifact": "九龍裝甲行動.html",
   "artifactBytes": 1136831,
   "artifactSha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
-  "audit": { "items": 100, "confirmedBugs": 21, "enhancementGaps": 79, "verified": 99, "publicationPending": 1 },
+  "audit": { "items": 100, "confirmedBugs": 21, "enhancementGaps": 79, "verified": 100, "publicationPending": 0 },
   "validation": {
     "check": "passed",
     "build": "passed",
@@ -23,6 +23,8 @@
     "tacticalBrowserGroups": 8,
     "legacyArtifactGroups": 20,
     "legacyTouchGroups": 8,
+    "publicArtifactViewports": 1,
+    "publicNormalChecks": 5,
     "stableRestartRounds": 8,
     "stableRendererResources": { "geometries": 19, "textures": 28, "programs": 14 },
     "stressSimulationSteps": 72000,
@@ -31,10 +33,20 @@
   "reports": [
     "rules.json", "audio.json", "renderer.json", "artifact.json",
     "touch-input.json", "touch-layout.json", "tactical.json", "legacy-browser.json", "legacy-touch.json",
-    "scene-budget-baseline.json", "scene-budget-final.json", "artifact-budget-baseline.json", "artifact-budget-final.json"
+    "scene-budget-baseline.json", "scene-budget-final.json", "artifact-budget-baseline.json", "artifact-budget-final.json",
+    "public.json", "public-normal.json", "pages.json"
   ],
   "rawLogs": ".omo/evidence/effects/",
-  "publication": { "status": "pending", "url": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html" },
+  "publication": {
+    "status": "verified",
+    "url": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html",
+    "codeCommit": "fcf7f5b91d5c06276ffabbffe73e710718f8d715",
+    "workflow": "https://github.com/teabonvivant/kowloon-armor/actions/runs/38494235972",
+    "verifiedAt": "2026-10-14T01:12:51.646Z",
+    "normalUrlHashMatches": true,
+    "normalBrowserStartupAndShooting": true,
+    "cacheDisabled": false
+  },
   "execution": { "soleExecutor": true, "delegatedAgents": 0, "otherModelInvocations": 0, "usage": null, "usageNote": "CLI/model token usage telemetry unavailable; no estimates." },
   "limits": [
     "Chromium 141 and SwiftShader software WebGL; not physical-device FPS or Safari validation.",

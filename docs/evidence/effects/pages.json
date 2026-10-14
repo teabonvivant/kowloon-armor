@@ -1,0 +1,22 @@
+{
+  "codeCommit": "fcf7f5b91d5c06276ffabbffe73e710718f8d715",
+  "workflow": {
+    "id": 38494235972,
+    "url": "https://github.com/teabonvivant/kowloon-armor/actions/runs/38494235972",
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-14T01:11:04Z"
+  },
+  "pagesBuild": {
+    "status": "built",
+    "commit": "fcf7f5b91d5c06276ffabbffe73e710718f8d715",
+    "createdAt": "2026-10-14T01:10:14Z",
+    "updatedAt": "2026-10-14T01:10:57Z",
+    "error": null
+  },
+  "url": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html",
+  "sha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "verifiedAt": "2026-10-14T01:12:51.646Z",
+  "browserReports": ["public.json", "public-normal.json"],
+  "cachePolicyChanged": false
+}

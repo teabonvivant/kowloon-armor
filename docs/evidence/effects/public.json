@@ -1,0 +1,31 @@
+{
+  "artifactSha256": "25a0c1503e7ce7ac22c7231c0ca6291f0855dc1bf13c468edaafee6aa364f6b9",
+  "browser": "141.0.7390.37",
+  "publicURL": "https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html",
+  "checks": [
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "touch": false,
+      "drawnBefore": 320,
+      "drawnAfter": 488,
+      "journal": "0:01 主炮發射",
+      "checks": [
+        "v1.8 startup",
+        "actual input fire and captured live muzzle",
+        "reload",
+        "pause and map",
+        "return/reset",
+        "all quality options",
+        "reduced motion and low flash"
+      ]
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "https://teabonvivant.github.io/kowloon-armor/%E4%B9%9D%E9%BE%8D%E8%A3%9D%E7%94%B2%E8%A1%8C%E5%8B%95.html"
+  ],
+  "method": "Final standalone HTML, offline unless publicURL. Test-only rAF clock freezes exact firing moments, drawing only the last frame of each accelerated input batch; no production game debug interface. CDP touch input; not physical devices, continuous rendering or a benchmark."
+}

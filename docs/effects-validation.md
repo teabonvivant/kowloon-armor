@@ -1,6 +1,6 @@
 # v1.8 炮火與衝力：驗收紀錄
 
-基線 `8e059c0`（v1.7）；[100 項審核](effects-upgrade.md)逐項分開已確認缺陷與表現／驗證缺口。由單一執行者實作、測試及自審，沒有代理、模型轉交或外部素材。發布核對仍待完成，以下列出已取得的證據。
+基線 `8e059c0`（v1.7）；[100 項審核](effects-upgrade.md)逐項分開已確認缺陷與表現／驗證缺口。由單一執行者實作、測試及自審，沒有代理、模型轉交或外部素材。100 項均有指定證據，公開發布亦已核對；[機器可讀清單](evidence/effects/manifest.json)記錄計數及限制。
 
 ## 成品與範圍
 
@@ -27,6 +27,7 @@
 | 舊戰術瀏覽器套件 | 8/8 組：佔領、防守、敗北／重試、補給、模擬 HOTAS、雙視窗及壓力測試；[tactical.json](evidence/effects/tactical.json) |
 | 舊成品瀏覽器套件 | 20/20：目錄／設定、鍵盤駕駛／瞄準、相機、指標鎖定、暫停、四模式、實際第一關勝利及跨重載解鎖；[legacy-browser.json](evidence/effects/legacy-browser.json)，繪圖模式見下文 |
 | 舊成品觸控套件 | 8/8；正常連續繪圖，三指開炮／放手煞車、七尺寸、四項觸控設定跨重載、左手佈局、旋轉及失焦暫停；[legacy-touch.json](evidence/effects/legacy-touch.json) |
+| 公開成品 | 1 個 1440×900 定格驗收場景，加正常連續渲染 5 項檢查；SHA256、v1.8 啟動及鍵盤開炮通過；[public.json](evidence/effects/public.json)／[public-normal.json](evidence/effects/public-normal.json) |
 
 原始命令輸出存於 `.omo/evidence/effects/`，不是以編譯成功代替視覺驗收。特效來源／成品報告均為零 JavaScript／console 錯誤、零外部網絡請求；舊套件記錄零 pageerror 及外部請求。
 
@@ -100,4 +101,8 @@ R9 的八輪真正射擊／擊毀／返回車庫，暖機後一直維持 **19 �
 
 畫面維持原創程序化風格；煙霧不是體積流體，接地陰影是共用柔邊貼片。彈痕依原有簡化碰撞盒及法線定位，個別精細裝甲或凹凸外牆未必完全貼合；沒有改碰撞盒來遷就效果。實體 iPhone／Android／iPad、Safari、實體 HOTAS、揚聲器及長時間真人操作仍未驗收。音訊峰值通過列出的混音場景，並非對所有硬件輸出作聲學保證。
 
-發布狀態待填：會以正常 Pages URL 比對 HTML SHA256，再驗證公開頁面啟動及開炮；不永久停用快取。
+程式提交 `fcf7f5b91d5c06276ffabbffe73e710718f8d715` 已推送 main，[Pages 工作流程 38494235972](https://github.com/teabonvivant/kowloon-armor/actions/runs/38494235972) 成功，Pages API 回報同一 commit 已 built；[發布紀錄](evidence/effects/pages.json)。2026-10-14 01:12:51 UTC 以[正常遊戲網址](https://teabonvivant.github.io/kowloon-armor/九龍裝甲行動.html)讀取的 HTML SHA256 與上述最終檔案一致。
+
+公開定格套件捕捉[仍在生效的炮口及曳光](evidence/effects/public-muzzle-1440x900.png)，並測試重開、畫質及舒適度。另一個全新瀏覽器 context 保留原生 rAF 及 WebGL，實際按住 Space 後進入裝填，取得[正常遊戲截圖](evidence/effects/public-normal-play.png)；該圖在開炮後，不能用作炮口瞬間驗收。兩者零 JavaScript／console 錯誤，只有遊戲 HTML 本身的網絡請求。沒有加 cache-busting 查詢、停用快取或改動使用者瀏覽器設定。
+
+執行紀錄已追加至 `_team_runs/runs.jsonl`。CLI／模型 token 使用量遙測在此執行環境不可取得，記作 unavailable／null，沒有估算用量。
