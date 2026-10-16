@@ -5,6 +5,7 @@ import { Soundtrack } from './soundtrack';
 import { cannonSound, impactSound } from './effect-audio';
 import type { SoundProfile } from './effect-audio';
 import type { ImpactKind } from './effect-math';
+import { REALISM_SAMPLE } from './realism';
 
 export class GameAudio {
   private context: AudioContext | null = null;
@@ -34,6 +35,8 @@ export class GameAudio {
   private disposed = false;
   private fieldActive = false;
   private events = 0; private cancelled = 0;
+  private cannonNoise: AudioBuffer | null = null;
+  private interior = false;
 
   unlock(): void {
     if (this.disposed) return;
@@ -72,6 +75,11 @@ export class GameAudio {
       this.noise = this.context.createBuffer(1, Math.ceil(this.context.sampleRate * .6), this.context.sampleRate);
       const samples = this.noise.getChannelData(0);
       for (let index = 0; index < samples.length; index++) samples[index] = (Math.random() * 2 - 1) * Math.exp(-index / (samples.length * .13));
+      if (REALISM_SAMPLE) {
+        this.cannonNoise = this.context.createBuffer(1,this.context.sampleRate * 2,this.context.sampleRate);
+        const pressure = this.cannonNoise.getChannelData(0); let seed = 90137;
+        for (let index = 0; index < pressure.length; index++) { seed = (Math.imul(seed,1664525) + 1013904223) >>> 0; pressure[index] = seed / 2147483648 - 1; }
+      }
       const track = this.context.createBufferSource(), buffer = this.context.createBuffer(1, this.context.sampleRate * 2, this.context.sampleRate);
       const trackSamples = buffer.getChannelData(0);
       let smooth = 0;
@@ -106,7 +114,7 @@ export class GameAudio {
     if (this.context && this.limiter) {
       this.limiter.threshold.setTargetAtTime(enabled ? -24 : -10, this.context.currentTime, .05);
       this.limiter.ratio.setTargetAtTime(enabled ? 12 : 8, this.context.currentTime, .05);
-      this.output?.gain.setTargetAtTime(enabled ? .55 : 1, this.context.currentTime, .05);
+      this.output?.gain.setTargetAtTime(enabled ? .55 : REALISM_SAMPLE ? .8 : 1, this.context.currentTime, .05);
     }
     this.setVolume(this.volume);
   }
@@ -147,7 +155,39 @@ export class GameAudio {
   fire(position = this.listener, calibre = 120, own = false): void {
     const distance = Math.hypot(position.x - this.listener.x, position.z - this.listener.z);
     const mix = own ? { pan: 0, gain: 1, cutoff: 6500 } : this.mixAt(position);
-    this.burst(cannonSound(calibre), mix, own ? 0 : Math.min(.8, distance / 343), own || distance < 1);
+    if (REALISM_SAMPLE) this.cannonEvent(calibre,mix,own ? 0 : Math.min(.8,distance / 343),own);
+    else this.burst(cannonSound(calibre), mix, own ? 0 : Math.min(.8, distance / 343), own || distance < 1);
+  }
+  perspective(interior: boolean): void { this.interior = interior; }
+  private cannonEvent(calibre: number, mix: { pan: number; gain: number; cutoff: number }, delay: number, own: boolean): void {
+    if (!this.context || !this.cannonNoise || !this.battleGain || this.context.state !== 'running' || this.voices + 5 > 24 || this.effectsVolume === 0) return;
+    const context = this.context, time = context.currentTime + delay, enclosed = own && this.interior;
+    const filter = context.createBiquadFilter(), panner = context.createStereoPanner();
+    filter.type = 'lowpass'; filter.frequency.value = Math.min(mix.cutoff,enclosed ? 1400 : 8200);
+    panner.pan.value = mix.pan; filter.connect(panner).connect(this.battleGain);
+    if (this.echo && !enclosed) panner.connect(this.echo);
+    const level = Math.sqrt(Math.max(90,Math.min(155,calibre)) / 120) * mix.gain;
+    let remaining = 5;
+    const release = (): void => { if (--remaining === 0) { filter.disconnect(); panner.disconnect(); } };
+    const noise = (offset: number, duration: number, amplitude: number, frequency: number, type: BiquadFilterType): void => {
+      const source = context.createBufferSource(), gain = context.createGain(), band = context.createBiquadFilter();
+      source.buffer = this.cannonNoise; band.type = type; band.frequency.value = frequency; band.Q.value = .6;
+      const start = time + offset;
+      gain.gain.setValueAtTime(0,start); gain.gain.linearRampToValueAtTime(amplitude * level,start + .002);
+      gain.gain.exponentialRampToValueAtTime(.0001,start + duration);
+      source.connect(band).connect(gain).connect(filter); this.register(source,[band,gain],release);
+      source.start(start,offset % .9); source.stop(start + duration);
+    };
+    noise(0,.075,enclosed ? .29 : .9,2800,'highpass');
+    noise(.009,.55,enclosed ? .55 : .72,620,'lowpass');
+    noise(.075,.09,enclosed ? .23 : .11,1600,'bandpass');
+    noise(.53,.14,enclosed ? .2 : .075,920,'bandpass');
+    const pressure = context.createOscillator(), gain = context.createGain(); pressure.type = 'sine';
+    pressure.frequency.setValueAtTime(92,time); pressure.frequency.exponentialRampToValueAtTime(43,time + .22);
+    gain.gain.setValueAtTime(0,time); gain.gain.linearRampToValueAtTime(.48 * level,time + .007);
+    gain.gain.exponentialRampToValueAtTime(.0001,time + .46);
+    pressure.connect(gain).connect(filter); this.register(pressure,[gain],release); pressure.start(time); pressure.stop(time + .48);
+    this.events++;
   }
   impact(position: { readonly x: number; readonly z: number }, destroyed: boolean, kind: ImpactKind = 'armor', calibre = 120): void {
     const profile = impactSound(kind, destroyed); profile.volume *= Math.sqrt(Math.max(90, Math.min(155, calibre)) / 120);
@@ -226,6 +266,6 @@ export class GameAudio {
     this.engineOscillator?.stop(); this.engineOscillator?.disconnect(); this.trackSource?.stop(); this.trackSource?.disconnect();
     this.master?.disconnect(); this.output?.disconnect(); this.field?.disconnect(); this.echo?.disconnect(); this.battleGain?.disconnect();
     if (this.context && typeof this.context.close === 'function') void this.context.close();
-    this.noise = null; this.context = null;
+    this.noise = null; this.cannonNoise = null; this.context = null;
   }
 }

@@ -13,17 +13,18 @@ import { LANDMARKS } from './render/hong-kong';
 import { FACE_NAMES, ZONE_NAMES } from './armor';
 import { navigationHint } from './field';
 import { ballisticEstimate } from './operations';
+import { REALISM_SAMPLE } from './realism';
 
 export function hudMarkup(game: Game, bindings: KeyBindings = DEFAULT_BINDINGS): string {
   return `<div class="battle-hud"><div class="combat-vignette"></div><div class="driver-frame" id="driver-frame" hidden></div>
     <div class="hud-top"><div class="operation-tag"><span class="live-dot"></span><span>${MODE_NAMES[game.mode]} <small>${game.mode === 'campaign' ? game.mission?.area : '九龍 · 封閉演習區'}${game.mode !== 'drive' ? ` / ${DIFFICULTIES[game.difficulty].name}` : ''}</small></span></div><div class="compass"><span id="compass-direction">北 N</span><b id="heading">000°</b></div><div class="hud-tools"><button class="icon-button" data-action="camera" aria-label="切換視角">${icon('camera')}</button><button class="icon-button" data-action="pause" aria-label="暫停遊戲">${icon('pause')}</button></div></div>
-    <section class="objective"><span class="small-label" id="district-label">${game.mode === 'drive' ? '自由探索' : '作戰目標'}</span><strong id="objective-title">${game.mode === 'drive' ? '探索九龍街道' : objectiveName(game.mode === 'campaign' ? game.mission?.objective : undefined)}</strong><div><span id="objective-count">0 / ${game.totalEnemies}</span><span id="mission-time">00:00</span></div><p id="zone-status" hidden></p><p id="zone-location" hidden></p><progress id="zone-progress" max="100" value="0" aria-label="任務進度" hidden></progress><p id="wave-status" ${game.mode === 'survival' ? '' : 'hidden'}></p></section>
+    <section class="objective"><span class="small-label" id="district-label">${game.mode === 'drive' ? '自由探索' : '作戰目標'}</span><strong id="objective-title">${game.mode === 'drive' ? REALISM_SAMPLE ? '街口自由試車' : '探索九龍街道' : objectiveName(game.mode === 'campaign' ? game.mission?.objective : undefined)}</strong><div><span id="objective-count">0 / ${game.totalEnemies}</span><span id="mission-time">00:00</span></div><p id="zone-status" hidden></p><p id="zone-location" hidden></p><progress id="zone-progress" max="100" value="0" aria-label="任務進度" hidden></progress><p id="wave-status" ${game.mode === 'survival' ? '' : 'hidden'}></p></section>
     ${game.training ? `<section class="training-hud" aria-label="基礎訓練"><span class="small-label" id="training-step">基礎訓練 · 1 / 4</span><strong id="training-title">向前行駛 15 米</strong><progress id="training-progress" max="4" value="0" aria-label="訓練完成步驟"></progress><p data-training-hint="0">按住 ${keyLabel(bindings.forward)} 前進，或推動已校準的 HOTAS 油門。</p><p data-training-hint="1" hidden>放開油門，按住 ${keyLabel(bindings.brake)} 煞車，停穩約 1 秒。</p><p data-training-hint="2" hidden>右鍵拖動，或按 ${keyLabel(bindings.turretLeft)} / ${keyLabel(bindings.turretRight)}，把炮塔從目前方向轉動 30°。只轉車身不計算。</p><p data-training-hint="3" hidden>按 ${keyLabel(bindings.fire)}、滑鼠左鍵或 HOTAS 開火。等主炮就緒才可射擊。</p><p data-training-hint="4" hidden>四步已完成。可繼續自由駕駛，或返回車庫開始戰役。</p><button class="text-button" id="training-return" data-action="training-return" hidden>返回車庫 →</button></section>` : ''}
     <button class="compact-map operations-toggle" data-action="tactical" aria-label="暫停並開啟戰術地圖">地圖</button>
     <output id="performance-meter" hidden></output>
     <div class="bearing-instrument"><span id="hull-heading">車頭 000°</span><span id="turret-bearing">炮塔 0°</span><span id="observation-status" hidden>獨立觀察</span><span id="threat-alert" hidden></span><span id="waypoint-hint" hidden></span></div>
     <div id="target-analysis" hidden></div>
-    ${game.mode === 'drive' && !game.training ? '<section class="tour-panel" aria-label="九龍巡遊"><button class="text-button" data-action="tour" id="tour-toggle" aria-pressed="false">開始六站巡遊</button><strong id="tour-destination">到街邊觀景點停穩兩秒</strong><p id="tour-navigation">可隨時暫停 · 到訪紀錄只保留本回合</p><progress id="tour-progress" max="6" value="0" aria-label="巡遊到訪進度"></progress></section>' : ''}
+    ${game.mode === 'drive' && !game.training && !REALISM_SAMPLE ? '<section class="tour-panel" aria-label="九龍巡遊"><button class="text-button" data-action="tour" id="tour-toggle" aria-pressed="false">開始六站巡遊</button><strong id="tour-destination">到街邊觀景點停穩兩秒</strong><p id="tour-navigation">可隨時暫停 · 到訪紀錄只保留本回合</p><progress id="tour-progress" max="6" value="0" aria-label="巡遊到訪進度"></progress></section>' : ''}
     <div class="incoming-indicator" id="incoming-indicator" hidden><i></i><span>受擊方向</span></div>
     <div class="reticle" id="reticle"><svg class="reload-ring" viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="43"/></svg><div class="reticle-h"></div><div class="reticle-v"></div><i></i><span id="reticle-range">APFSDS</span><b id="reload-label">就緒</b><em id="hit-confirm" aria-live="off"></em><small id="fire-solution"></small></div>
     <div id="enemy-markers" class="enemy-markers"></div><div class="hit-flash" id="hit-flash"></div>
@@ -84,7 +85,7 @@ export function updateHud(game: Game): void {
   const relative = Math.round(-angleDelta(p.yaw, p.aim) * 180 / Math.PI);
   setText('turret-bearing', `炮塔 ${relative > 0 ? '右' : relative < 0 ? '左' : ''}${Math.abs(relative)}°`);
   const observation = document.getElementById('observation-status'); if (observation) observation.hidden = !game.observing;
-  setText('district-label', districtAt(p.visual.root.position.x, p.visual.root.position.z));
+  setText('district-label', REALISM_SAMPLE ? 'A-01 · 佐敦街口' : districtAt(p.visual.root.position.x, p.visual.root.position.z));
   setText('speed', Math.round(Math.abs(p.speed) * 3.6).toString());
   setText('gear', Math.abs(p.speed) < 0.3 ? 'N' : p.speed < 0 ? 'R' : `D${Math.min(6, Math.ceil(p.speed / 3))}`);
   setText('heading', `${(Math.round(heading) % 360).toString().padStart(3,'0')}°`);
@@ -181,14 +182,17 @@ function drawMap(game: Game): void {
   const highContrast = document.body.classList.contains('high-contrast');
   ctx.fillStyle = '#131d20'; ctx.fillRect(0, 0, 240, 240);
   ctx.strokeStyle = '#3f4d4d'; ctx.lineWidth = 10;
-  for (const road of [-168,-84,0,84,168]) {
+  for (const road of REALISM_SAMPLE ? [] : [-168,-84,0,84,168]) {
     const s = 120 + road * .49; ctx.beginPath(); ctx.moveTo(s,8); ctx.lineTo(s,232); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(8,s); ctx.lineTo(232,s); ctx.stroke();
   }
   ctx.fillStyle = '#647571'; ctx.font = '10px Microsoft JhengHei';
-  ctx.fillText('旺角', 150, 36); ctx.fillText('佐敦', 36, 154); ctx.fillText('彌敦道', 123, 203);
+  if (REALISM_SAMPLE) {
+    ctx.fillText('佐敦街口樣板',12,22); ctx.fillStyle = '#3e4c4e';
+    for (const obstacle of game.world.obstacles) ctx.fillRect(120 + (obstacle.x - obstacle.halfX) * .49,120 + (obstacle.z - obstacle.halfZ) * .49,obstacle.halfX * .98,obstacle.halfZ * .98);
+  } else { ctx.fillText('旺角', 150, 36); ctx.fillText('佐敦', 36, 154); ctx.fillText('彌敦道', 123, 203); }
   ctx.fillStyle = '#e8c58e'; ctx.font = '8px Microsoft JhengHei';
-  for (const landmark of LANDMARKS) {
+  for (const landmark of REALISM_SAMPLE ? [] : LANDMARKS) {
     const horizontal = 120 + landmark.x * .49, vertical = 120 + landmark.z * .49;
     ctx.fillRect(horizontal - 2, vertical - 2, 4, 4);
     ctx.fillText(landmark.kind === 'icc' ? 'ICC' : landmark.name.slice(0, 3), Math.max(4, horizontal - 10), vertical - 5);

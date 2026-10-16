@@ -40,6 +40,24 @@ export function effectBudget(quality: string, mobile: boolean): { smoke: number;
     debris: [16, 40, 64][level] ?? 16, marks: [16, 32, 48][level] ?? 16,
     flash: [12, 20, 32][level] ?? 12, dust: [32, 64, 96][level] ?? 32 };
 }
+export function effectPathClear(start: Vector3, end: Vector3, radius: number, obstacles: readonly Obstacle[]): boolean {
+  const margin = Math.max(0, radius);
+  for (const box of obstacles) {
+    let enter = 0, exit = 1;
+    const axes = [[start.x,end.x - start.x,box.x - box.halfX - margin,box.x + box.halfX + margin],
+      [start.z,end.z - start.z,box.z - box.halfZ - margin,box.z + box.halfZ + margin]];
+    if (box.height !== undefined) axes.push([start.y,end.y - start.y,-margin,box.height + margin]);
+    for (const [origin = 0, travel = 0, low = 0, high = 0] of axes) {
+      if (Math.abs(travel) < 1e-8) { if (origin < low || origin > high) { exit = -1; break; } }
+      else {
+        const near = (low - origin) / travel, far = (high - origin) / travel;
+        enter = Math.max(enter, Math.min(near, far)); exit = Math.min(exit, Math.max(near, far));
+      }
+    }
+    if (enter <= exit) return false;
+  }
+  return true;
+}
 export function wallNormal(point: Vector3, obstacles: readonly Obstacle[], incoming: Vector3): Vector3 {
   let distance = Infinity; const normal = incoming.clone().negate().normalize();
   for (const box of obstacles) {

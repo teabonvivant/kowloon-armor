@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Difficulty } from './challenges';
 import type { GameMode } from './game';
+import { REALISM_SAMPLE } from './realism';
 const scoreKey = z.string().regex(/^(?:[1-6]|campaign:[1-6]:(?:training|standard|veteran)|(?:battle|survival):0:(?:training|standard|veteran)|wave:(?:training|standard|veteran))$/);
 const progressSchema = z.object({ completed: z.number().int().min(0).max(6).default(0),
   victories: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),
@@ -8,7 +9,7 @@ const progressSchema = z.object({ completed: z.number().int().min(0).max(6).defa
   trainingComplete: z.boolean().optional() });
 export type Progress = z.infer<typeof progressSchema>;
 const initial: Progress = { completed: 0, victories: 0, bestScores: {} };
-export const PROGRESS_KEY = 'kowloon-armor-progress';
+export const PROGRESS_KEY = REALISM_SAMPLE ? 'kowloon-armor-realism-progress' : 'kowloon-armor-progress';
 const RECOVERY_KEY = `${PROGRESS_KEY}-recovery`;
 export const BACKUP_LIMIT = 65536;
 export type ProgressStatus = 'ready' | 'empty' | 'recovered' | 'invalid' | 'unavailable';

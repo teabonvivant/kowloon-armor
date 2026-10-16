@@ -4,12 +4,16 @@ import { FAMILY_SHAPES, slopedHull, trackGeometry, wheelGeometry, wheelMaterial 
 import { GeometryBatch, glowMaterial, metalMaterial, unitSphere, unitBox } from './materials';
 import { addTankDetails, tankPaint } from './tank-details';
 import { gunProfile, recoilEnvelope } from '../effect-math';
+import { REALISM_SAMPLE } from '../realism';
+import { createLeopard } from './leopard';
 
 export interface TankVisual {
   readonly root: THREE.Group;
   readonly body: THREE.Group;
   readonly turret: THREE.Group;
   readonly barrel: THREE.Group;
+  readonly recoilTube?: THREE.Group;
+  readonly muzzleTip?: THREE.Object3D;
   readonly wheels: THREE.InstancedMesh;
   readonly treads: THREE.InstancedMesh;
   wheelPhase: number;
@@ -39,6 +43,9 @@ const groundMaterial = new THREE.ShaderMaterial({ transparent: true, depthWrite:
   fragmentShader: 'varying vec2 vUV;void main(){float a=pow(max(0.,1.-length(vUV*2.-1.)),.65)*.26;gl_FragColor=vec4(.07,.075,.06,a);}' });
 
 export function createTank(spec: TankSpec): TankVisual {
+  if (REALISM_SAMPLE && spec.id === 'leopard2a8') {
+    const visual = createLeopard(spec); updateTreads(visual); visual.treads.computeBoundingSphere(); return visual;
+  }
   const root = new THREE.Group();
   const turret = new THREE.Group();
   const barrel = new THREE.Group();
@@ -156,24 +163,61 @@ export function createTank(spec: TankSpec): TankVisual {
   return visual;
 }
 export function muzzlePosition(visual: TankVisual, target: THREE.Vector3): THREE.Vector3 {
+  if (visual.recoilTube) syncGunTransform(visual);
   visual.root.updateMatrixWorld(true);
+  if (visual.muzzleTip) return visual.muzzleTip.getWorldPosition(target);
   return visual.barrel.localToWorld(target.set(0, 0, -3.745));
 }
 export function muzzleDirection(visual: TankVisual, target: THREE.Vector3): THREE.Vector3 {
   visual.root.updateMatrixWorld(true);
+  if (REALISM_SAMPLE) {
+    if (visual.recoilTube) syncGunTransform(visual);
+    target.set(0, 0, -1);
+    for (let part: THREE.Object3D | null = visual.barrel; part; part = part.parent) target.applyQuaternion(part.quaternion);
+    return target.normalize();
+  }
   return target.set(0, 0, -1).transformDirection(visual.barrel.matrixWorld);
+}
+const gunWorld = new THREE.Matrix4();
+const gunParent = new THREE.Matrix4();
+const gunRotation = new THREE.Quaternion();
+const gunPosition = new THREE.Vector3();
+const gunUnitScale = new THREE.Vector3(1, 1, 1);
+function syncGunTransform(visual: TankVisual): void {
+  visual.barrel.updateMatrix();
+  visual.root.updateMatrixWorld(true);
+  gunRotation.identity();
+  for (let part: THREE.Object3D | null = visual.barrel; part; part = part.parent) gunRotation.premultiply(part.quaternion);
+  gunPosition.setFromMatrixPosition(visual.barrel.matrixWorld);
+  gunWorld.compose(gunPosition, gunRotation, gunUnitScale);
+  gunParent.copy(visual.turret.matrixWorld).invert();
+  visual.barrel.matrix.multiplyMatrices(gunParent, gunWorld);
+  visual.barrel.matrixAutoUpdate = false;
+  visual.barrel.matrixWorldNeedsUpdate = true;
+  visual.root.updateMatrixWorld(true);
 }
 export function kickTank(visual: TankVisual, calibre: number, weight: number, bearing: number): void {
   const profile = gunProfile(calibre, weight);
   const residual = recoilEnvelope(visual.shotAge);
   visual.force = Math.min(1.6, profile.force + visual.force * residual * .25);
   visual.stroke = Math.min(.65, profile.stroke + visual.stroke * residual * .08);
+  if (visual.recoilTube) { visual.shotAge = 0; visual.shotBearing = bearing; return; }
   visual.shotAge = .012; visual.shotBearing = bearing;
   updateTankMotion(visual, 0, visual.barrel.rotation.x, 0, true);
 }
 export function updateTankMotion(visual: TankVisual, dt: number, pitch: number, acceleration: number, reduced: boolean): void {
   visual.shotAge = Math.min(2, visual.shotAge + dt);
   visual.recoil = visual.stroke * recoilEnvelope(visual.shotAge);
+  if (visual.recoilTube) {
+    visual.recoilTube.position.z = visual.recoil;
+    visual.motionPitch += (Math.max(-.014, Math.min(.014, -acceleration * .0012)) - visual.motionPitch) * (1 - Math.exp(-dt * 7));
+    const response = visual.shotAge < 1.2 ? Math.sin(visual.shotAge * 18) * Math.exp(-visual.shotAge * 6) * visual.force : 0;
+    visual.body.rotation.x = reduced ? 0 : visual.motionPitch + response * .014 * Math.cos(visual.shotBearing);
+    visual.body.rotation.z = reduced ? 0 : -response * .012 * Math.sin(visual.shotBearing);
+    visual.body.position.y = reduced ? 0 : -Math.abs(response) * .014;
+    syncGunTransform(visual);
+    return;
+  }
   visual.barrel.position.set(0, .28 - Math.sin(pitch) * visual.recoil, -1.42 + Math.cos(pitch) * visual.recoil);
   const bounce = visual.shotAge < .9 ? Math.sin(visual.shotAge * 23) * Math.exp(-visual.shotAge * 7) * visual.force : 0;
   visual.motionPitch += (Math.max(-.018, Math.min(.018, -acceleration * .0014)) - visual.motionPitch) * (1 - Math.exp(-dt * 8));

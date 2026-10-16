@@ -14,6 +14,7 @@ export interface Obstacle {
   readonly halfX: number;
   readonly halfZ: number;
   readonly surface?: 'building' | 'metal';
+  readonly height?: number;
 }
 
 export interface WorldData {

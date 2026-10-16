@@ -4,6 +4,7 @@ import type { TankSpec } from './data/tanks';
 import { dialogHeader } from './dialogs';
 import { TOUR_STOPS } from './field';
 import { challengeStatus, CHALLENGES } from './operations';
+import { REALISM_SAMPLE } from './realism';
 
 export function comparison(first: TankSpec, second: TankSpec): string {
   const rows = [['最高速度', 'speed', 'km/h'], ['倒車速度', 'reverse', 'km/h'], ['正面防護', 'armor', ''], ['車體耐久', 'hp', ''], ['裝填時間', 'reload', 's'], ['基礎傷害', 'damage', '']] as const;
@@ -25,14 +26,15 @@ export function preparationMarkup(game: Game, favorites: readonly string[], seed
 
 export function tacticalMarkup(game: Game): string {
   const point = (value: number): number => 220 + value;
+  const landmarks = REALISM_SAMPLE ? [] : TOUR_STOPS;
   const player = game.player.visual.root.position, goal = game.mode === 'campaign' ? game.mission?.objective : undefined;
   const challenge = challengeStatus(game);
   return `${dialogHeader('TACTICAL BOARD', '戰術地圖與戰況')}
-    <p class="dialog-intro">演習已暫停。點圖設定航點，或用下方座標／地標按鈕。地圖沿用演習的全域敵軍資訊，不代表視線內偵測。</p>
+    <p class="dialog-intro">${REALISM_SAMPLE ? '街口樣板 · 演習已暫停。圖中只標示本場景障礙與敵我位置；可點圖或輸入座標設定航點。' : '演習已暫停。點圖設定航點，或用下方座標／地標按鈕。'}地圖沿用演習的全域敵軍資訊，不代表視線內偵測。</p>
     <div class="tactical-layout"><div><svg id="tactical-map" viewBox="0 0 440 440" role="img" aria-label="九龍戰術地圖，亦可使用下方座標欄位設定航點">
       <rect width="440" height="440" fill="#111b1e"/>
       <g fill="#3e4c4e">${game.world.obstacles.map(obstacle => `<rect x="${point(obstacle.x - obstacle.halfX)}" y="${point(obstacle.z - obstacle.halfZ)}" width="${obstacle.halfX * 2}" height="${obstacle.halfZ * 2}"/>`).join('')}</g>
-      <g fill="#f1d29f" font-size="10">${TOUR_STOPS.map(stop => `<circle cx="${point(stop.x)}" cy="${point(stop.z)}" r="3"/><text x="${point(stop.x) + 5}" y="${point(stop.z) - 6}">${stop.name}</text>`).join('')}</g>
+      <g fill="#f1d29f" font-size="10">${landmarks.map(stop => `<circle cx="${point(stop.x)}" cy="${point(stop.z)}" r="3"/><text x="${point(stop.x) + 5}" y="${point(stop.z) - 6}">${stop.name}</text>`).join('')}</g>
       ${goal && goal.kind !== 'clear' ? `<circle cx="${point(goal.center[0])}" cy="${point(goal.center[1])}" r="${goal.radius}" fill="#e8a65a33" stroke="#ffd18b"/>` : ''}
       ${game.enemies.filter(enemy => enemy.alive).map(enemy => `<path d="M0 -5 5 0 0 5 -5 0Z" fill="#ffcf5a" transform="translate(${point(enemy.visual.root.position.x)} ${point(enemy.visual.root.position.z)})"/>`).join('')}
       <path d="M0 -8 6 6 0 3 -6 6Z" fill="#64e5ff" transform="translate(${point(player.x)} ${point(player.z)}) rotate(${-game.player.yaw * 180 / Math.PI})"/>
@@ -41,7 +43,7 @@ export function tacticalMarkup(game: Game): string {
     <div class="tactical-summary"><h3>本回合作戰摘要</h3><p>耐久 ${Math.round(game.player.hp / game.player.maxHp * 100)}% · 擊破 ${game.kills} / ${game.totalEnemies}</p><p>命中 ${game.shots ? Math.round(game.hits / game.shots * 100) : 0}%（${game.hits}/${game.shots}）</p><p>輸出 ${game.report.dealt} · 承傷 ${game.report.received}</p><p>行駛 ${Math.round(game.report.distance)} m · ${Math.floor(game.elapsed)} 秒</p><p>種子 ${game.seed}</p><h3>${challenge.title}</h3><p>${challenge.progress}${challenge.complete ? ' · 條件已達成' : ''}</p>
     <h3>最近戰鬥事件（最多 40 筆）</h3><ol class="event-log">${game.journal.length ? [...game.journal].reverse().map(entry => `<li><time>${Math.floor(entry.time / 60)}:${String(Math.floor(entry.time % 60)).padStart(2, '0')}</time> ${entry.message}</li>`).join('') : '<li>尚未開炮或受擊。</li>'}</ol></div></div>
     <form id="waypoint-form" class="waypoint-form"><label>東西 X<input id="waypoint-x" type="number" min="-210" max="210" step="1" value="${Math.round(game.waypoint?.x ?? player.x)}" required></label><label>南北 Z<input id="waypoint-z" type="number" min="-210" max="210" step="1" value="${Math.round(game.waypoint?.z ?? player.z)}" required></label><button class="btn" type="submit">設定航點</button><button class="btn" id="clear-waypoint" type="button">清除航點</button></form>
-    <div class="landmark-shortcuts">${TOUR_STOPS.map((stop, index) => `<button class="btn" data-waypoint="${index}">${stop.name}</button>`).join('')}</div>
+    <div class="landmark-shortcuts">${landmarks.map((stop, index) => `<button class="btn" data-waypoint="${index}">${stop.name}</button>`).join('')}</div>
     <p id="waypoint-status" role="status">航點為直線方向提示，不會自動駕駛或穿過建築。</p>
     <div class="dialog-buttons"><button class="btn btn-primary" data-action="close">繼續演習</button><button class="btn" data-action="return-pause">返回暫停選單</button></div>`;
 }

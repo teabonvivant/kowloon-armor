@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { DEFAULT_BINDINGS, keyBindingsSchema } from './key-bindings';
 import { TANKS } from './data/tanks';
+import { REALISM_SAMPLE } from './realism';
+
+const SETTINGS_KEY = REALISM_SAMPLE ? 'kowloon-armor-realism-settings' : 'kowloon-armor-settings';
 
 const schema = z.object({
   controlMode: z.enum(['auto', 'touch', 'desktop']).default('auto').catch('auto'),
@@ -44,13 +47,13 @@ const schema = z.object({
 export type Preferences = z.infer<typeof schema>;
 export function loadPreferences(): Preferences {
   try {
-    const result = schema.safeParse(JSON.parse(localStorage.getItem('kowloon-armor-settings') ?? '{}'));
+    const result = schema.safeParse(JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? (REALISM_SAMPLE ? localStorage.getItem('kowloon-armor-settings') : null) ?? '{}'));
     return result.success ? result.data : schema.parse({});
   } catch { return schema.parse({}); }
 }
 export function savePreferences(settings: Preferences): boolean {
   const result = schema.safeParse(settings);
   if (!result.success) return false;
-  try { localStorage.setItem('kowloon-armor-settings', JSON.stringify(result.data)); return true; }
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(result.data)); return true; }
   catch { return false; }
 }

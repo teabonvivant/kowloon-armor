@@ -22,6 +22,10 @@ import { createObjectiveState, updateObjective } from './objectives';
 import { createTraining, updateTraining } from './training';
 import type { TrainingState } from './training';
 import { fireSolution, imminentThreats, LandmarkTour } from './field';
+import { intercept, launchPose } from './ballistics';
+import { REALISM_SAMPLE } from './realism';
+import { Arcade, STRIKE_COOLDOWN, STRIKE_SHELLS, comboMultiplier } from './arcade';
+import type { Prop } from './arcade';
 
 export type GameMode = 'drive' | 'battle' | 'campaign' | 'survival';
 export type GamePhase = 'garage' | 'playing' | 'paused' | 'victory' | 'defeat';
@@ -31,6 +35,7 @@ export interface GameEvents {
   readonly cannon?: (position: Vector3, enemy: boolean, calibre: number) => void; readonly ready?: () => void;
   readonly contact?: (contact: Contact) => void;
   readonly trained?: () => void;
+  readonly shake?: (amount: number) => void; readonly popup?: (text: string, kind: 'kill' | 'prop' | 'pickup' | 'strike') => void;
   readonly finish: (victory: boolean) => void; readonly notify: (message: string) => void;
 }
 function firstTank(): TankSpec {
@@ -50,6 +55,10 @@ export class Game {
   waypoint: { x: number; z: number } | null = null;
   challenge: 'none' | 'precision' | 'mobile' | 'armor' = 'none';
   readonly journal: { time: number; message: string }[] = [];
+  readonly arcade: Arcade;
+  hitStop = 0;
+  private readonly blasts: { t: number; x: number; z: number; radius: number; damage: number; friendly: boolean; prop: Prop | undefined }[] = [];
+  private rng = 1;
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
   private effectOptions: EffectOptions = { ...DEFAULT_EFFECTS };
@@ -58,13 +67,16 @@ export class Game {
   private readonly effects: Effects; private readonly combat: Combat;
   constructor(private readonly scene: Scene, readonly world: WorldData, private readonly events: GameEvents) {
     this.player = createActor(firstTank(), 0, 100); scene.add(this.player.visual.root);
-    this.effects = new Effects(scene);
+    this.effects = new Effects(scene); this.arcade = new Arcade(scene);
     this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; this.log('主炮發射'); events.shot(); },
       cannon: (position, enemy, calibre) => events.cannon?.(position, enemy, calibre),
       contact: contact => events.contact?.(contact),
+      prop: (id, position, byPlayer) => { const prop = this.arcade.prop(id); if (prop) this.blastProp(prop, byPlayer, position); },
       hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++;
           this.report.dealt += damage; if (impact.face !== 'front') this.report.flankingHits++; }
         else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; this.report.received += damage; }
+        if (enemy && killed) this.onKill(impact.position.x, impact.position.z);
+        else if (!enemy) events.shake?.(Math.min(1, .35 + damage / 120));
         this.log(`${enemy ? killed ? '擊破敵車' : '命中敵車' : '裝甲受擊'} · ${damage}`);
         events.hit(damage, killed, enemy, impact); } });
   }
@@ -74,7 +86,7 @@ export class Game {
     this.player = createActor(spec, 0, 100); this.scene.add(this.player.visual.root);
   }
   start(mode: GameMode, missionIndex: number, difficulty: Difficulty = 'standard', seed = Math.floor(Math.random() * 0xffffffff)): void {
-    this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.select(this.player.spec);
+    this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.arcade.clear(); this.select(this.player.spec);
     this.mode = mode; this.mission = MISSIONS[missionIndex]; this.elapsed = 0; this.kills = 0;
     this.shots = 0; this.hits = 0; this.cameraMode = 'chase'; this.scope = false;
     this.difficulty = difficulty; this.seed = seed >>> 0; this.wave = mode === 'survival' ? 1 : 0;
@@ -86,14 +98,16 @@ export class Game {
     this.tour = new LandmarkTour(); this.report = { dealt: 0, received: 0, flankingHits: 0, distance: 0 }; this.repairingTracks = false;
     const mission = this.mission;
     if (mode === 'campaign' && mission) this.player.visual.root.position.set(mission.spawn[0], 0, mission.spawn[1]);
-    const spots = mode === 'battle' || mode === 'survival'
+    const spots = REALISM_SAMPLE && mode !== 'drive' ? [[-3.5, 30], [4.5, -2]] as const : mode === 'battle' || mode === 'survival'
       ? encounterSpawns(this.seed, mode === 'battle' ? 4 : waveSize(this.wave), this.player.visual.root.position, this.world.obstacles)
       : mission?.targets ?? [];
     if (mode !== 'drive') this.spawnEnemies(spots, mode === 'campaign' ? missionIndex + 4 : this.seed % TANKS.length);
+    this.blasts.length = 0; this.hitStop = 0; this.rng = (this.seed ^ 0x51ed270b) >>> 0 || 1;
+    this.arcade.populate(this.seed, this.player.visual.root.position, this.world.obstacles, REALISM_SAMPLE ? 7 : 12, REALISM_SAMPLE ? 4 : 7);
     this.phase = 'playing';
-    this.events.notify(mode === 'drive' ? '自由駕駛開始 · 無限彈藥，探索九龍街道' : '演習開始 · 紅色標記為敵方坦克');
+    this.events.notify(REALISM_SAMPLE ? mode === 'drive' ? '自由試車 · 茶餐廳前方街口可練習駕駛與射擊' : '街口接敵 · 清除前方兩輛敵車，裝填時留意掩護' : mode === 'drive' ? '自由駕駛開始 · 無限彈藥，探索九龍街道' : '演習開始 · 紅色標記為敵方坦克');
   }
-  garage(): void { this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.select(this.player.spec); this.intermission = 0; this.training = null; this.phase = 'garage'; }
+  garage(): void { this.clearEnemies(); this.combat.clear(); this.effects.clear(); this.arcade.clear(); this.blasts.length = 0; this.select(this.player.spec); this.intermission = 0; this.training = null; this.phase = 'garage'; }
   beginTraining(): void {
     if (this.phase === 'playing' && this.mode === 'drive') this.training = createTraining(this.player, this.shots);
   }
@@ -159,13 +173,14 @@ export class Game {
         ...(orders ? { objective: orders } : {}),
       });
       const e = enemy.visual.root.position;
-      const desired = Math.atan2(-(p.x - e.x), -(p.z - e.z));
+      const desired = REALISM_SAMPLE ? intercept(enemy, this.player).aim : Math.atan2(-(p.x - e.x), -(p.z - e.z));
       const clear = wallFraction(e.x, e.z, p.x - e.x, p.z - e.z, this.world.obstacles) === 1;
       if (clear && e.distanceTo(p) < 200 && Math.abs(angleDelta(enemy.aim, desired)) < 0.045) this.combat.fire(enemy, this.world.obstacles);
     }
     const waveDamage = this.mode === 'survival' ? Math.min(1.7, 1 + (this.wave - 1) * .08) : 1;
     this.combat.update(dt, actors, this.world.obstacles,
-      (this.mode === 'campaign' ? (this.mission?.enemyDamage ?? 24) / 100 : .32) * DIFFICULTIES[this.difficulty].damage * waveDamage);
+      (this.mode === 'campaign' ? (this.mission?.enemyDamage ?? 24) / 100 : .32) * DIFFICULTIES[this.difficulty].damage * waveDamage, this.arcade);
+    this.updateArcade(dt);
     this.dustTimer += dt;
     if (this.dustTimer >= .15) {
       this.dustTimer = 0;
@@ -187,10 +202,103 @@ export class Game {
       else if (goal?.kind === 'clear' ? this.kills === this.totalEnemies : goal && this.objective.progress >= goal.seconds) this.finish(true);
     } else if (this.mode === 'battle' && this.kills === this.totalEnemies) this.finish(true);
   }
+  private random(): number { this.rng = (Math.imul(this.rng, 1664525) + 1013904223) >>> 0; return this.rng / 4294967296; }
+  tickRealtime(dt: number): void { this.hitStop = Math.max(0, this.hitStop - dt); }
+  get timeScale(): number { return this.hitStop > 0 && !this.effectOptions.reducedMotion ? .22 : 1; }
+  private onKill(x: number, z: number): void {
+    const result = this.arcade.kill(150), multiplier = comboMultiplier(result.combo);
+    this.events.popup?.(`擊破 +${result.points}${multiplier > 1 ? ` · 連殺 ×${multiplier}` : ''}`, 'kill');
+    this.arcade.dropPickup(this.kills % 2 === 0 || this.player.hp < this.player.maxHp * .6 ? 'repair' : 'rapid', x, z);
+    this.hitStop = Math.max(this.hitStop, .14); this.events.shake?.(.7);
+  }
+  private blastProp(prop: Prop, byPlayer: boolean, at?: Vector3): void {
+    if (!prop.alive) return;
+    this.arcade.detonate(prop);
+    const result = byPlayer ? this.arcade.kill(prop.kind === 'car' ? 120 : 80) : undefined;
+    if (result) this.events.popup?.(`${prop.kind === 'car' ? '引爆車輛' : '引爆油桶'} +${result.points}`, 'prop');
+    this.explode(at?.x ?? prop.x, at?.z ?? prop.z, prop.kind === 'car' ? 14 : 11, prop.kind === 'car' ? 120 : 90, false, byPlayer);
+    for (const other of this.arcade.props) {
+      if (!other.alive || Math.hypot(other.x - prop.x, other.z - prop.z) > 12) continue;
+      this.blasts.push({ t: .12 + this.blasts.length % 6 * .1, x: other.x, z: other.z, radius: 0, damage: 0, friendly: false, prop: other });
+    }
+  }
+  private explode(x: number, z: number, radius: number, damage: number, friendly: boolean, byPlayer: boolean): void {
+    const at = new Vector3(x, 0, z);
+    this.effects.destroy(at.clone().setY(1.2), 155);
+    this.events.contact?.({ position: at.clone().setY(1), normal: new Vector3(0, 1, 0), kind: 'armor', destroyed: true, calibre: 155 });
+    const distance = Math.hypot(x - this.player.visual.root.position.x, z - this.player.visual.root.position.z);
+    this.events.shake?.(Math.max(0, 1 - distance / 70) * 1.1);
+    this.hitStop = Math.max(this.hitStop, .09);
+    for (const actor of [this.player, ...this.enemies]) {
+      if (!actor.alive || (friendly && !actor.enemy)) continue;
+      const p = actor.visual.root.position, d = Math.hypot(p.x - x, p.z - z);
+      if (d >= radius) continue;
+      const dealt = Math.max(1, Math.min(actor.hp, Math.round(damage * (1 - d / radius * .7) * (actor.enemy ? 1 : .45) * (actor.enemy ? 1 : DIFFICULTIES[this.difficulty].damage))));
+      actor.hp -= dealt;
+      const killed = actor.hp <= 0;
+      if (killed) { actor.hp = 0; actor.alive = false; actor.speed = 0; actor.visual.wreckAge = 0;
+        actor.visual.root.rotation.z = .055; actor.visual.root.position.y = -.2; }
+      if (actor.enemy) {
+        this.hits++; this.report.dealt += dealt; if (killed) { this.kills++; this.onKill(p.x, p.z); }
+        this.log(`${killed ? '爆炸擊破' : '爆炸波及'} · ${dealt}`);
+        this.events.hit(dealt, killed, true, { zone: 'hull', face: 'side', bearing: 0, position: p.clone() });
+      } else {
+        this.damageBearing = Math.atan2(x - p.x, z - p.z); this.damageTimer = 2.5; this.report.received += dealt;
+        this.log(`爆炸波及 · ${dealt}`);
+        this.events.hit(dealt, false, false, { zone: 'hull', face: 'side', bearing: this.damageBearing, position: p.clone() });
+      }
+    }
+    void byPlayer;
+  }
+  /** Calls a covering barrage onto the nearest enemy ahead of the turret (or empty ground ahead). */
+  callStrike(): boolean {
+    if (this.phase !== 'playing' || this.arcade.strikeCooldown > 0) return false;
+    const p = this.player.visual.root.position;
+    let target: { x: number; z: number } | undefined, best = 1e9;
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      const e = enemy.visual.root.position, d = Math.hypot(e.x - p.x, e.z - p.z);
+      const bearing = Math.abs(angleDelta(this.player.aim, Math.atan2(-(e.x - p.x), -(e.z - p.z))));
+      if (d < 170 && bearing < .95 && d < best) { best = d; target = { x: e.x, z: e.z }; }
+    }
+    target ??= { x: p.x - Math.sin(this.player.aim) * 55, z: p.z - Math.cos(this.player.aim) * 55 };
+    this.arcade.strikeCooldown = STRIKE_COOLDOWN; this.arcade.strikesCalled++;
+    for (let i = 0; i < STRIKE_SHELLS; i++) {
+      const angle = this.random() * Math.PI * 2, spread = i === 0 ? 0 : 3 + this.random() * 7;
+      this.blasts.push({ t: 1.6 + i * .27, x: target.x + Math.sin(angle) * spread, z: target.z + Math.cos(angle) * spread, radius: 9, damage: 95, friendly: true, prop: undefined });
+    }
+    this.effects.burst(new Vector3(target.x, 0, target.z), false);
+    this.events.popup?.('炮擊支援已呼叫 · 2 秒後落彈', 'strike');
+    return true;
+  }
+  private updateArcade(dt: number): void {
+    for (let i = this.blasts.length - 1; i >= 0; i--) {
+      const blast = this.blasts[i]; if (!blast) continue;
+      blast.t -= dt; if (blast.t > 0) continue;
+      this.blasts.splice(i, 1);
+      if (blast.prop) this.blastProp(blast.prop, true);
+      else {
+        this.explode(blast.x, blast.z, blast.radius, blast.damage, blast.friendly, true);
+        for (const prop of this.arcade.props) if (prop.alive && Math.hypot(prop.x - blast.x, prop.z - blast.z) < blast.radius) this.blastProp(prop, true);
+      }
+    }
+    const p = this.player.visual.root.position;
+    if (Math.abs(this.player.speed) > 5) for (const prop of this.arcade.props) {
+      if (prop.alive && Math.hypot(prop.x - p.x, prop.z - p.z) < prop.radius + 3.2) this.blastProp(prop, true);
+    }
+    for (const kind of this.arcade.update(dt, p, this.player.alive)) {
+      if (kind === 'repair') {
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.round(this.player.maxHp * .3));
+        this.player.leftTrack = 0; this.player.rightTrack = 0;
+        this.events.popup?.('修復包 · 車體 +30% · 履帶修好', 'pickup');
+      } else { this.player.rapidShots = Math.max(this.player.rapidShots, 4); this.player.cooldown = Math.min(this.player.cooldown, .4);
+        this.events.popup?.('快裝彈藥 · 四發快速裝填', 'pickup'); }
+    }
+  }
   private finish(victory: boolean): void { this.phase = victory ? 'victory' : 'defeat'; this.events.finish(victory); }
   private spawnEnemies(spots: readonly (readonly [number, number])[], variant: number): void {
     for (const [index, spot] of spots.entries()) {
-      const spec = TANKS[(index * 3 + variant) % TANKS.length] ?? this.player.spec;
+      const spec = REALISM_SAMPLE ? firstTank() : TANKS[(index * 3 + variant) % TANKS.length] ?? this.player.spec;
       const actor = createActor(spec, spot[0], spot[1], true);
       const waveHealth = this.mode === 'survival' ? Math.min(1.8, 1 + (this.wave - 1) * .06) : 1;
       actor.hp = actor.maxHp = Math.round(actor.maxHp * DIFFICULTIES[this.difficulty].health * waveHealth);
@@ -226,17 +334,18 @@ export class Game {
   touchEffects(mobile: boolean): void { if (this.effectOptions.mobile !== mobile) this.configureEffects({ ...this.effectOptions, mobile }); }
   prepareEffects(camera: PerspectiveCamera, height: number): void { this.effects.prepare(camera, height, !this.observing && (this.scope || this.cameraMode !== 'chase')); }
   effectStats(): ReturnType<Effects['stats']> & { projectiles: number } { return { ...this.effects.stats(), projectiles: this.combat.stats().active }; }
-  dispose(): void { this.clearEnemies(); this.combat.dispose(); this.effects.dispose(); this.player.visual.root.removeFromParent(); disposeTank(this.player.visual); }
+  dispose(): void { this.clearEnemies(); this.combat.dispose(); this.effects.dispose(); this.arcade.dispose(); this.player.visual.root.removeFromParent(); disposeTank(this.player.visual); }
   get fireSolution(): ReturnType<typeof fireSolution> { return fireSolution(this.player, this.enemies, this.world.obstacles); }
   get target(): Actor | undefined { return this.fireSolution.target; }
   get threats(): number { return imminentThreats(this.player, this.enemies, this.world.obstacles); }
   getAimPoint(target: Vector3): Vector3 {
+    if (REALISM_SAMPLE) { const pose = launchPose(this.player); return target.copy(pose.origin).addScaledVector(pose.direction, 100); }
     return target.set(-Math.sin(this.player.aim) * Math.cos(this.player.pitch) * 100, 2.5 + Math.sin(this.player.pitch) * 100,
       -Math.cos(this.player.aim) * Math.cos(this.player.pitch) * 100).add(this.player.visual.root.position);
   }
   get score(): number {
     const accuracyBonus = this.shots ? this.hits / this.shots * 500 : 0;
     return Math.round((this.kills * 500 + Math.max(0, this.player.hp / this.player.maxHp) * 1000 + accuracyBonus +
-      (this.mode === 'survival' ? Math.max(0, this.wave - 1) * 750 : Math.max(0, 300 - this.elapsed) * 5)) * DIFFICULTIES[this.difficulty].score);
+      (this.mode === 'survival' ? Math.max(0, this.wave - 1) * 750 : Math.max(0, 300 - this.elapsed) * 5) + this.arcade.bonus) * DIFFICULTIES[this.difficulty].score);
   }
 }

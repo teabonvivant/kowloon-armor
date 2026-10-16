@@ -5,25 +5,35 @@ import type { ArmorFace, HitZone } from './armor';
 import { angleDelta, wallFraction } from './math';
 import type { Obstacle } from './render/world';
 import { LANDMARKS } from './render/hong-kong';
+import { launchPose, obstacleFraction } from './ballistics';
+import { REALISM_SAMPLE } from './realism';
 
 export interface FireSolution { target?: Actor; zone?: HitZone; face?: ArmorFace; blocked: boolean; distance: number }
 export function fireSolution(player: Actor, enemies: readonly Actor[], obstacles: readonly Obstacle[]): FireSolution {
   const position = player.visual.root.position;
   const direction = new Vector3(-Math.sin(player.aim) * Math.cos(player.pitch), Math.sin(player.pitch), -Math.cos(player.aim) * Math.cos(player.pitch));
   const start = position.clone().add(new Vector3(0, 2.5, 0));
-  const muzzle = wallFraction(start.x, start.z, direction.x * 5.5, direction.z * 5.5, obstacles);
-  if (muzzle < 1) return { blocked: true, distance: muzzle * 5.5 };
-  start.addScaledVector(direction, 5.5);
+  let offset = 5.5;
+  if (REALISM_SAMPLE) {
+    const pose = launchPose(player), delta = pose.origin.clone().sub(pose.breech);
+    const clearance = obstacleFraction(pose.breech,delta,obstacles);
+    if (clearance < 1) return { blocked: true, distance: clearance * delta.length() };
+    direction.copy(pose.direction); start.copy(pose.origin); offset = pose.origin.distanceTo(position);
+  } else {
+    const muzzle = wallFraction(start.x, start.z, direction.x * 5.5, direction.z * 5.5, obstacles);
+    if (muzzle < 1) return { blocked: true, distance: muzzle * 5.5 };
+    start.addScaledVector(direction, 5.5);
+  }
   const delta = direction.clone().multiplyScalar(560);
-  let nearest = wallFraction(start.x, start.z, delta.x, delta.z, obstacles);
+  let nearest = REALISM_SAMPLE ? obstacleFraction(start,delta,obstacles) : wallFraction(start.x, start.z, delta.x, delta.z, obstacles);
   if (delta.y < 0) nearest = Math.min(nearest, Math.max(0, (.2 - start.y) / delta.y));
-  let solution: FireSolution = { blocked: nearest < 1, distance: nearest * 560 + 5.5 };
+  let solution: FireSolution = { blocked: nearest < 1, distance: nearest * 560 + offset };
   for (const enemy of enemies) {
     if (!enemy.alive) continue;
     const hit = intersectTank(enemy, start, delta);
     if (hit && hit.fraction < nearest) {
       nearest = hit.fraction;
-      solution = { target: enemy, zone: hit.zone, face: impactArmor(enemy, hit.zone, direction).face, blocked: false, distance: nearest * 560 + 5.5 };
+      solution = { target: enemy, zone: hit.zone, face: impactArmor(enemy, hit.zone, direction).face, blocked: false, distance: nearest * 560 + offset };
     }
   }
   return solution;

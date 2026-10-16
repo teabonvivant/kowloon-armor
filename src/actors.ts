@@ -10,6 +10,9 @@ import type { Tactic } from './tactics';
 import type { Difficulty } from './challenges';
 import { addEnemyDetails, enemyRole } from './render/enemy-details';
 import type { EnemyRole } from './render/enemy-details';
+import { intercept } from './ballistics';
+import { REALISM_SAMPLE } from './realism';
+import { identifyOpposition } from './render/leopard';
 
 export interface Actor {
   readonly role: EnemyRole;
@@ -23,7 +26,8 @@ export interface Actor {
 export function createActor(spec: TankSpec, x: number, z: number, enemy = false): Actor {
   const visual = createTank(spec);
   const role = enemyRole(spec);
-  if (enemy) addEnemyDetails(visual, role);
+  if (enemy && !REALISM_SAMPLE) addEnemyDetails(visual, role);
+  if (enemy && REALISM_SAMPLE) identifyOpposition(visual);
   visual.root.position.set(x, 0, z);
   const maxHp = enemy ? Math.round(spec.hp * 0.5) : spec.hp;
   return { spec, visual, enemy, role, hp: maxHp, maxHp, speed: 0, yaw: enemy ? Math.PI : 0,
@@ -73,10 +77,11 @@ export function advanceEnemy(actor: Actor, player: Actor, dt: number,
   obstacles: readonly Obstacle[], actors: readonly Actor[], orders: EnemyOrders = {}): void {
   const position = actor.visual.root.position;
   const target = player.visual.root.position;
-  const aim = Math.atan2(-(target.x - position.x), -(target.z - position.z));
+  const lead = REALISM_SAMPLE ? intercept(actor, player) : null;
+  const aim = lead?.aim ?? Math.atan2(-(target.x - position.x), -(target.z - position.z));
   const response = orders.difficulty === 'veteran' ? .9 : orders.difficulty === 'training' ? .45 : .65;
   actor.aim += clamp(angleDelta(actor.aim, aim), -response * dt, response * dt);
-  actor.pitch = 0;
+  actor.pitch = lead ? clamp(lead.pitch, -.12, .32) : 0;
   const distance = position.distanceTo(target);
   actor.aiAge += dt; actor.think -= dt;
   if (actor.tactic === 'flank' && position.distanceTo(actor.waypoint) < 5) actor.nextFlank = actor.aiAge + 10;

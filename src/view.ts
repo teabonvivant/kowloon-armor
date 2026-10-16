@@ -1,15 +1,20 @@
 import { ACESFilmicToneMapping, Color, DirectionalLight, FogExp2, HemisphereLight,
-  PCFSoftShadowMap, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer, Mesh, MeshBasicMaterial, RingGeometry } from 'three';
+  PCFSoftShadowMap, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer, Mesh, MeshBasicMaterial, RingGeometry, PMREMGenerator } from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { Game } from './game';
 import { wallFraction } from './math';
 import { createWorld } from './render/world';
 import { AdaptiveResolution } from './resolution';
 import { FrameDiagnostics } from './operations';
 import { cameraKick } from './effect-math';
+import { REALISM_SAMPLE } from './realism';
+import { createRealismWorld } from './render/realism-world';
+import { createRealismSky } from './render/realism-sky';
+import { chaseHeight } from './camera-framing';
 
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
-  readonly renderer: WebGLRenderer; readonly world = createWorld();
+  readonly renderer: WebGLRenderer; readonly world = REALISM_SAMPLE ? createRealismWorld() : createWorld();
   scopeZoom = 2;
   highContrast = false;
   chaseDistance = 15; chaseFov = 50; shakeStrength = 1;
@@ -32,23 +37,36 @@ export class View {
   private garageOffset = { horizontal: 0, vertical: 0 };
   private garageFov = 48;
   private framingDirty = true; private cameraInGarage = false;
+  private readonly sky = REALISM_SAMPLE ? createRealismSky() : null;
   constructor(readonly canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
+    if (REALISM_SAMPLE) {
+      const generator = new PMREMGenerator(this.renderer), room = new RoomEnvironment();
+      this.scene.environment = generator.fromScene(room,.08).texture;
+      this.scene.environmentIntensity = .36; room.dispose(); generator.dispose();
+      this.renderer.toneMappingExposure = .94;
+    }
     this.scene.background = new Color(0x8cabb8); this.scene.fog = new FogExp2(0x8cabb8, 0.0033);
     this.scene.add(this.ambient);
+    if (this.sky) this.scene.add(this.sky);
     const fill = new DirectionalLight(0xc4d5e3, 1.4);
     fill.position.set(12, 18, -30); this.scene.add(fill);
     this.sun.position.set(-45, 85, 65); this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(1024, 1024);
     Object.assign(this.sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 1, far: 250 });
     this.sun.shadow.bias = -0.0007; this.sun.shadow.normalBias = 0.15;
+    if (REALISM_SAMPLE) {
+      Object.assign(this.sun.shadow.camera,{ left: -58,right: 58,top: 58,bottom: -58 });
+      this.sun.shadow.normalBias = .055;
+    }
     this.scene.add(this.sun, this.sun.target, this.world.group);
     this.zone.rotation.x = -Math.PI / 2; this.zone.visible = false; this.scene.add(this.zone);
     this.camera.position.set(15, 8, 115); this.resize();
+    if (REALISM_SAMPLE) this.lighting('day');
     window.addEventListener('resize', () => this.resize());
     canvas.addEventListener('webglcontextlost', event => { event.preventDefault();
       document.dispatchEvent(new CustomEvent('graphics-lost')); });
@@ -72,7 +90,22 @@ export class View {
     document.body.classList.toggle('reduce-motion', this.reducedMotion);
   }
   recoil(): void { this.shotAge = 0; }
+  private shakeEnergy = 0; private fovPunch = 0;
+  shake(amount: number): void { if (!this.reducedMotion) this.shakeEnergy = Math.min(1.6, Math.max(this.shakeEnergy, amount * this.shakeStrength)); }
+  punch(degrees: number): void { if (!this.reducedMotion) this.fovPunch = Math.max(this.fovPunch, degrees); }
   lighting(preset: 'day' | 'dusk'): void {
+    if (REALISM_SAMPLE) {
+      const dusk = preset === 'dusk', sky = dusk ? 0x9c9790 : 0xb7beb9;
+      this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky,dusk ? .0058 : .0047);
+      this.sun.color.setHex(dusk ? 0xffc795 : 0xffe0b5); this.sun.intensity = dusk ? 2.5 : 3.15;
+      this.ambient.color.setHex(0xb8cadb); this.ambient.groundColor.setHex(0x55534d); this.ambient.intensity = dusk ? 1.15 : 1.45;
+      if (this.sky) {
+        this.sky.material.uniforms['zenith']!.value.setHex(dusk ? 0x626e86 : 0x6e8fa8);
+        this.sky.material.uniforms['horizon']!.value.setHex(sky);
+        this.sky.material.uniforms['cloud']!.value.setHex(dusk ? 0xc4aaa0 : 0xc9ccc5);
+      }
+      return;
+    }
     const dusk = preset === 'dusk', sky = dusk ? 0x666a85 : 0x8cabb8;
     this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky, dusk ? .0038 : .0033);
     this.sun.color.setHex(dusk ? 0xffac72 : 0xffdfb0); this.sun.intensity = dusk ? 2.6 : 4.1;
@@ -128,6 +161,7 @@ export class View {
       const yaw = game.observing ? game.observationYaw : actor.aim;
       desired.set(Math.sin(yaw) * this.chaseDistance, 8.2, Math.cos(yaw) * this.chaseDistance).add(p);
       const distance = wallFraction(p.x, p.z, desired.x - p.x, desired.z - p.z, game.world.obstacles);
+      desired.y = p.y + chaseHeight(this.chaseDistance,distance,REALISM_SAMPLE);
       if (distance < 1) { desired.x = p.x + (desired.x - p.x) * Math.max(0.15, distance - 0.07);
         desired.z = p.z + (desired.z - p.z) * Math.max(0.15, distance - 0.07); }
       if (game.observing) look.set(-Math.sin(yaw) * 100, 3, -Math.cos(yaw) * 100).add(p);
@@ -148,15 +182,24 @@ export class View {
     this.stablePosition.lerp(desired, game.phase === 'garage' ? 1 - Math.exp(-dt * 4) : 1 - Math.exp(-dt * 12));
     this.camera.position.copy(this.stablePosition);
     this.shotAge = Math.min(2, this.shotAge + dt);
-    const kick = cameraKick(this.shotAge, game.cameraMode, game.scope, this.scopeZoom, this.shakeStrength, this.reducedMotion);
+    const kick = cameraKick(REALISM_SAMPLE ? actor.visual.shotAge : this.shotAge, game.cameraMode, game.scope, this.scopeZoom, this.shakeStrength * (REALISM_SAMPLE ? .55 : 1), this.reducedMotion);
     this.camera.position.y += kick;
     this.camera.position.x += Math.sin(actor.aim) * kick * .45;
     this.camera.position.z += Math.cos(actor.aim) * kick * .45;
+    if (this.shakeEnergy > .002) {
+      const e = this.shakeEnergy * this.shakeEnergy, t = this.elapsed * 63;
+      this.camera.position.x += Math.sin(t * 1.3) * .35 * e; this.camera.position.y += Math.sin(t * 1.9 + 1) * .28 * e;
+      this.camera.position.z += Math.cos(t * 1.1) * .35 * e;
+      this.shakeEnergy *= Math.exp(-dt * 5.5);
+    } else this.shakeEnergy = 0;
+    this.fovPunch *= Math.exp(-dt * 9); if (this.fovPunch < .02) this.fovPunch = 0;
     this.camera.lookAt(look);
+    this.sky?.position.copy(this.camera.position);
+    fov -= this.fovPunch;
     if (Math.abs(fov - this.camera.fov) > .01) {
-      this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * 10); this.camera.updateProjectionMatrix();
+      this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * (this.fovPunch > 0 ? 40 : 10)); this.camera.updateProjectionMatrix();
     }
-    this.sun.position.set(p.x - 45, 85, p.z + 65); this.sun.target.position.copy(p);
+    this.sun.position.set(p.x - 45, REALISM_SAMPLE ? 58 : 85, p.z + 65); this.sun.target.position.copy(p);
     game.prepareEffects(this.camera, this.renderer.domElement.height);
     this.renderer.render(this.scene, this.camera);
   }

@@ -1,0 +1,19 @@
+import { icon } from './ui-kit';
+import type { GameMode } from './game';
+import type { Difficulty } from './challenges';
+
+export const unitMark = `<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M6 12v23l7 7h22l7-7V12L24 3 6 12Z" stroke="currentColor" stroke-width="1.5"/><path d="m13 19 7-4v15l-7 4V19Zm15-4 7 4v15l-7-4V15Z" fill="currentColor"/><path d="M22 11h4v24h-4z" fill="currentColor"/></svg>`;
+
+export function realismGarageMarkup(mode: GameMode, difficulty: Difficulty): string {
+  const drive = mode === 'drive';
+  const route = `<div class="sample-route" aria-label="街口主軸示意，非導航"><svg viewBox="0 0 180 40" aria-hidden="true"><path d="M8 20H172M42 5v30M125 5v30" stroke="currentColor" opacity=".3"/><path d="M17 20h132m-6-5 6 5-6 5" stroke="currentColor"/><circle cx="17" cy="20" r="3" fill="currentColor"/><path d="m156 14 6 6-6 6-6-6z" stroke="currentColor"/></svg><span>整備區<span>街口</span></span></div>`;
+  return `<div class="sample-preparation">
+    <header class="sample-header"><div class="sample-brand" aria-label="九龍裝甲行動">${unitMark}<span>九龍裝甲行動<small>KOWLOON ARMOR / 02</small></span></div><span class="sample-header-note">裝甲分隊 · 作戰整備</span><div class="top-actions"><button class="device-status" data-action="controller">${icon('controller')}<span id="pad-status">HOTAS 控制設定</span></button><button class="icon-button" data-action="settings" aria-label="遊戲設定">${icon('settings')}</button></div></header>
+    <div class="sample-main">
+      <section class="sample-orders"><span class="sample-kicker">佐敦演習區 / 0715 HRS</span><h1>${drive ? '自由試車' : '街口接敵'}</h1><p class="sample-lede">${drive ? '無敵軍，按自己的節奏探索。<br>練習煞停、轉炮塔及掩體旁射擊。' : '沿茶餐廳向前推進。<br>停穩、瞄準，清除街口兩輛敵車。'}</p>${route}<div class="sample-mode-list"><button data-mode="battle" class="${!drive ? 'active' : ''}" aria-pressed="${!drive}"><b>01</b><span>街口交火<small>完整交戰 · 兩輛 AI 對手</small></span>${icon('arrow',18)}</button><button data-mode="drive" class="${drive ? 'active' : ''}" aria-pressed="${drive}"><b>02</b><span>自由試車<small>無敵軍 · 檢查駕駛與射擊</small></span>${icon('arrow',18)}</button></div><p class="sample-tactic">${drive ? '先熟悉轉向和煞車，再練習瞄準。<br>手機以左搖桿駕駛，右側拖曳瞄準。' : '開火後退回掩護，利用裝填時間換位。<br>沙灰車身及雙斜帶標示敵方演習車。'}</p><button class="text-button" data-action="training">首次出勤 · 四步操作訓練 ${icon('arrow',15)}</button></section>
+      <section class="showroom sample-showroom" aria-label="Leopard 2 A8 三維整備場景"><div class="sample-scene-label"><i></i> VEHICLE READY<span>德製主戰坦克 · 單車樣板</span></div><button class="sample-orbit" data-action="rotate" aria-label="轉動戰車展示角度">${icon('camera',18)} 檢視戰車</button></section>
+      <aside class="sample-vehicle"><span class="sample-kicker">主戰車 / A-01</span><h2>LEOPARD<br><strong>2 A8</strong></h2><dl><div><dt>主炮參考組合</dt><dd>L55 / DM63A1</dd></div><div><dt>初速</dt><dd>1,720 <small>m/s</small></dd></div><div><dt>遊戲裝填</dt><dd>5.5 <small>s</small></dd></div><div><dt>整備狀態</dt><dd class="sample-ready">主炮就緒</dd></div></dl><p>原創幾何模型與程序音效。<br>彈道參考公開資料；裝甲、傷害及裝填採遊戲設定。</p></aside>
+    </div>
+    <footer class="sample-deploy"><div class="sample-scope"><span class="sample-kicker">寫實重製 · 品質樣板</span><p>一輛戰車，一個街口，一場交火。<br><small>本樣板獨立於正式版，戰績不寫入戰役紀錄。</small></p></div><div class="sample-deploy-controls"><label for="difficulty">演習難度<select id="difficulty"><option value="training" ${difficulty === 'training' ? 'selected' : ''}>入門</option><option value="standard" ${difficulty === 'standard' ? 'selected' : ''}>標準</option><option value="veteran" ${difficulty === 'veteran' ? 'selected' : ''}>精英</option></select></label><button class="sample-start" data-action="start"><span>${mode === 'drive' ? '開始試車' : '進入街口'}</span>${icon('arrow',22)}</button></div><div class="sample-footer-links"><span>離線可玩 / 鍵鼠 · 觸控 · HOTAS</span><button data-action="guide">操作指南</button><button data-action="settings">畫面與聲音</button></div></footer>
+  </div>`;
+}

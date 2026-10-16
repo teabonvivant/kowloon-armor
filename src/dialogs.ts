@@ -54,7 +54,7 @@ export function guideDialog(bindings: KeyBindings = DEFAULT_BINDINGS, allowTrain
     <div class="training-tip"><strong>履帶與任務</strong><br>命中履帶可減慢敵車；自己的履帶受損時，停車累計 6 秒便會修復。佔點須在標示區域內且沒有敵車；守區時敵車闖入會扣防線耐久，降至零即告失敗。</div>
     <div class="training-tip"><strong>無盡防線</strong><br>首波兩輛敵車，逐波增加至最多八輛。清場後有 8 秒選擇修復 35% 車體及兩側履帶，或四發裝填時間減少 32% 的快裝補給。倒數完畢才套用，預設修復。</div>`;
 }
-export function resultDialog(game: Game, victory: boolean, completed: number, newBest = false, previousBest = 0, saved = true): string {
+export function resultDialog(game: Game, victory: boolean, completed: number, newBest = false, previousBest = 0, saved = true, sample = false): string {
   const health = Math.max(0, game.player.hp / game.player.maxHp);
   const stars = victory ? health > .7 ? 3 : health > .35 ? 2 : 1 : 0;
   const survival = game.mode === 'survival';
@@ -80,7 +80,7 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
     ${game.challenge !== 'none' ? `<section class="challenge-result"><h3>${challenge.complete ? '✓ 挑戰達成' : '挑戰未達成'} · ${challenge.title}</h3><p>${challenge.progress}</p></section>` : ''}
     <p class="training-tip"><strong>下一次練習</strong><br>${coaching(game)}</p>
     <div class="dialog-buttons"><button class="btn" data-action="replay">相同配置重賽</button><button class="btn" data-action="export-report">匯出本回合戰報</button></div>
-    <p class="fine-print">${previousBest ? `上次最佳 ${previousBest.toLocaleString()} 分${victory || survival ? ` · 本次 ${game.score >= previousBest ? '+' : '−'}${Math.abs(game.score - previousBest).toLocaleString()} 分` : ' · 本回合未完成，不列入最高分'}` : victory || survival ? '首次完成紀錄。' : '完成演習後才會記錄最高分。'} ${saved ? '戰績已儲存於目前瀏覽器。' : '尚未成功儲存，請在離開前匯出備份。'}</p>
+    <p class="fine-print">${sample ? '品質樣板交火報告 · 本回合不寫入正式版戰役紀錄。' : `${previousBest ? `上次最佳 ${previousBest.toLocaleString()} 分${victory || survival ? ` · 本次 ${game.score >= previousBest ? '+' : '−'}${Math.abs(game.score - previousBest).toLocaleString()} 分` : ' · 本回合未完成，不列入最高分'}` : victory || survival ? '首次完成紀錄。' : '完成演習後才會記錄最高分。'} ${saved ? '戰績已儲存於目前瀏覽器。' : '尚未成功儲存，請在離開前匯出備份。'}`}</p>
     <div class="dialog-buttons">${victory && game.mode === 'campaign' && (game.mission?.id ?? 6) < 6 ? '<button class="btn btn-primary" data-action="next">下一關 →</button>' : '<button class="btn btn-primary" data-action="retry">再次演習</button>'}<button class="btn" data-action="return">返回車庫</button><button class="btn" data-action="records">查看／備份戰績</button></div>`;
 }
 export function aboutDialog(): string {

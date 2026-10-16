@@ -1,5 +1,7 @@
 import type { Actor } from './actors';
 import type { Game } from './game';
+import { weaponProfile, launchPose } from './ballistics';
+import { REALISM_SAMPLE } from './realism';
 
 export function parseSeed(value: string): number | null | undefined {
   const clean = value.trim();
@@ -10,9 +12,11 @@ export function parseSeed(value: string): number | null | undefined {
 }
 
 export function ballisticEstimate(distance: number, player: Actor, target: Actor): { seconds: number; drop: number; lead: number } {
-  const seconds = Math.max(0, distance - 5.5) / 190;
+  const profile = weaponProfile(player.spec);
+  const offset = REALISM_SAMPLE ? launchPose(player).origin.distanceTo(player.visual.root.position) : 5.5;
+  const seconds = Math.max(0, distance - offset) / profile.velocity;
   const lateral = -Math.sin(target.yaw) * target.speed * Math.cos(player.aim) + Math.cos(target.yaw) * target.speed * Math.sin(player.aim);
-  return { seconds, drop: .6 * seconds * seconds, lead: lateral * seconds };
+  return { seconds, drop: .5 * profile.gravity * seconds * seconds, lead: lateral * seconds };
 }
 
 export const CHALLENGES = { none: '不設額外挑戰', precision: '精準射手 · 至少 6 發、命中率 ≥70%', mobile: '機動突擊 · 行駛 800 m、擊破 2 車', armor: '保甲行動 · 勝利時保留 ≥70% 耐久' } as const;

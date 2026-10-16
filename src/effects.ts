@@ -1,8 +1,11 @@
 import { FogExp2, Matrix4, Points, Vector3 } from 'three';
 import type { Object3D, PerspectiveCamera, Scene } from 'three';
-import { DEFAULT_EFFECTS, effectBudget, gunProfile, impactDirection } from './effect-math';
+import { DEFAULT_EFFECTS, effectBudget, effectPathClear, gunProfile, impactDirection } from './effect-math';
 import type { EffectOptions, ImpactKind } from './effect-math';
 import { EffectPool } from './render/effect-pools';
+import type { Particle } from './render/effect-pools';
+import type { Obstacle } from './render/world';
+import { REALISM_SAMPLE } from './realism';
 
 export class Effects {
   private options: EffectOptions = { ...DEFAULT_EFFECTS };
@@ -47,8 +50,9 @@ export class Effects {
     if (distance > 260) return 0;
     return (this.options.mobile || this.options.quality === 'low' ? .45 : this.options.quality === 'high' ? 1 : .7) * (distance > 140 ? .3 : distance > 70 ? .6 : 1);
   }
-  muzzle(at: Vector3, direction: Vector3, calibre: number, own = false, clearance = 1): void {
+  muzzle(at: Vector3, direction: Vector3, calibre: number, own = false, clearance = 1, obstacles: readonly Obstacle[] = []): void {
     const density = this.density(at); if (!density) return;
+    if (REALISM_SAMPLE) { this.muzzleSample(at, direction, calibre, own, clearance, density, obstacles); return; }
     const profile = gunProfile(calibre), length = profile.length * Math.min(1, clearance);
     if (length <= .05) return;
     for (let layer = 0; layer < 2; layer++) {
@@ -71,18 +75,88 @@ export class Effects {
     if (at.y < 5) {
       const p = this.glow.take(this.point.set(at.x, .045, at.z), .14);
       if (p) { p.normal.set(0, 1, 0); p.scale.set(4, 5, 1); p.color.setHex(0xffab52); p.opacity = .23; p.own = own; }
-      for (const sign of [-1, 1]) {
-        const dust = this.dustPool.take(this.point.set(at.x + side.x * sign * .6, .25, at.z + side.z * sign * .6), .9);
-        if (dust) { dust.delay = .04; dust.velocity.copy(side).multiplyScalar(sign * 2.8); dust.velocity.y = .3;
+      const rays = 2;
+      for (let ray = 0; ray < rays; ray++) {
+        const angle = ray * Math.PI * 2 / rays;
+        const horizontal = side.x * Math.cos(angle) + direction.x * Math.sin(angle), along = side.z * Math.cos(angle) + direction.z * Math.sin(angle);
+        const dust = this.dustPool.take(this.point.set(at.x + horizontal * .6,.25,at.z + along * .6), .9);
+        if (dust) { dust.delay = .04; dust.velocity.set(horizontal * 2.8,.3,along * 2.8);
           dust.drag = 2; dust.size = 1.2; dust.growth = 2; dust.opacity = .25; dust.color.setHex(0xa39c87); dust.own = own; }
       }
     }
+  }
+  private muzzleSample(at: Vector3, direction: Vector3, calibre: number, own: boolean, clearance: number, density: number, obstacles: readonly Obstacle[]): void {
+    const profile = gunProfile(calibre), confinement = Math.max(0, Math.min(1, clearance));
+    const freeLength = profile.length * confinement, length = freeLength * .72, bore = profile.length / 2.8;
+    if (!(length > .05) || direction.lengthSq() < 1e-8) return;
+    const axis = direction.clone().normalize(), side = new Vector3(axis.z, 0, -axis.x);
+    if (side.lengthSq() < 1e-8) side.set(1, 0, 0); else side.normalize();
+    const up = new Vector3().crossVectors(axis, side).normalize();
+    for (let layer = 0; layer < 2; layer++) {
+      const pulse = this.flash.take(this.point.copy(at).addScaledVector(axis, length * .32), (layer ? .055 : .032) * Math.sqrt(bore));
+      if (!pulse) continue;
+      pulse.normal.copy(axis); pulse.delay = layer ? .007 : 0;
+      pulse.scale.set((layer ? .28 : .115) * Math.sqrt(confinement), (layer ? .22 : .095) * Math.sqrt(confinement), length * (layer ? .46 : .31));
+      pulse.color.setHex(layer ? 0xffbe73 : 0xfff2ce); pulse.opacity = layer ? .42 : .92; pulse.own = own;
+      const expansion = .75 + pulse.life * 4;
+      const front = this.point.copy(pulse.position).addScaledVector(axis, pulse.scale.z * expansion);
+      if (!effectPathClear(at, front, Math.max(pulse.scale.x, pulse.scale.y) * expansion, obstacles)) pulse.life = 0;
+    }
+    const count = Math.ceil(6 * density), scale = bore * confinement;
+    for (let index = 0; index < count; index++) {
+      const progress = (index + .5) / count;
+      this.point.copy(at).addScaledVector(axis, (.12 + progress * .62) * scale)
+        .addScaledVector(side, (this.random() - .5) * .18 * progress * scale)
+        .addScaledVector(up, (this.random() - .5) * .12 * progress * scale);
+      const gas = this.smoke.take(this.point, .82 + this.random() * .14 - progress * .14);
+      if (!gas) continue;
+      gas.delay = .026 + progress * .065; gas.drag = 2.5;
+      gas.velocity.copy(axis).multiplyScalar((3.1 - progress * .7) * scale)
+        .addScaledVector(side, (this.random() - .5) * .7 * scale).addScaledVector(up, (.45 + progress * .25) * scale);
+      gas.velocity.x += .45 * scale; gas.velocity.z += .18 * scale;
+      gas.size = (.28 + progress * .38) * scale; gas.growth = (.9 + progress * .45) * scale;
+      gas.opacity = .2 - progress * .06; gas.color.setHex(index % 2 ? 0xa3a197 : 0xb2afa2); gas.own = own;
+      const radius = (gas.size + gas.life * gas.growth) / 2;
+      const travel = -Math.expm1(-gas.drag * gas.life) / gas.drag;
+      const remaining = freeLength - radius - this.point.copy(gas.position).sub(at).dot(axis);
+      const forwardSpeed = gas.velocity.dot(axis);
+      if (forwardSpeed * travel > remaining) gas.velocity.addScaledVector(axis, Math.max(0, remaining / travel) - forwardSpeed);
+      if (!this.particlePathClear(gas, at, obstacles)) gas.life = 0;
+    }
+    const groundForce = Math.max(0, 1 - Math.max(0, at.y) / 5) * bore;
+    if (groundForce <= 0) return;
+    const ground = new Vector3(at.x, .12, at.z), forward = new Vector3(axis.x, 0, axis.z).normalize();
+    const glowRadius = .75 + groundForce * 1.1;
+    if (effectPathClear(ground, ground, glowRadius * 1.2, obstacles)) {
+      const glow = this.glow.take(this.point.set(at.x, .045, at.z), .048 + .01 * bore);
+      if (glow) { glow.normal.set(0, 1, 0); glow.scale.set(glowRadius * 2, glowRadius * 2.4, 1);
+        glow.color.setHex(0xffc88b); glow.opacity = .08 * groundForce; glow.own = own; }
+    }
+    const rays = Math.ceil(5 * density);
+    for (let ray = 0; ray < rays; ray++) {
+      const angle = (ray + .2 + this.random() * .3) * Math.PI * 2 / rays;
+      const radial = side.clone().multiplyScalar(Math.cos(angle)).addScaledVector(forward, Math.sin(angle) + .35).normalize();
+      const reach = .3 + this.random() * .45;
+      const dust = this.dustPool.take(this.point.copy(ground).addScaledVector(radial, reach), .6 + this.random() * .24);
+      if (!dust) continue;
+      dust.delay = Math.max(0, at.y) / 343 + reach / (12 + groundForce * 12);
+      dust.velocity.copy(radial).multiplyScalar((2.6 + this.random() * 1.3) * Math.sqrt(groundForce)); dust.velocity.y = .16;
+      dust.drag = 2.9; dust.size = .55 + this.random() * .25; dust.growth = 1.05;
+      dust.opacity = .16 * groundForce * (.8 + this.random() * .4); dust.color.setHex(0xa39e90); dust.own = own;
+      if (!this.particlePathClear(dust, ground, obstacles)) dust.life = 0;
+    }
+  }
+  private particlePathClear(particle: Particle, origin: Vector3, obstacles: readonly Obstacle[]): boolean {
+    const radius = (particle.size + particle.life * particle.growth) / 2;
+    if (!effectPathClear(origin, particle.position, radius, obstacles)) return false;
+    const travel = particle.drag > 0 ? -Math.expm1(-particle.drag * particle.life) / particle.drag : particle.life;
+    return effectPathClear(particle.position, this.point.copy(particle.position).addScaledVector(particle.velocity, travel), radius, obstacles);
   }
   impact(at: Vector3, normal: Vector3, incoming: Vector3, kind: ImpactKind, calibre: number, anchor: Object3D | null = null): void {
     const density = this.density(at); if (!density) return;
     const metal = kind === 'armor' || kind === 'metal' || kind === 'track', track = kind === 'track';
     const reflected = impactDirection(incoming, normal), scale = gunProfile(calibre).length / 2.8;
-    const count = Math.ceil((metal ? track ? 13 : 22 : 5) * density);
+    const count = Math.ceil((metal ? track ? 13 : 22 : REALISM_SAMPLE ? 0 : 5) * density);
     for (let i = 0; i < count; i++) {
       const p = this.sparks.take(this.point.copy(at).addScaledVector(normal, .07), .16 + this.random() * (track ? .24 : .4));
       if (!p) continue;

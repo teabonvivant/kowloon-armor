@@ -19,6 +19,7 @@ import { mountSettings } from './settings';
 import type { SettingsTab } from './settings';
 import { comparison, preparationMarkup, tacticalMarkup, mountTactical } from './operations-ui';
 import { CHALLENGES, parseSeed, operationReport } from './operations';
+import { REALISM_SAMPLE } from './realism';
 
 export class Interface {
   private readonly app = required('#app', HTMLElement);
@@ -34,9 +35,10 @@ export class Interface {
   private sortieChallenge: Game['challenge'] = 'none';
   constructor(private readonly game: Game, private readonly input: Input, private readonly view: View, private readonly audio: GameAudio) {
     const stored = readProgress(); this.progress = stored.progress; this.storageStatus = stored.status;
-    this.mode = this.preferences.mode;
+    this.mode = REALISM_SAMPLE ? 'battle' : this.preferences.mode;
+    document.body.classList.toggle('realism-sample',REALISM_SAMPLE);
     this.missionIndex = this.preferences.deploymentSet ? Math.min(this.preferences.missionIndex, this.progress.completed, 5) : Math.min(this.progress.completed, 5);
-    const selected = TANKS.find(tank => tank.id === this.preferences.tankId);
+    const selected = TANKS.find(tank => tank.id === (REALISM_SAMPLE ? 'leopard2a8' : this.preferences.tankId));
     if (selected && selected.id !== this.game.player.spec.id) this.game.select(selected);
     this.applyPreferences();
     document.addEventListener('click', event => this.click(event));
@@ -118,6 +120,12 @@ export class Interface {
     this.persistProgress({ ...mergeProgress(this.progress, readProgress().progress), trainingComplete: true });
   }
   finish(victory: boolean): void {
+    if (REALISM_SAMPLE) {
+      this.audio.stop();
+      this.open(resultDialog(this.game,victory,this.progress.completed,false,0,false,true), 'result');
+      this.modal.insertAdjacentHTML('afterbegin','<p class="sample-kicker">九龍裝甲行動 / A-01 · 街口交火報告</p>');
+      return;
+    }
     this.audio.stop(); this.progress = mergeProgress(this.progress, readProgress().progress);
     const scoreKey = `${this.game.mode}:${this.game.mode === 'campaign' ? this.game.mission?.id ?? 0 : 0}:${this.game.difficulty}`;
     const bestBefore = this.progress.bestScores[scoreKey] ?? 0;

@@ -6,6 +6,8 @@ import { DIFFICULTIES } from './challenges';
 import type { Difficulty } from './challenges';
 import { icon, silhouette } from './ui-kit';
 import { operationBrief } from './briefing';
+import { REALISM_SAMPLE } from './realism';
+import { realismGarageMarkup } from './realism-ui';
 
 export const MODE_NAMES = { drive: '自由駕駛', battle: '模擬對戰', campaign: '九龍戰役', survival: '無盡防線' } as const;
 const modeInfo = [
@@ -21,6 +23,7 @@ export function tankCard(tank: TankSpec, selected: string): string {
 
 export function garageMarkup(tank: TankSpec, mode: GameMode, missionIndex: number, completed: number,
   difficulty: Difficulty = 'standard', bestScore = 0, trainingComplete = false): string {
+  if (REALISM_SAMPLE) return realismGarageMarkup(mode,difficulty);
   const mission = MISSIONS[missionIndex];
   const brief = operationBrief(mode, missionIndex);
   return `<div class="garage">

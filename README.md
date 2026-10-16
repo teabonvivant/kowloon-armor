@@ -2,6 +2,18 @@
 
 單人 3D 坦克遊戲，支援手機／平板觸控、鍵盤及滑鼠，以及 USB 飛行搖桿／HOTAS。
 
+## 寫實方向樣板（未取代正式版）
+
+最新一輪以完成品質覆核為主：重做內縮窗洞及街廓立面、補齊後方天際線與地面，調整追尾鏡頭，加入受靜態障礙限制的分段炮煙與揚塵。範圍、測試方式及限制見 [深度優化紀錄](docs/finish-pass.md)；上一輪 115 項清單保留作歷史紀錄。新增檢查：`node scripts/camera-quality-check.mjs`、`node scripts/scene-quality-check.mjs`、`node scripts/firing-quality-check.mjs`。
+
+第二輪已加入 115 項材質、車體、街廓、路面、炮火、介面與渲染細節；該輪範圍及驗收見 [第二輪清單](docs/realism-refinement.md)。舊 [對照入口](docs/evidence/refinement/index.html) 的截圖與數據屬第二輪，遊玩連結指向目前樣板。規則檢查：`node scripts/refinement-check.mjs`。仍是獨立樣板，並非 30 車及全城全面重製。
+
+開啟 `九龍裝甲行動-寫實樣板.html`，選「街口交火」或「自由試車」。這是單一 Leopard 2 A8、佐敦街口與兩輛敵車的可玩方向樣板，並非全遊戲重製完成或 AAA 品質承諾。離線可玩，樣板設定與戰績另存，正式版 HTML 不變。
+
+樣板統一炮口／彈道／AI 提前量、分離炮管後座，重做車體幾何、材質、街口構圖、整備識別及原創程序炮聲。L55／DM63A1 的 1,720 m/s 取自 Rheinmetall 公開資料；阻力、裝甲、傷害及裝填仍採簡化或遊戲設定。
+
+`npm run build:realism` 只建置樣板；`node scripts/realism-check.mjs` 檢查射擊與隔離存檔。畫面及離線操作重現：先執行 `node scripts/realism-preview.mjs`，再執行 `node scripts/realism-browser.mjs`。詳見 [設計](docs/realism-rebuild-design.md)、[實作計劃](docs/realism-rebuild-plan.md) 及 [驗證與觀感限制](docs/realism-rebuild-validation.md)。使用者確認方向後才安排其他車型與街區，尚未發布取代主遊戲。
+
 ## 1.8 炮火與衝力
 
 [100 項審核與驗收](docs/effects-upgrade.md) · [測試與限制](docs/effects-validation.md)。保留 30 款戰車、六關戰役、四種模式、v1.7 多指觸控及單檔離線。

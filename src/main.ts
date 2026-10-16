@@ -5,17 +5,20 @@ import { Input } from './input';
 import { Interface } from './interface';
 import { required } from './ui-kit';
 import { View } from './view';
+import { ArcadeHud } from './arcade-hud';
 import { SimulationClock } from './simulation-clock';
 
 function boot(): void {
   const canvas = required('#world', HTMLCanvasElement);
   const view = new View(canvas), audio = new GameAudio(), input = new Input(canvas);
-  const game = new Game(view.scene, view.world, { shot: () => view.recoil(),
-    cannon: (position, enemy, calibre) => audio.fire(position, calibre, !enemy), ready: () => audio.ready(), trained: () => ui.completeTraining(),
+  const game = new Game(view.scene, view.world, { shot: () => { view.recoil(); view.shake(.55); view.punch(3.4); arcadeHud.flash(); },
+    shake: amount => view.shake(amount), popup: (text, kind) => arcadeHud.popup(text, kind),
+    cannon: (position, enemy, calibre) => { audio.fire(position, calibre, !enemy); if (enemy) { const d = position.distanceTo(game.player.visual.root.position); if (d < 70) view.shake(.3 * (1 - d / 70)); } }, ready: () => audio.ready(), trained: () => ui.completeTraining(),
     contact: contact => audio.impact(contact.position, contact.destroyed, contact.kind, contact.calibre),
     hit: (damage, killed, enemy, impact) => ui.hit(damage, killed, enemy, impact),
     finish: victory => ui.finish(victory), notify: message => ui.notify(message) });
   const ui = new Interface(game, input, view, audio);
+  const arcadeHud = new ArcadeHud(game);
   let last = performance.now(), uiElapsed = 0;
   const clock = new SimulationClock();
   document.getElementById('boot')?.remove();
@@ -28,8 +31,10 @@ function boot(): void {
     view.sampleFrame(frameSeconds, game.phase === 'playing');
     game.touchEffects(input.touch.enabled);
     audio.listen(game.player.visual.root.position, game.observing ? game.observationYaw : game.cameraMode === 'driver' && !game.scope ? game.player.yaw : game.player.aim, game.world.obstacles);
+    audio.perspective(!game.observing && (game.scope || game.cameraMode !== 'chase'));
     if (game.phase === 'playing') {
-      clock.advance(dt, step => {
+      game.tickRealtime(dt);
+      clock.advance(dt * game.timeScale, step => {
         const control = input.sample(step);
         if (control.pause) ui.pause();
         game.update(step, control);
@@ -45,7 +50,7 @@ function boot(): void {
     if (uiElapsed > .1) {
       uiElapsed = 0;
       if (game.phase !== 'garage') {
-        updateHud(game);
+        updateHud(game); arcadeHud.update();
         updateEnemyMarkers(game, view.camera);
         const resolution = document.getElementById('render-scale');
         if (resolution) resolution.textContent = `3D ${Math.round(view.renderScale * 100)}%`;
