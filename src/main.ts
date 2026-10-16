@@ -12,13 +12,18 @@ function boot(): void {
   const canvas = required('#world', HTMLCanvasElement);
   const view = new View(canvas), audio = new GameAudio(), input = new Input(canvas);
   const game = new Game(view.scene, view.world, { shot: () => { view.recoil(); view.shake(.55); view.punch(3.4); arcadeHud.flash(); },
+    explosion: event => { audio.explosion(event.position, event.kind, event.power); view.blast(event.position, event.power); },
+    flyby: (position, speed, calibre) => { audio.flyby(position, speed, calibre); view.shake(.15); },
+    killcam: position => view.killcam(position), propBreak: (kind, position) => audio.propBreak(position, kind),
     shake: amount => view.shake(amount), popup: (text, kind) => arcadeHud.popup(text, kind),
     cannon: (position, enemy, calibre) => { audio.fire(position, calibre, !enemy); if (enemy) { const d = position.distanceTo(game.player.visual.root.position); if (d < 70) view.shake(.3 * (1 - d / 70)); } }, ready: () => audio.ready(), trained: () => ui.completeTraining(),
-    contact: contact => audio.impact(contact.position, contact.destroyed, contact.kind, contact.calibre),
+    contact: contact => audio.impact(contact.position, contact.destroyed, contact.kind, contact.calibre, contact.grade),
+    pulse: (strength, seconds) => view.pulse(strength, seconds), lowFlash: enabled => view.lowFlash(enabled),
     hit: (damage, killed, enemy, impact) => ui.hit(damage, killed, enemy, impact),
     finish: victory => ui.finish(victory), notify: message => ui.notify(message) });
   const ui = new Interface(game, input, view, audio);
-  const arcadeHud = new ArcadeHud(game);
+  const arcadeHud = new ArcadeHud(game, () => ui.keyBindings, () => audio.stinger());
+  canvas.addEventListener('tank-strike', () => { game.callStrike(); });
   let last = performance.now(), uiElapsed = 0;
   const clock = new SimulationClock();
   document.getElementById('boot')?.remove();
@@ -36,6 +41,7 @@ function boot(): void {
       game.tickRealtime(dt);
       clock.advance(dt * game.timeScale, step => {
         const control = input.sample(step);
+        if (control.throttle !== 0 || control.steer !== 0 || control.aimX !== 0 || control.aimY !== 0 || control.fire || control.brake || (control.pointerX ?? 0) !== 0 || (control.pointerY ?? 0) !== 0) view.cancelKillcam();
         if (control.pause) ui.pause();
         game.update(step, control);
         return game.phase === 'playing';
@@ -44,9 +50,17 @@ function boot(): void {
         audio.engine(Math.abs(game.player.speed));
         const nearby = game.enemies.reduce((threat, enemy) => enemy.alive ? Math.max(threat, 1 - enemy.visual.root.position.distanceTo(game.player.visual.root.position) / 180) : threat, 0);
         audio.atmosphere(Math.max(nearby, game.damageTimer > 0 ? 1 : 0), dt);
+        let closest: { x: number; z: number } | null = null, closestDistance = Infinity;
+        for (const enemy of game.enemies) {
+          if (!enemy.alive) continue;
+          const d = enemy.visual.root.position.distanceTo(game.player.visual.root.position);
+          if (d < closestDistance) { closestDistance = d; closest = enemy.visual.root.position; }
+        }
+        audio.ambienceUpdate(dt, { enemy: closest });
       } else audio.stop();
     } else { clock.reset(); audio.idle(); }
     view.render(game, dt);
+    arcadeHud.guide(view.camera);
     if (uiElapsed > .1) {
       uiElapsed = 0;
       if (game.phase !== 'garage') {

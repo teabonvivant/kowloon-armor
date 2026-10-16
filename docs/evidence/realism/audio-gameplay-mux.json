@@ -1,0 +1,88 @@
+{
+  "createdAt": "2026-10-15T02:56:14.341Z",
+  "passed": true,
+  "checks": {
+    "audioSourceReportPasses": true,
+    "allCannonAndContactsAccepted": true,
+    "videoFrameCount": true,
+    "videoFps": true,
+    "videoResolution": true,
+    "audioFormat": true,
+    "durationsMatch": true,
+    "decodedAacUnclipped": true
+  },
+  "timelineSha256": "bc4c5d045efd87c16d599d48d6d280eb670987e5bd506e025087b17233a98615",
+  "source": {
+    "programs": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 768,
+        "height": 432,
+        "r_frame_rate": "12/1",
+        "start_time": "0.000000",
+        "duration": "43.750000",
+        "nb_frames": "525"
+      }
+    ],
+    "format": {
+      "duration": "43.750000"
+    }
+  },
+  "output": {
+    "programs": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 768,
+        "height": 432,
+        "r_frame_rate": "12/1",
+        "start_time": "0.000000",
+        "duration": "43.750000",
+        "nb_frames": "525"
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "start_time": "0.000000",
+        "duration": "43.750000",
+        "nb_frames": "2052"
+      }
+    ],
+    "format": {
+      "duration": "43.750000"
+    }
+  },
+  "wave": {
+    "programs": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "pcm_s16le",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "duration": "43.750000"
+      }
+    ],
+    "format": {
+      "duration": "43.750000"
+    }
+  },
+  "expectedCannonAndContacts": 36,
+  "acceptedCannonAndContacts": 36,
+  "dropped": [],
+  "maximumSchedulingLeadSeconds": 0.0020000000003275176,
+  "decodedAacPeak": 0.5916675329208374,
+  "decodedAacFinite": true,
+  "methodology": "ffmpeg video stream copy, AAC 192kbit/s, faststart, shortest; output decoded to float PCM to inspect finite signal/peak. No human listening or real-time performance claim."
+}

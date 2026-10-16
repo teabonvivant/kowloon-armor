@@ -25,6 +25,7 @@ export interface TankVisual {
 }
 
 export function disposeTank(visual: TankVisual): void {
+  restoreTurret(visual);
   visual.root.traverse((node) => {
     if (node instanceof THREE.InstancedMesh) node.dispose();
   });
@@ -274,4 +275,50 @@ function updateTreads(visual: TankVisual): void {
     visual.treads.setMatrixAt((side < 0 ? 0 : 60) + index, treadTransform.matrix);
   }
   visual.treads.instanceMatrix.needsUpdate = true;
+}
+
+/** v1.9 C11 turret launch: the turret group flies (<= 2 s) and lands beside the hull; reversible without disposal. */
+interface TurretFlight {
+  age: number; duration: number; landed: boolean;
+  readonly home: THREE.Vector3; readonly homeRotation: THREE.Euler;
+  readonly velocity: THREE.Vector3; readonly spin: THREE.Vector3; gravity: number; rest: number;
+}
+const turretFlights = new WeakMap<TankVisual, TurretFlight>();
+const unit = (seed: number, salt: number): number => {
+  let h = Math.imul((seed | 0) ^ Math.imul(salt + 1, 0x9e3779b1), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
+export const TURRET_FLIGHT = { minSeconds: 1.5, maxSeconds: 2, minApex: 6, maxApex: 10 } as const;
+export function launchTurret(visual: TankVisual, seed: number): void {
+  if (turretFlights.has(visual)) return;
+  const t = visual.turret, duration = TURRET_FLIGHT.minSeconds + unit(seed, 1) * (TURRET_FLIGHT.maxSeconds - TURRET_FLIGHT.minSeconds);
+  const apex = TURRET_FLIGHT.minApex + unit(seed, 2) * (TURRET_FLIGHT.maxApex - TURRET_FLIGHT.minApex);
+  const rest = .75, drop = Math.max(.1, t.position.y - rest);
+  // vertical: y(T) = rest with apex height `apex` above launch -> g = vy^2 / (2 apex)
+  const vy = (duration + Math.sqrt(duration * duration + drop * duration * duration / apex)) / (duration * duration / (2 * apex));
+  const heading = unit(seed, 3) * Math.PI * 2, reach = 3 + unit(seed, 4) * 3;
+  turretFlights.set(visual, { age: 0, duration, landed: false, home: t.position.clone(), homeRotation: t.rotation.clone(),
+    velocity: new THREE.Vector3(Math.cos(heading) * reach / duration, vy, Math.sin(heading) * reach / duration),
+    spin: new THREE.Vector3((unit(seed, 5) - .5) * 5, (unit(seed, 6) - .5) * 8, (unit(seed, 7) - .5) * 6),
+    gravity: vy * vy / (2 * apex), rest });
+}
+/** Advances the flight; returns true while airborne, false once landed (or when not launched). */
+export function updateTurretFlight(visual: TankVisual, dt: number): boolean {
+  const f = turretFlights.get(visual);
+  if (!f || f.landed || !(dt > 0)) return !!f && !f.landed;
+  f.age = Math.min(f.duration, f.age + dt);
+  const t = f.age, turret = visual.turret;
+  turret.position.set(f.home.x + f.velocity.x * t, f.home.y + f.velocity.y * t - .5 * f.gravity * t * t, f.home.z + f.velocity.z * t);
+  const settle = f.age >= f.duration;
+  turret.rotation.set(f.homeRotation.x + f.spin.x * t, f.homeRotation.y + f.spin.y * t, f.homeRotation.z + f.spin.z * t);
+  if (settle) { f.landed = true; turret.position.y = f.rest; turret.rotation.x = f.homeRotation.x + .12; turret.rotation.z = f.homeRotation.z - .18; }
+  return !settle;
+}
+export const isTurretFlying = (visual: TankVisual): boolean => { const f = turretFlights.get(visual); return !!f && !f.landed; };
+export const isTurretLaunched = (visual: TankVisual): boolean => turretFlights.has(visual);
+/** Re-seats the turret on the hull and forgets the flight (call before restart / garage / disposeTank). */
+export function restoreTurret(visual: TankVisual): void {
+  const f = turretFlights.get(visual); if (!f) return;
+  visual.turret.position.copy(f.home); visual.turret.rotation.copy(f.homeRotation);
+  turretFlights.delete(visual);
 }

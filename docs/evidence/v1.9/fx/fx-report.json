@@ -1,0 +1,563 @@
+{
+ "slices": {
+  "lpg-017ms": {
+   "effects": {
+    "active": 47,
+    "smoke": 10,
+    "dust": 9,
+    "flash": 6,
+    "sparks": 4,
+    "debris": 9,
+    "marks": 2,
+    "fire": 5,
+    "glow": 2,
+    "emissive": 9.510000000000002,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1.3447424330253734,
+    "radiance": 4.8,
+    "projectiles": 0
+   },
+   "camera": [
+    0.020234203652468804,
+    6.156023242007333,
+    115.17257849034429
+   ],
+   "fov": 50,
+   "meanLuma": 0.4801012910260788,
+   "brightArea": 0.028096064814814813,
+   "contacts": []
+  },
+  "lpg-083ms": {
+   "effects": {
+    "active": 47,
+    "smoke": 10,
+    "dust": 9,
+    "flash": 6,
+    "sparks": 4,
+    "debris": 9,
+    "marks": 2,
+    "fire": 5,
+    "glow": 2,
+    "emissive": 9.510000000000002,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1.883361524855109,
+    "radiance": 4.8,
+    "projectiles": 0
+   },
+   "camera": [
+    0.0032811102875091717,
+    6.126648014482417,
+    115.09444373223984
+   ],
+   "fov": 50,
+   "meanLuma": 0.47598928731947815,
+   "brightArea": 0.028412422839506173,
+   "contacts": []
+  },
+  "lpg-250ms": {
+   "effects": {
+    "active": 40,
+    "smoke": 10,
+    "dust": 9,
+    "flash": 0,
+    "sparks": 4,
+    "debris": 9,
+    "marks": 2,
+    "fire": 5,
+    "glow": 1,
+    "emissive": 4.41,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 2.9544028229835617,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    -0.01282464296072988,
+    6.123522179690785,
+    115.0277491525904
+   ],
+   "fov": 50,
+   "meanLuma": 0.4732436385752194,
+   "brightArea": 0.029695216049382717,
+   "contacts": []
+  },
+  "lpg-700ms": {
+   "effects": {
+    "active": 34,
+    "smoke": 10,
+    "dust": 9,
+    "flash": 0,
+    "sparks": 2,
+    "debris": 9,
+    "marks": 2,
+    "fire": 2,
+    "glow": 0,
+    "emissive": 1.7,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 4.008935137668809,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    -0.006570204623051712,
+    6.108722045273236,
+    114.97949252644739
+   ],
+   "fov": 50,
+   "meanLuma": 0.4696479742188618,
+   "brightArea": 0.025912422839506174,
+   "contacts": []
+  },
+  "lpg-3s": {
+   "effects": {
+    "active": 12,
+    "smoke": 10,
+    "dust": 0,
+    "flash": 0,
+    "sparks": 0,
+    "debris": 0,
+    "marks": 2,
+    "fire": 0,
+    "glow": 0,
+    "emissive": 0,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1000,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    0.006707389824467306,
+    6.11589172164143,
+    114.94263778360666
+   ],
+   "fov": 50,
+   "meanLuma": 0.4676274689932107,
+   "brightArea": 0.026064814814814815,
+   "contacts": []
+  },
+  "tanker-017ms": {
+   "effects": {
+    "active": 84,
+    "smoke": 16,
+    "dust": 12,
+    "flash": 10,
+    "sparks": 10,
+    "debris": 20,
+    "marks": 3,
+    "fire": 10,
+    "glow": 3,
+    "emissive": 16.259999999999998,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1.3301653236468032,
+    "radiance": 7.999999999999999,
+    "projectiles": 0
+   },
+   "camera": [
+    0.04012038601243702,
+    6.225132525256389,
+    115.27643044823371
+   ],
+   "fov": 50,
+   "meanLuma": 0.48930958627811066,
+   "brightArea": 0.033603395061728394,
+   "contacts": []
+  },
+  "tanker-083ms": {
+   "effects": {
+    "active": 84,
+    "smoke": 16,
+    "dust": 12,
+    "flash": 10,
+    "sparks": 10,
+    "debris": 20,
+    "marks": 3,
+    "fire": 10,
+    "glow": 3,
+    "emissive": 16.259999999999998,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1.8111993972502567,
+    "radiance": 7.999999999999999,
+    "projectiles": 0
+   },
+   "camera": [
+    -0.02502819554696654,
+    6.159367527985976,
+    115.1321992804451
+   ],
+   "fov": 50,
+   "meanLuma": 0.4820527132634485,
+   "brightArea": 0.031905864197530866,
+   "contacts": []
+  },
+  "tanker-250ms": {
+   "effects": {
+    "active": 73,
+    "smoke": 16,
+    "dust": 12,
+    "flash": 0,
+    "sparks": 10,
+    "debris": 20,
+    "marks": 3,
+    "fire": 10,
+    "glow": 2,
+    "emissive": 7.959999999999999,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 2.743217517940333,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    -0.03629030993988269,
+    6.091090885375577,
+    115.02059876419776
+   ],
+   "fov": 50,
+   "meanLuma": 0.47804996761785196,
+   "brightArea": 0.0358912037037037,
+   "contacts": []
+  },
+  "tanker-700ms": {
+   "effects": {
+    "active": 61,
+    "smoke": 16,
+    "dust": 12,
+    "flash": 0,
+    "sparks": 3,
+    "debris": 20,
+    "marks": 3,
+    "fire": 7,
+    "glow": 0,
+    "emissive": 5.09,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 3.4553265872110757,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    0.005008353137146958,
+    6.128619238422996,
+    114.96087998026579
+   ],
+   "fov": 50,
+   "meanLuma": 0.47057765408148494,
+   "brightArea": 0.027565586419753086,
+   "contacts": []
+  },
+  "tanker-3s": {
+   "effects": {
+    "active": 21,
+    "smoke": 16,
+    "dust": 0,
+    "flash": 0,
+    "sparks": 0,
+    "debris": 0,
+    "marks": 3,
+    "fire": 2,
+    "glow": 0,
+    "emissive": 0.84,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1000,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    0.02684672239727535,
+    6.142667336906136,
+    114.92362840946367
+   ],
+   "fov": 50,
+   "meanLuma": 0.4626708701340195,
+   "brightArea": 0.02648148148148148,
+   "contacts": []
+  },
+  "fire-020ms": {
+   "effects": {
+    "active": 16,
+    "smoke": 5,
+    "dust": 4,
+    "flash": 4,
+    "sparks": 0,
+    "debris": 0,
+    "marks": 0,
+    "fire": 1,
+    "glow": 2,
+    "emissive": 2.7732400000000004,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1000,
+    "radiance": 1.9800000000000002,
+    "projectiles": 1
+   },
+   "camera": [
+    2.368690223321046e-21,
+    6.168857096668482,
+    115.03098569350082
+   ],
+   "fov": 50,
+   "meanLuma": 0.4682768163151872,
+   "brightArea": 0.02666280864197531,
+   "contacts": []
+  },
+  "fire-080ms": {
+   "effects": {
+    "active": 11,
+    "smoke": 5,
+    "dust": 4,
+    "flash": 0,
+    "sparks": 0,
+    "debris": 0,
+    "marks": 0,
+    "fire": 1,
+    "glow": 1,
+    "emissive": 0.7517999999999999,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 0,
+    "markX": 0,
+    "minDebrisY": 1000,
+    "radiance": 0,
+    "projectiles": 1
+   },
+   "camera": [
+    1.939319530348093e-21,
+    6.200382622461219,
+    115.04517218010754
+   ],
+   "fov": 50,
+   "meanLuma": 0.4681783623013291,
+   "brightArea": 0.026477623456790122,
+   "contacts": []
+  },
+  "fire-200ms": {
+   "effects": {
+    "active": 38,
+    "smoke": 12,
+    "dust": 4,
+    "flash": 0,
+    "sparks": 16,
+    "debris": 3,
+    "marks": 1,
+    "fire": 2,
+    "glow": 0,
+    "emissive": 1.5,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 1,
+    "markX": 4.923423981996022e-18,
+    "minDebrisY": 2.698888344184194,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    1.5877805395407321e-21,
+    6.197003525901455,
+    115.04365158665566
+   ],
+   "fov": 50,
+   "meanLuma": 0.4683549965787427,
+   "brightArea": 0.026454475308641975,
+   "contacts": [
+    {
+     "kind": "armor",
+     "grade": "penetrate",
+     "destroyed": false
+    }
+   ]
+  },
+  "fire-450ms": {
+   "effects": {
+    "active": 31,
+    "smoke": 14,
+    "dust": 4,
+    "flash": 0,
+    "sparks": 9,
+    "debris": 3,
+    "marks": 1,
+    "fire": 0,
+    "glow": 0,
+    "emissive": 0,
+    "capacity": {
+     "smoke": 104,
+     "sparks": 72,
+     "debris": 56,
+     "marks": 32,
+     "flash": 28,
+     "dust": 64,
+     "fire": 16,
+     "glow": 12
+    },
+    "resources": 16,
+    "anchors": 1,
+    "markX": -5.2653253888364596e-17,
+    "minDebrisY": 2.9719702291213177,
+    "radiance": 0,
+    "projectiles": 0
+   },
+   "camera": [
+    1.299964756860748e-21,
+    6.169488317820467,
+    115.03126974301921
+   ],
+   "fov": 50,
+   "meanLuma": 0.4681414506773301,
+   "brightArea": 0.026539351851851852,
+   "contacts": [
+    {
+     "kind": "armor",
+     "grade": "penetrate",
+     "destroyed": false
+    }
+   ]
+  }
+ },
+ "errors": []
+}

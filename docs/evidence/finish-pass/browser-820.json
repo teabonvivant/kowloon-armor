@@ -1,0 +1,63 @@
+{
+  "browser": "141.0.7390.37",
+  "artifactBytes": 1204969,
+  "artifactSha256": "e97aae251edcb8a693b57b0f66a4e26245dc0be4b689614e034187b5a0e9af39",
+  "checks": [
+    {
+      "name": "offline artifact 820x1180",
+      "detail": {
+        "width": 820,
+        "documentWidth": 820,
+        "start": {
+          "width": 185,
+          "height": 60
+        },
+        "centre": {
+          "tag": "CANVAS",
+          "id": "world",
+          "scroll": 0,
+          "fire": {
+            "x": 672,
+            "y": 1004,
+            "width": 68,
+            "height": 104,
+            "top": 1004,
+            "right": 740,
+            "bottom": 1108,
+            "left": 672
+          }
+        }
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "width": 820,
+      "height": 1180,
+      "touch": true,
+      "documentWidth": 820,
+      "start": {
+        "width": 185,
+        "height": 60
+      },
+      "centre": {
+        "tag": "CANVAS",
+        "id": "world",
+        "scroll": 0,
+        "fire": {
+          "x": 672,
+          "y": 1004,
+          "width": 68,
+          "height": 104,
+          "top": 1004,
+          "right": 740,
+          "bottom": 1108,
+          "left": 672
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "method": "Standalone file:// artifact uses real DOM keyboard and CDP touch inputs with manually clocked rAF at 100 ms, drawing the final frame of each accelerated input batch. Every screenshot renders the full WebGL scene. This functional test is not the separately frame-rendered normal-speed recording. The separate source harness completes the encounter with input-only aiming, tests repeated restarts and synthetic Gamepad API. This is not physical HOTAS, Safari or real-device performance evidence."
+}

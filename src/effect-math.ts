@@ -2,7 +2,8 @@ import { Vector3 } from 'three';
 import { clamp } from './math';
 import type { Obstacle } from './render/world';
 import type { Actor } from './actors';
-import type { HitZone } from './armor';
+import type { HitZone, ArmorFace } from './armor';
+import type { ExplosionKind, ImpactGrade } from './game-events-v19';
 import { FAMILY_SHAPES } from './render/geo-tank';
 
 export type ImpactKind = 'armor' | 'track' | 'road' | 'building' | 'metal';
@@ -34,11 +35,77 @@ export function cameraKick(age: number, mode: string, scope: boolean, zoom: numb
 }
 export const tracerLength = (speed: number, elapsed: number): number => Math.max(0, Math.min(4, speed * Math.min(.018, elapsed)));
 export const groundContact = (height: number, verticalStep: number): number => verticalStep < 0 ? clamp((.2 - height) / verticalStep, 0, 1) : 1;
-export function effectBudget(quality: string, mobile: boolean): { smoke: number; sparks: number; debris: number; marks: number; flash: number; dust: number } {
+export interface EffectCapacity { smoke: number; sparks: number; debris: number; marks: number; flash: number; dust: number; fire: number; glow: number }
+/** Live pool limits. v1.9 raises medium/high only; low and touch keep the v1.8 values (monotonic, see M08). */
+export function effectBudget(quality: string, mobile: boolean): EffectCapacity {
   const level = mobile || quality === 'low' ? 0 : quality === 'high' ? 2 : 1;
-  return { smoke: [48, 88, 128][level] ?? 48, sparks: [32, 72, 128][level] ?? 32,
-    debris: [16, 40, 64][level] ?? 16, marks: [16, 32, 48][level] ?? 16,
-    flash: [12, 20, 32][level] ?? 12, dust: [32, 64, 96][level] ?? 32 };
+  return { smoke: [48, 104, 160][level] ?? 48, sparks: [32, 72, 128][level] ?? 32,
+    debris: [16, 56, 96][level] ?? 16, marks: [16, 32, 48][level] ?? 16,
+    flash: [12, 28, 48][level] ?? 12, dust: [32, 64, 96][level] ?? 32,
+    fire: [8, 16, 24][level] ?? 8, glow: [12, 12, 16][level] ?? 12 };
+}
+/** Physical pool sizes (the largest limit of any tier). */
+export const EFFECT_CAPACITY: Readonly<EffectCapacity> = effectBudget('high', false);
+
+export interface ExplosionProfile {
+  fire: number; fireColor: number; smokeColor: number; smokeLife: number; debris: number; debrisColor: number;
+  sparks: number; flash: number; dust: number; radius: number; burn: number; heat: number;
+}
+/** Per-kind look of the dedicated explosion. `radius` matches PROP_TABLE; multipliers are applied to the power-scaled base. */
+export const EXPLOSION_PROFILES: Readonly<Record<ExplosionKind, ExplosionProfile>> = {
+  barrel: { fire: .9, fireColor: 0xff9a3a, smokeColor: 0x3a3b39, smokeLife: 1, debris: 1, debrisColor: 0x4a4a42, sparks: 1, flash: 0, dust: 1, radius: 11, burn: 0, heat: .8 },
+  lpg: { fire: 1.25, fireColor: 0xffb347, smokeColor: 0x5a5750, smokeLife: .8, debris: .85, debrisColor: 0x6a6a64, sparks: .8, flash: 1, dust: 1, radius: 11, burn: 0, heat: 1 },
+  vehicle: { fire: 1.05, fireColor: 0xff8a2e, smokeColor: 0x1f201f, smokeLife: 1.15, debris: 1.2, debrisColor: 0x42463f, sparks: 1.1, flash: 0, dust: 1, radius: 14, burn: 4, heat: 1 },
+  tanker: { fire: 1.6, fireColor: 0xff7a24, smokeColor: 0x1a1b1a, smokeLife: 1.3, debris: 1, debrisColor: 0x55564f, sparks: 1, flash: 1, dust: 1, radius: 18, burn: 6, heat: 1.2 },
+  ammo: { fire: .8, fireColor: 0xffd27a, smokeColor: 0x5b5a55, smokeLife: .9, debris: 1, debrisColor: 0x3b3e38, sparks: 2.4, flash: 2, dust: 1, radius: 8, burn: 0, heat: 1 },
+  strike: { fire: .75, fireColor: 0xffc062, smokeColor: 0x6f6a5c, smokeLife: .95, debris: 1.3, debrisColor: 0x5a5240, sparks: .7, flash: 0, dust: 1.3, radius: 12, burn: 0, heat: .9 },
+};
+export interface ExplosionPlan { fire: number; flash: number; smoke: number; debris: number; sparks: number; dust: number; marks: number; glow: number; burn: number }
+/**
+ * Emission counts of one explosion. Quality tier: low/touch 0.4, medium 1, high 1.3 (clamped to the C02 ranges);
+ * distance: >70 m 0.75, >140 m 0.5, >260 m none. `power` is clamped to 0.5-2.
+ */
+export function explosionPlan(kind: ExplosionKind, power: number, quality: string, mobile: boolean, distance = 0): ExplosionPlan {
+  const u = (clamp(Number.isFinite(power) ? power : 1, .5, 2) - .5) / 1.5, profile = EXPLOSION_PROFILES[kind];
+  const tier = mobile || quality === 'low' ? .4 : quality === 'high' ? 1.3 : 1;
+  const far = distance > 260 ? 0 : distance > 140 ? .5 : distance > 70 ? .75 : 1;
+  if (far === 0) return { fire: 0, flash: 0, smoke: 0, debris: 0, sparks: 0, dust: 0, marks: 0, glow: 0, burn: 0 };
+  const lerp = (a: number, b: number) => a + (b - a) * u, count = (n: number, max: number) => Math.min(max, Math.floor(n * tier * far));
+  return {
+    fire: count(Math.round(lerp(6, 8)), 8), flash: count(Math.round(lerp(6, 9)) + profile.flash, 11),
+    smoke: count(Math.round(lerp(12, 16)), 16), debris: count(Math.max(12, Math.round(lerp(12, 20) * profile.debris)), 20),
+    sparks: count(Math.round(lerp(6, 10) * profile.sparks), 24), dust: count(Math.round(12 * profile.dust), 16),
+    marks: count(3, 4), glow: count(3, 4), burn: tier > .4 && profile.burn > 0 ? 2 : 0,
+  };
+}
+/** Scorch size (m, 3-5) of the ground mark. */
+export const scorchSize = (power: number): number => 3 + (clamp(Number.isFinite(power) ? power : 1, .5, 2) - .5) / 1.5 * 2;
+
+/** Armour contact grade; presentation only, never feeds damage. `cosIncidence` = -v̂·n̂ on the struck surface. */
+export interface ImpactGradeInput { target: boolean; cosIncidence: number; factor?: number | undefined; face?: ArmorFace | undefined; destroyed?: boolean | undefined }
+export const GRADE_LIMITS = { ricochetCos: .34, frontBlockedCos: .5, penetrateFactor: .8 } as const;
+export function impactGrade(input: ImpactGradeInput): ImpactGrade {
+  const cos = clamp(Number.isFinite(input.cosIncidence) ? input.cosIncidence : 1, -1, 1);
+  if (!input.target) return cos < GRADE_LIMITS.ricochetCos ? 'ricochet' : 'blocked';
+  if (input.destroyed) return 'penetrate';
+  if (cos < GRADE_LIMITS.ricochetCos) return 'ricochet';
+  if ((input.factor ?? 1) < GRADE_LIMITS.penetrateFactor) return 'blocked';
+  if (input.face === 'front' && cos < GRADE_LIMITS.frontBlockedCos) return 'blocked';
+  return 'penetrate';
+}
+/** Deterministic ammo-rack cook-off (about 50 %), only for a turret-ring / rear strike. */
+export type CookOffZone = HitZone | 'turretRing' | 'rear';
+export function shouldCookOff(seed: number, enemyIndex: number, zone: CookOffZone, face?: ArmorFace): boolean {
+  const eligible = zone === 'turret' || zone === 'turretRing' || zone === 'rear' || (zone === 'hull' && face === 'rear');
+  if (!eligible) return false;
+  let h = Math.imul((seed | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((enemyIndex | 0) + 0x7f4a7c15, 0xc2b2ae35);
+  h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d); h ^= h >>> 12; h = Math.imul(h, 0x297a2d39); h ^= h >>> 15;
+  return ((h >>> 0) & 1023) < 512;
+}
+/** v1.9 tracer length: <=6 m at >=120 m/s (4 m below), never longer than the distance flown, ~32 ms of travel. */
+export function tracerLengthV19(speed: number, flown: number): number {
+  const cap = speed >= 120 ? 6 : 4;
+  return Math.max(0, Math.min(cap, flown, speed * .032));
 }
 export function effectPathClear(start: Vector3, end: Vector3, radius: number, obstacles: readonly Obstacle[]): boolean {
   const margin = Math.max(0, radius);

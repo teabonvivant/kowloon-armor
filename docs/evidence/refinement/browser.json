@@ -1,0 +1,395 @@
+{
+  "browser": "141.0.7390.37",
+  "artifactBytes": 1198158,
+  "artifactSha256": "2b558d3aed90347e1563d725666a357356c05159158a2d58e243fec4ecf99987",
+  "checks": [
+    {
+      "name": "offline artifact 1440x900",
+      "detail": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "start": {
+          "width": 221,
+          "height": 60
+        }
+      }
+    },
+    {
+      "name": "offline artifact 1280x577",
+      "detail": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "start": {
+          "width": 221,
+          "height": 58
+        }
+      }
+    },
+    {
+      "name": "offline artifact 390x844",
+      "detail": {
+        "width": 390,
+        "documentWidth": 390,
+        "start": {
+          "width": 255,
+          "height": 56.5
+        },
+        "centre": {
+          "tag": "CANVAS",
+          "id": "world",
+          "scroll": 0,
+          "fire": {
+            "x": 260,
+            "y": 668,
+            "width": 62,
+            "height": 104,
+            "top": 668,
+            "right": 322,
+            "bottom": 772,
+            "left": 260
+          }
+        }
+      }
+    },
+    {
+      "name": "offline artifact 844x390",
+      "detail": {
+        "width": 844,
+        "documentWidth": 844,
+        "start": {
+          "width": 172,
+          "height": 44
+        },
+        "centre": {
+          "tag": "CANVAS",
+          "id": "world",
+          "scroll": 0,
+          "fire": {
+            "x": 696,
+            "y": 214,
+            "width": 68,
+            "height": 104,
+            "top": 214,
+            "right": 764,
+            "bottom": 318,
+            "left": 696
+          }
+        }
+      }
+    },
+    {
+      "name": "offline artifact 820x1180",
+      "detail": {
+        "width": 820,
+        "documentWidth": 820,
+        "start": {
+          "width": 185,
+          "height": 60
+        },
+        "centre": {
+          "tag": "CANVAS",
+          "id": "world",
+          "scroll": 0,
+          "fire": {
+            "x": 672,
+            "y": 1004,
+            "width": 68,
+            "height": 104,
+            "top": 1004,
+            "right": 740,
+            "bottom": 1108,
+            "left": 672
+          }
+        }
+      }
+    },
+    {
+      "name": "full street encounter through input frames",
+      "detail": {
+        "phase": "victory",
+        "kills": 2,
+        "shots": 8,
+        "hits": 6,
+        "hp": 751,
+        "seconds": 42.18333333333222,
+        "metres": 12.490733183086178,
+        "obstacles": 15
+      }
+    },
+    {
+      "name": "restart GPU resource counts remain bounded",
+      "detail": [
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 25,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "simulated HOTAS calibration, throttle and trigger",
+      "detail": {
+        "speed": 8.462686567164187,
+        "shots": 1,
+        "devices": 1
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "height": 900,
+      "touch": false,
+      "documentWidth": 1440,
+      "start": {
+        "width": 221,
+        "height": 60
+      }
+    },
+    {
+      "width": 1280,
+      "height": 577,
+      "touch": false,
+      "documentWidth": 1280,
+      "start": {
+        "width": 221,
+        "height": 58
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "touch": true,
+      "documentWidth": 390,
+      "start": {
+        "width": 255,
+        "height": 56.5
+      },
+      "centre": {
+        "tag": "CANVAS",
+        "id": "world",
+        "scroll": 0,
+        "fire": {
+          "x": 260,
+          "y": 668,
+          "width": 62,
+          "height": 104,
+          "top": 668,
+          "right": 322,
+          "bottom": 772,
+          "left": 260
+        }
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "touch": true,
+      "documentWidth": 844,
+      "start": {
+        "width": 172,
+        "height": 44
+      },
+      "centre": {
+        "tag": "CANVAS",
+        "id": "world",
+        "scroll": 0,
+        "fire": {
+          "x": 696,
+          "y": 214,
+          "width": 68,
+          "height": 104,
+          "top": 214,
+          "right": 764,
+          "bottom": 318,
+          "left": 696
+        }
+      }
+    },
+    {
+      "width": 820,
+      "height": 1180,
+      "touch": true,
+      "documentWidth": 820,
+      "start": {
+        "width": 185,
+        "height": 60
+      },
+      "centre": {
+        "tag": "CANVAS",
+        "id": "world",
+        "scroll": 0,
+        "fire": {
+          "x": 672,
+          "y": 1004,
+          "width": 68,
+          "height": 104,
+          "top": 1004,
+          "right": 740,
+          "bottom": 1108,
+          "left": 672
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "method": "Standalone file:// artifact uses real DOM keyboard and CDP touch inputs with manually clocked rAF at 100 ms, drawing the final frame of each accelerated input batch. Every screenshot renders the full WebGL scene. This functional test is not the separately frame-rendered normal-speed recording. The separate source harness completes the encounter with input-only aiming, tests repeated restarts and synthetic Gamepad API. This is not physical HOTAS, Safari or real-device performance evidence."
+}

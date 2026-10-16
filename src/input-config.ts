@@ -28,6 +28,7 @@ export const controllerSchema = z.object({
   buttonPause: button,
   buttonScope: button,
   buttonReverse: button,
+  buttonStrike: button,
   neutralSteer: neutral,
   neutralThrottle: neutral,
   neutralAimX: neutral,
@@ -43,13 +44,13 @@ export const HOTAS_PRESET: ControllerConfig = {
   invertSteer: false, invertThrottle: true, invertAimX: false, invertAimY: false,
   throttleMode: 'centered', deadzone: 0.12, sensitivity: 1,
   buttonFire: 0, buttonBrake: 1, buttonCamera: 2, buttonPause: 7,
-  buttonScope: 3, buttonReverse: 4,
+  buttonScope: 3, buttonReverse: 4, buttonStrike: 5,
   neutralSteer: 0, neutralThrottle: 0, neutralAimX: 0, neutralAimY: 0,
 } as const;
 
 export const XBOX_PRESET: ControllerConfig = {
   ...HOTAS_PRESET, buttonFire: 7, buttonBrake: 0, buttonCamera: 3,
-  buttonPause: 9, buttonScope: 6, buttonReverse: -1,
+  buttonPause: 9, buttonScope: 6, buttonReverse: -1, buttonStrike: 5,
 } as const;
 
 const STORAGE_KEY = 'kowloon-armour.controllers.v1';
@@ -59,7 +60,7 @@ export function loadControllerConfig(): ControllerConfig {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === null) return HOTAS_PRESET;
     const parsed: unknown = JSON.parse(saved);
-    const config = controllerSchema.safeParse(parsed);
+    const config = controllerSchema.safeParse(typeof parsed === 'object' && parsed !== null && !('buttonStrike' in parsed) ? { ...parsed, buttonStrike: HOTAS_PRESET.buttonStrike } : parsed);
     return config.success ? config.data : HOTAS_PRESET;
   } catch (error) {
     if (error instanceof DOMException || error instanceof SyntaxError) return HOTAS_PRESET;

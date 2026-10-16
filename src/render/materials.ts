@@ -46,42 +46,67 @@ export interface Pose {
   readonly rotation?: readonly [number, number, number];
 }
 
-interface Instance {
-  readonly pose: Pose;
-  readonly color: THREE.ColorRepresentation;
+/** Handle to one instance of a finished batch (v1.9). `mesh`/`index` are filled by `finish()`. */
+export interface BatchRef {
+  mesh?: THREE.InstancedMesh;
+  index: number;
+  readonly matrix: THREE.Matrix4;
+  readonly color: THREE.Color;
+}
+
+const poseTransform = new THREE.Object3D();
+function poseMatrix(pose: Pose, target = new THREE.Matrix4()): THREE.Matrix4 {
+  poseTransform.position.set(...pose.position);
+  poseTransform.scale.set(...pose.scale);
+  poseTransform.rotation.set(...(pose.rotation ?? [0, 0, 0]));
+  poseTransform.updateMatrix();
+  return target.copy(poseTransform.matrix);
+}
+
+/** Overwrite one finished instance's transform (GPU upload happens on the next render). */
+export function setInstancePose(ref: BatchRef, matrix: THREE.Matrix4): void {
+  ref.matrix.copy(matrix);
+  if (ref.mesh) { ref.mesh.setMatrixAt(ref.index, matrix); ref.mesh.instanceMatrix.needsUpdate = true; }
+}
+export function setInstanceColor(ref: BatchRef, color: THREE.ColorRepresentation): void {
+  ref.color.set(color);
+  if (ref.mesh) { ref.mesh.setColorAt(ref.index, ref.color); if (ref.mesh.instanceColor) ref.mesh.instanceColor.needsUpdate = true; }
 }
 
 export class GeometryBatch {
-  private readonly entries = new Map<THREE.BufferGeometry, Instance[]>();
+  private readonly entries = new Map<THREE.BufferGeometry, BatchRef[]>();
+  /** Optional parent transform applied to every pose added while it is set (used to place whole vehicles). */
+  base: THREE.Matrix4 | null = null;
   constructor(private readonly material: THREE.Material = solidMaterial) {}
 
-  add(geometry: THREE.BufferGeometry, pose: Pose, color: THREE.ColorRepresentation): void {
+  add(geometry: THREE.BufferGeometry, pose: Pose, color: THREE.ColorRepresentation): BatchRef {
+    const matrix = poseMatrix(pose);
+    if (this.base) matrix.premultiply(this.base);
+    const ref: BatchRef = { index: -1, matrix, color: new THREE.Color(color) };
     const instances = this.entries.get(geometry) ?? [];
-    instances.push({ pose, color });
+    instances.push(ref);
     this.entries.set(geometry, instances);
+    return ref;
   }
 
-  box(pose: Pose, color: THREE.ColorRepresentation): void { this.add(unitBox, pose, color); }
-  cylinder(pose: Pose, color: THREE.ColorRepresentation): void { this.add(unitCylinder, pose, color); }
-  sphere(pose: Pose, color: THREE.ColorRepresentation): void { this.add(unitSphere, pose, color); }
+  box(pose: Pose, color: THREE.ColorRepresentation): BatchRef { return this.add(unitBox, pose, color); }
+  cylinder(pose: Pose, color: THREE.ColorRepresentation): BatchRef { return this.add(unitCylinder, pose, color); }
+  sphere(pose: Pose, color: THREE.ColorRepresentation): BatchRef { return this.add(unitSphere, pose, color); }
 
   finish(group: THREE.Group, castShadow = true, cellSize = 0): void {
-    const transform = new THREE.Object3D();
     for (const [geometry, instances] of this.entries) {
-      const cells = new Map<string, Instance[]>();
+      const cells = new Map<string, BatchRef[]>();
       for (const instance of instances) {
-        const key = cellSize ? `${Math.floor((instance.pose.position[0] + cellSize / 2) / cellSize)},${Math.floor((instance.pose.position[2] + cellSize / 2) / cellSize)}` : 'all';
+        const e = instance.matrix.elements;
+        const key = cellSize ? `${Math.floor((e[12]! + cellSize / 2) / cellSize)},${Math.floor((e[14]! + cellSize / 2) / cellSize)}` : 'all';
         const cell = cells.get(key) ?? []; cell.push(instance); cells.set(key, cell);
       }
       for (const cell of cells.values()) {
         const mesh = new THREE.InstancedMesh(geometry, this.material, cell.length);
-        cell.forEach(({ pose, color }, index) => {
-          transform.position.set(...pose.position);
-          transform.scale.set(...pose.scale);
-          transform.rotation.set(...(pose.rotation ?? [0, 0, 0]));
-          transform.updateMatrix();
-          mesh.setMatrixAt(index, transform.matrix);
-          mesh.setColorAt(index, new THREE.Color(color));
+        cell.forEach((ref, index) => {
+          ref.mesh = mesh; ref.index = index;
+          mesh.setMatrixAt(index, ref.matrix);
+          mesh.setColorAt(index, ref.color);
         });
         mesh.castShadow = castShadow;
         mesh.receiveShadow = true;
@@ -92,6 +117,22 @@ export class GeometryBatch {
     }
   }
 }
+
+/** Day/dusk emissive registry: `setGlowMode(true)` raises signs and lamps to neon strength (day values unchanged). */
+const glowRegistry: { material: THREE.MeshStandardMaterial; day: number; dusk: number }[] = [];
+export function registerGlow(material: THREE.MeshStandardMaterial, day: number, dusk: number): void {
+  glowRegistry.push({ material, day, dusk }); material.emissiveIntensity = glowDusk ? dusk : day;
+}
+let glowDusk = false;
+export function setGlowMode(dusk: boolean): void {
+  glowDusk = dusk;
+  for (const entry of glowRegistry) entry.material.emissiveIntensity = dusk ? entry.dusk : entry.day;
+  if (asphalt) { asphalt.emissive.setHex(dusk ? ROAD_DUSK_GLOW : 0x000000); asphalt.emissiveIntensity = dusk ? ROAD_DUSK_INTENSITY : 0; }
+}
+export const isDuskGlow = (): boolean => glowDusk;
+registerGlow(glowMaterial, .6, .95);
+let asphalt: THREE.MeshStandardMaterial | null = null;
+const ROAD_DUSK_GLOW = 0xff9a55, ROAD_DUSK_INTENSITY = 2.3;
 
 export function createAsphaltMaterial(): THREE.MeshStandardMaterial {
   const canvas = document.createElement('canvas');
@@ -113,7 +154,10 @@ export function createAsphaltMaterial(): THREE.MeshStandardMaterial {
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(100, 100);
   texture.colorSpace = THREE.SRGBColorSpace;
-  return new THREE.MeshStandardMaterial({ map: texture, roughness: 0.98, metalness: 0.02 });
+  // Wet-road look: at dusk the asphalt picks up warm neon spill (texture-modulated, so grain survives); day is untouched.
+  asphalt = new THREE.MeshStandardMaterial({ map: texture, emissiveMap: texture, roughness: 0.75, metalness: 0.02 });
+  if (glowDusk) { asphalt.emissive.setHex(ROAD_DUSK_GLOW); asphalt.emissiveIntensity = ROAD_DUSK_INTENSITY; }
+  return asphalt;
 }
 
 export interface SignStyle {
@@ -122,6 +166,49 @@ export interface SignStyle {
   readonly background: string;
   readonly foreground: string;
   readonly vertical?: boolean;
+  readonly neon?: boolean;
+}
+
+/** Paint one sign into a rectangle of a 2D canvas. `neon` draws tube-outlined glyphs with an outer halo. */
+export function paintSign(context: CanvasRenderingContext2D, style: SignStyle, x: number, y: number, width: number, height: number): void {
+  context.save();
+  context.beginPath(); context.rect(x, y, width, height); context.clip();
+  context.fillStyle = style.background;
+  context.fillRect(x, y, width, height);
+  context.strokeStyle = style.foreground;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  if (style.neon) {
+    context.lineJoin = 'round';
+    context.shadowColor = style.foreground; context.shadowBlur = 12; context.lineWidth = 5;
+    context.strokeRect(x + 9, y + 9, width - 18, height - 18);
+    const chars = [...style.text], pitch = (height - 40) / Math.max(chars.length, 3), size = Math.min(width - 30, pitch * .92);
+    context.font = `bold ${Math.round(size)}px "Microsoft JhengHei", "Noto Sans CJK TC", sans-serif`;
+    chars.forEach((character, index) => {
+      const cy = y + 20 + pitch * (index + .5);
+      context.shadowBlur = 14; context.lineWidth = 4; context.strokeStyle = style.foreground;
+      context.strokeText(character, x + width / 2, cy);
+      context.shadowBlur = 0; context.lineWidth = 1.5; context.strokeStyle = '#ffffff';
+      context.strokeText(character, x + width / 2, cy);
+    });
+    context.restore();
+    return;
+  }
+  context.lineWidth = 3;
+  context.strokeRect(x + 7, y + 7, width - 14, height - 14);
+  context.fillStyle = style.foreground;
+  context.shadowColor = style.foreground;
+  context.shadowBlur = 4;
+  if (style.vertical) {
+    context.font = 'bold 72px "Microsoft JhengHei", sans-serif';
+    [...style.text].forEach((character, index) => context.fillText(character, x + 64, y + 66 + index * 94));
+  } else {
+    context.font = 'bold 56px "Microsoft JhengHei", sans-serif';
+    context.fillText(style.text, x + 256, y + 48, 480);
+    context.font = '19px Arial, sans-serif';
+    context.fillText(style.subtitle, x + 256, y + 97, 470);
+  }
+  context.restore();
 }
 
 export function createSignMaterial(style: SignStyle): THREE.MeshStandardMaterial {
@@ -129,29 +216,11 @@ export function createSignMaterial(style: SignStyle): THREE.MeshStandardMaterial
   canvas.width = style.vertical ? 128 : 512;
   canvas.height = style.vertical ? 512 : 128;
   const context = canvas.getContext('2d');
-  if (context) {
-    context.fillStyle = style.background;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = style.foreground;
-    context.lineWidth = 3;
-    context.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
-    context.fillStyle = style.foreground;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.shadowColor = style.foreground;
-    context.shadowBlur = 4;
-    if (style.vertical) {
-      context.font = 'bold 72px "Microsoft JhengHei", sans-serif';
-      [...style.text].forEach((character, index) => context.fillText(character, 64, 66 + index * 94));
-    } else {
-      context.font = 'bold 56px "Microsoft JhengHei", sans-serif';
-      context.fillText(style.text, 256, 48, 480);
-      context.font = '19px Arial, sans-serif';
-      context.fillText(style.subtitle, 256, 97, 470);
-    }
-  }
+  if (context) paintSign(context, style, 0, 0, canvas.width, canvas.height);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;
-  return new THREE.MeshStandardMaterial({ map: texture, emissiveMap: texture, emissive: 0xffffff, emissiveIntensity: 0.38, roughness: 0.8, side: THREE.DoubleSide });
+  const material = new THREE.MeshStandardMaterial({ map: texture, emissiveMap: texture, emissive: 0xffffff, emissiveIntensity: 0.38, roughness: 0.8, side: THREE.DoubleSide });
+  registerGlow(material, 0.38, 1.1);
+  return material;
 }

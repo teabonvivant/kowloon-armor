@@ -5,6 +5,7 @@ import type { Game } from './game';
 import type { Progress } from './persistence';
 import { icon } from './ui-kit';
 import { DEFAULT_BINDINGS, keyLabel } from './key-bindings';
+import { arcadeRating, comboMultiplier } from './arcade';
 import type { KeyBindings } from './key-bindings';
 import { briefingMap, operationBrief } from './briefing';
 import type { GameMode } from './game';
@@ -75,6 +76,7 @@ export function resultDialog(game: Game, victory: boolean, completed: number, ne
     <div><small>${DIFFICULTIES[game.difficulty].name}難度得分</small><strong>${game.score.toLocaleString()}</strong></div></div>
     <div class="debrief-line"><span>命中率 <b>${accuracy}%</b>（${game.hits} / ${game.shots} 發）</span><span>剩餘耐久 <b>${Math.round(health * 100)}%</b></span><span>得分倍率 <b>×${DIFFICULTIES[game.difficulty].score}</b></span></div>
     <div class="debrief-line"><span>有效傷害 <b>${game.report.dealt}</b></span><span>承受傷害 <b>${game.report.received}</b></span><span>側後命中 <b>${game.report.flankingHits}</b> 次</span><span>行駛 <b>${Math.round(game.report.distance)}</b> m</span></div>
+    <div class="debrief-line arcade-report"><span>爆破 <b>${game.arcade.propsDestroyed}</b> 件</span><span>最大連殺 <b>×${comboMultiplier(game.arcade.bestCombo)}</b></span><span>最佳一炮引爆 <b>${game.arcade.bestChain}</b></span><span>爆破評級 <b>${arcadeRating(game.arcade)}</b></span></div>
     <div class="debrief-objective">${brief.objective}<small>${objective && objective.kind !== 'clear' ? `控制時間 ${Math.floor(game.objective.progress)} / ${objective.seconds} 秒${objective.kind === 'defend' ? ` · 防線 ${Math.ceil(game.objective.integrity)}%` : ''}` : `擊破 ${game.kills} 輛 · ${brief.area}`}</small></div>
     <p class="dialog-intro">${advice}</p>
     ${game.challenge !== 'none' ? `<section class="challenge-result"><h3>${challenge.complete ? '✓ 挑戰達成' : '挑戰未達成'} · ${challenge.title}</h3><p>${challenge.progress}</p></section>` : ''}

@@ -21,7 +21,7 @@ export class TouchControls {
   constructor(private readonly canvas: HTMLElement) {
     this.root.id = 'touch-controls'; this.root.hidden = true;
     this.root.innerHTML = `<div class="touch-drive"><div id="touch-stick" role="group" aria-label="駕駛搖桿：上前進、下倒車、左右轉彎"><span>駕駛</span><i></i></div><button data-touch-hold="brake" aria-label="按住煞車">煞車</button></div>
-      <div class="touch-actions"><button id="touch-scope" aria-pressed="false">瞄準鏡</button><button id="touch-observe" aria-pressed="false">觀察</button><button id="touch-fire" data-touch-hold="fire" aria-label="按住開火"><strong>開火</strong><small>就緒</small></button><button id="touch-recentre" aria-label="炮塔回正">回正</button></div>`;
+      <div class="touch-actions"><button id="touch-scope" aria-pressed="false">瞄準鏡</button><button id="touch-observe" aria-pressed="false">觀察</button><button id="touch-fire" data-touch-hold="fire" aria-label="按住開火"><strong>開火</strong><small>就緒</small></button><button id="touch-recentre" aria-label="炮塔回正">回正</button><button id="touch-strike" aria-label="呼叫炮擊支援">炮擊</button></div>`;
     document.body.append(this.root);
     const options = { signal: this.abort.signal };
     document.addEventListener('pointerdown', event => {
@@ -41,6 +41,7 @@ export class TouchControls {
       if (target?.id === 'touch-scope') this.state.scope = !this.state.scope;
       if (target?.id === 'touch-observe') this.state.observe = !this.state.observe;
       if (target?.id === 'touch-recentre') this.canvas.dispatchEvent(new CustomEvent('tank-recentre'));
+      if (target?.id === 'touch-strike') this.canvas.dispatchEvent(new CustomEvent('tank-strike'));
       this.buttons();
     }, options);
     window.addEventListener('resize', () => {

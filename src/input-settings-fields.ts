@@ -10,7 +10,7 @@ const AXES = [
 const BUTTONS = [
   ['buttonFire', '開火按鈕'], ['buttonBrake', '煞車按鈕'],
   ['buttonScope', '瞄準鏡按鈕'], ['buttonCamera', '切換視角按鈕'],
-  ['buttonReverse', '倒車按鈕（滑動油門）'], ['buttonPause', '暫停按鈕'],
+  ['buttonReverse', '倒車按鈕（滑動油門）'], ['buttonPause', '暫停按鈕'], ['buttonStrike', '炮擊支援按鈕'],
 ] as const;
 const DEVICES = [
   ['controllerIndex', '主要搖桿'], ['throttleControllerIndex', '油門裝置'],

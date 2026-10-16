@@ -1,0 +1,217 @@
+{
+  "results": [
+    {
+      "mission": 1,
+      "vehicle": "leopard2a8",
+      "kind": "clear",
+      "phase": "victory",
+      "elapsed": 16.850000000000325,
+      "hp": 885,
+      "kills": 2,
+      "shots": 4,
+      "hits": 4,
+      "objective": {
+        "progress": 0,
+        "integrity": 100,
+        "contested": false,
+        "inside": false
+      },
+      "position": [
+        -1.1642593365624369e-15,
+        0,
+        65.46746828896553
+      ],
+      "enemies": []
+    },
+    {
+      "mission": 2,
+      "vehicle": "leopard2a8",
+      "kind": "capture",
+      "phase": "victory",
+      "elapsed": 94.44999999999592,
+      "hp": 926,
+      "kills": 3,
+      "shots": 12,
+      "hits": 6,
+      "objective": {
+        "progress": 20,
+        "integrity": 100,
+        "contested": false,
+        "inside": true
+      },
+      "position": [
+        18.122537624621113,
+        0,
+        2.5294469749705244
+      ],
+      "enemies": []
+    },
+    {
+      "mission": 3,
+      "vehicle": "leopard2a8",
+      "kind": "clear",
+      "phase": "victory",
+      "elapsed": 64.38333333333097,
+      "hp": 553,
+      "kills": 4,
+      "shots": 11,
+      "hits": 11,
+      "objective": {
+        "progress": 0,
+        "integrity": 100,
+        "contested": false,
+        "inside": false
+      },
+      "position": [
+        0.21192758968912892,
+        0,
+        59.474972713516316
+      ],
+      "enemies": []
+    },
+    {
+      "mission": 4,
+      "vehicle": "leopard2a8",
+      "kind": "defend",
+      "phase": "victory",
+      "elapsed": 45.016666666665394,
+      "hp": 745,
+      "kills": 3,
+      "shots": 9,
+      "hits": 8,
+      "objective": {
+        "progress": 45,
+        "integrity": 100,
+        "contested": false,
+        "inside": true
+      },
+      "position": [
+        84,
+        0,
+        100
+      ],
+      "enemies": [
+        {
+          "position": [
+            85.87045418547703,
+            0,
+            30.950041318050268
+          ],
+          "hp": 353,
+          "tactic": "cover"
+        },
+        {
+          "position": [
+            4.7652520076307985,
+            0,
+            82.39962459370282
+          ],
+          "hp": 182,
+          "tactic": "cover"
+        }
+      ]
+    },
+    {
+      "mission": 5,
+      "vehicle": "leopard2a8",
+      "kind": "capture",
+      "phase": "victory",
+      "elapsed": 124.14999999999424,
+      "hp": 447,
+      "kills": 6,
+      "shots": 16,
+      "hits": 14,
+      "objective": {
+        "progress": 30,
+        "integrity": 100,
+        "contested": false,
+        "inside": true
+      },
+      "position": [
+        -81.49337130324763,
+        0,
+        -65.91410761746334
+      ],
+      "enemies": []
+    },
+    {
+      "mission": 6,
+      "vehicle": "leopard2a8",
+      "kind": "defend",
+      "phase": "defeat",
+      "elapsed": 58.99999999999793,
+      "hp": 0,
+      "kills": 2,
+      "shots": 9,
+      "hits": 10,
+      "objective": {
+        "progress": 56.46666666666474,
+        "integrity": 79.73333333333233,
+        "contested": false,
+        "inside": true
+      },
+      "position": [
+        -10.520177325603097,
+        -0.2,
+        -7.585630543234416
+      ],
+      "enemies": [
+        {
+          "position": [
+            -84.2749712187165,
+            0,
+            3.907586645136713
+          ],
+          "hp": 401,
+          "tactic": "cover"
+        },
+        {
+          "position": [
+            85.34548783860434,
+            0,
+            -13.801170209736874
+          ],
+          "hp": 330,
+          "tactic": "advance"
+        },
+        {
+          "position": [
+            77.56577789030062,
+            0,
+            -13.87210017945264
+          ],
+          "hp": 27,
+          "tactic": "advance"
+        },
+        {
+          "position": [
+            -81.6513707900538,
+            0,
+            13.478908754969103
+          ],
+          "hp": 345,
+          "tactic": "advance"
+        },
+        {
+          "position": [
+            67.26687153308208,
+            0,
+            6.9476787150257335
+          ],
+          "hp": 132,
+          "tactic": "advance"
+        },
+        {
+          "position": [
+            -47.97635236097563,
+            0,
+            -0.5751928676392318
+          ],
+          "hp": 394,
+          "tactic": "cover"
+        }
+      ]
+    }
+  ],
+  "method": "All six missions in full city obstacles, training difficulty, fixed 60 Hz, Leopard 2 A8 input-only pilot. Final defence patrols four points with 5-second orders. Every step checks real building clearance. No health, cooldown, position or outcome overrides."
+}

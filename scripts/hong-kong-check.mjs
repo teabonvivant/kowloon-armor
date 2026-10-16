@@ -11,6 +11,8 @@ const bundle = await build({ stdin: { resolveDir: resolve('.'), contents: `
   export { Color } from 'three';
   export { TANKS } from './src/data/tanks';
   export { loadPreferences, savePreferences } from './src/preferences';
+  export { NEON_SIGNS, LIGHTBOX_ADS } from './src/render/hk-street';
+  export { shopSigns, streetSigns } from './src/render/city-details';
 ` }, bundle: true, format: 'esm', platform: 'node', write: false });
 const api = await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
 
@@ -71,4 +73,19 @@ test('damage shading is idempotent and repairs restore original instance colours
   api.showTankDamage(actor.visual, 1);
   const repaired = new api.Color(); mesh.getColorAt(0, repaired);
   assert.ok(Math.abs(repaired.r - before.r) < 1e-6);
+});
+
+test('v1.9 HK street layer: node-named props, fictional traditional signage, collision footprint of v1.8 preserved', () => {
+  globalThis.document = { createElement: () => ({ getContext: () => null }) };
+  const world = api.createWorld(), legacy = api.createWorld({ hkExtras: false }); delete globalThis.document;
+  const count = prefix => { let total = 0; world.group.traverse(object => { if (object.name.startsWith(prefix)) total++; }); return total; };
+  assert.ok(count('hk-taxi-') >= 4 && count('hk-minibus-') >= 2 && count('hk-flyover-') >= 2 && count('hk-stall-') >= 3 && count('hk-laundry-') >= 12);
+  const simplified = [...'门铺药馆龙凤业东乐华发兴汉酱鱼鸡饭面楼书车钱银电广鸿运达顺们这个时来过无为开关记鲜园会学区医岛团艺场气热爱贝轻视觉'];
+  const texts = [...api.NEON_SIGNS, ...api.LIGHTBOX_ADS, ...api.shopSigns, ...api.streetSigns].map(style => style.text);
+  assert.ok(new Set(api.NEON_SIGNS.map(style => style.text)).size >= 8);
+  for (const text of texts) for (const char of text) assert.ok(!simplified.includes(char), `${text}: simplified ${char}`);
+  const key = item => `${item.x},${item.z},${item.halfX},${item.halfZ}`;
+  const now = new Set(world.obstacles.map(key));
+  for (const item of legacy.obstacles) assert.ok(now.has(key(item)));
+  assert.equal(legacy.obstacles.length, 116);
 });

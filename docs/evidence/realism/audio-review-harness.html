@@ -1,0 +1,487 @@
+<meta charset="utf-8"><title>Offline audio evidence</title><script>(() => {
+  // src/spatial-audio.ts
+  function spatialMix(listener, yaw, source) {
+    const offsetX = source.x - listener.x, offsetZ = source.z - listener.z;
+    const distance = Math.hypot(offsetX, offsetZ);
+    return {
+      pan: distance < 0.01 ? 0 : Math.max(-1, Math.min(1, (offsetX * Math.cos(yaw) - offsetZ * Math.sin(yaw)) / distance)),
+      gain: 1 / (1 + distance / 42),
+      cutoff: Math.max(500, 6500 / (1 + distance / 55))
+    };
+  }
+
+  // src/math.ts
+  var clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  function wallFraction(x, z, dx, dz, obstacles, clearance = 0) {
+    let first = 1;
+    for (const box of obstacles) {
+      let enter = 0;
+      let exit = 1;
+      for (const [start, delta, centre, half] of [[x, dx, box.x, box.halfX + clearance], [z, dz, box.z, box.halfZ + clearance]]) {
+        if (start === void 0 || delta === void 0 || centre === void 0 || half === void 0) continue;
+        if (Math.abs(delta) < 1e-5) {
+          if (start < centre - half || start > centre + half) {
+            exit = -1;
+            break;
+          }
+        } else {
+          const a = (centre - half - start) / delta;
+          const b = (centre + half - start) / delta;
+          enter = Math.max(enter, Math.min(a, b));
+          exit = Math.min(exit, Math.max(a, b));
+        }
+      }
+      if (enter <= exit && enter >= 0 && enter < first) first = enter;
+    }
+    return first;
+  }
+
+  // src/soundtrack.ts
+  var Soundtrack = class {
+    constructor(context, destination) {
+      this.context = context;
+      this.gain = context.createGain();
+      this.gain.gain.value = 0;
+      this.gain.connect(destination);
+    }
+    nextBeat = 0;
+    beat = 0;
+    voices = 0;
+    intensity = 0;
+    volume = 0.35;
+    gain;
+    setVolume(volume) {
+      this.volume = Math.max(0, Math.min(1, volume));
+    }
+    update(threat, dt) {
+      this.intensity += (Math.max(0, Math.min(1, threat)) - this.intensity) * Math.min(1, dt * 1.5);
+      const now = this.context.currentTime;
+      this.gain.gain.setTargetAtTime(this.volume * 0.32, now, 0.2);
+      if (this.nextBeat < now - 0.2) this.nextBeat = now;
+      while (this.nextBeat < now + 0.1) {
+        const beat = this.beat++ % 64, time = this.nextBeat;
+        const root = [73.416, 65.406, 58.27, 65.406][Math.floor(beat / 16)] ?? 73.416;
+        if (beat % 4 === 0) this.note(root, time, 1.1, 0.2, "triangle");
+        if (beat % 4 === 2) this.note(root * 1.5, time, 0.4, 0.08, "sine");
+        if (beat % 8 === 0) {
+          const interval = [4, 4.5, 5, 6, 5, 4.5, 3, 4][Math.floor(beat / 8)] ?? 4;
+          this.note(root * interval, time, 1.4, 0.09, "sine");
+          this.note(root * interval * 2.002, time, 0.6, 0.025, "sine");
+        }
+        if (this.intensity > 0.25 && beat % 2 === 0) this.note(90, time, 0.14, 0.25 * this.intensity, "sine", 34);
+        if (this.intensity > 0.55 && beat % 4 === 3) this.note(root * 2, time, 0.12, 0.1, "triangle");
+        this.nextBeat += 0.3125;
+      }
+    }
+    stop() {
+      this.gain.gain.setTargetAtTime(0, this.context.currentTime, 0.03);
+      this.nextBeat = this.context.currentTime;
+      this.intensity = 0;
+    }
+    note(frequency, time, duration, volume, type, end) {
+      if (this.voices >= 12) return;
+      const oscillator = this.context.createOscillator(), gain = this.context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, time);
+      if (end) oscillator.frequency.exponentialRampToValueAtTime(end, time + duration);
+      gain.gain.setValueAtTime(1e-4, time);
+      gain.gain.exponentialRampToValueAtTime(volume, time + 0.015);
+      gain.gain.exponentialRampToValueAtTime(1e-4, time + duration);
+      oscillator.connect(gain).connect(this.gain);
+      this.voices++;
+      oscillator.start(time);
+      oscillator.stop(time + duration);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gain.disconnect();
+        this.voices--;
+      };
+    }
+  };
+
+  // src/effect-audio.ts
+  function cannonSound(calibre) {
+    const bore = clamp(Number.isFinite(calibre) ? calibre : 120, 90, 155) / 120;
+    return { frequency: 100 / Math.sqrt(bore), duration: 0.68 * bore, volume: 0.38 * Math.sqrt(bore), cutoff: 6200 / bore, crack: 0.17, tail: 0.1 * bore };
+  }
+  function impactSound(kind, destroyed) {
+    if (destroyed) return { frequency: 62, duration: 1, volume: 0.44, cutoff: 2800, crack: 0.2, tail: 0.15 };
+    const frequency = { armor: 280, track: 170, building: 120, road: 85, metal: 340 }[kind];
+    return {
+      frequency,
+      duration: kind === "road" || kind === "building" ? 0.36 : 0.2,
+      volume: 0.22,
+      cutoff: { armor: 5800, track: 3100, building: 1700, road: 1100, metal: 6400 }[kind],
+      crack: 0.15,
+      tail: 0.04
+    };
+  }
+
+  // src/realism.ts
+  var REALISM_SAMPLE = true;
+
+  // src/audio.ts
+  var GameAudio = class {
+    context = null;
+    master = null;
+    engineGain = null;
+    engineOscillator = null;
+    volume = 0.35;
+    failureReported = false;
+    listener = { x: 0, z: 0 };
+    listenerYaw = 0;
+    noise = null;
+    voices = 0;
+    soundtrack = null;
+    musicVolume = 0.35;
+    field = null;
+    trackGain = null;
+    trackFilter = null;
+    obstacles = [];
+    echo = null;
+    limiter = null;
+    output = null;
+    night = false;
+    battleGain = null;
+    effectsVolume = 1;
+    engineVolume = 1;
+    alertsVolume = 1;
+    active = /* @__PURE__ */ new Set();
+    trackSource = null;
+    disposed = false;
+    fieldActive = false;
+    events = 0;
+    cancelled = 0;
+    cannonNoise = null;
+    interior = false;
+    unlock() {
+      if (this.disposed) return;
+      if (typeof AudioContext !== "function") return;
+      if (this.context === null) {
+        this.context = new AudioContext();
+        this.master = this.context.createGain();
+        this.master.gain.value = this.volume;
+        const limiter = this.context.createDynamicsCompressor();
+        this.limiter = limiter;
+        limiter.threshold.value = -10;
+        limiter.knee.value = 6;
+        limiter.ratio.value = 8;
+        limiter.attack.value = 3e-3;
+        limiter.release.value = 0.18;
+        this.output = this.context.createGain();
+        this.master.connect(limiter).connect(this.output).connect(this.context.destination);
+        this.setNightMode(this.night);
+        this.field = this.context.createGain();
+        this.field.gain.value = 0;
+        this.field.connect(this.master);
+        this.battleGain = this.context.createGain();
+        this.battleGain.gain.value = this.effectsVolume;
+        this.battleGain.connect(this.field);
+        this.soundtrack = new Soundtrack(this.context, this.master);
+        this.soundtrack.setVolume(this.musicVolume);
+        this.echo = this.context.createGain();
+        this.echo.gain.value = 0.2;
+        const delay = this.context.createDelay(0.5), tail = this.context.createDelay(0.5);
+        const damping = this.context.createBiquadFilter(), decay = this.context.createGain();
+        delay.delayTime.value = 0.13;
+        tail.delayTime.value = 0.21;
+        decay.gain.value = 0.28;
+        damping.type = "lowpass";
+        damping.frequency.value = 1600;
+        this.echo.connect(delay).connect(damping).connect(this.battleGain);
+        damping.connect(tail).connect(decay).connect(this.battleGain);
+        const oscillator = this.context.createOscillator();
+        const filter = this.context.createBiquadFilter();
+        this.engineGain = this.context.createGain();
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = 34;
+        filter.type = "lowpass";
+        filter.frequency.value = 140;
+        this.engineGain.gain.value = 0;
+        oscillator.connect(filter).connect(this.engineGain).connect(this.field);
+        oscillator.start();
+        this.engineOscillator = oscillator;
+        this.noise = this.context.createBuffer(1, Math.ceil(this.context.sampleRate * 0.6), this.context.sampleRate);
+        const samples = this.noise.getChannelData(0);
+        for (let index = 0; index < samples.length; index++) samples[index] = (Math.random() * 2 - 1) * Math.exp(-index / (samples.length * 0.13));
+        if (REALISM_SAMPLE) {
+          this.cannonNoise = this.context.createBuffer(1, this.context.sampleRate * 2, this.context.sampleRate);
+          const pressure = this.cannonNoise.getChannelData(0);
+          let seed = 90137;
+          for (let index = 0; index < pressure.length; index++) {
+            seed = Math.imul(seed, 1664525) + 1013904223 >>> 0;
+            pressure[index] = seed / 2147483648 - 1;
+          }
+        }
+        const track = this.context.createBufferSource(), buffer = this.context.createBuffer(1, this.context.sampleRate * 2, this.context.sampleRate);
+        const trackSamples = buffer.getChannelData(0);
+        let smooth = 0;
+        for (let index = 0; index < trackSamples.length; index++) {
+          smooth = (smooth + (Math.random() * 2 - 1) * 0.08) / 1.08;
+          trackSamples[index] = smooth * (0.5 + 0.5 * Math.sin(index / this.context.sampleRate * Math.PI * 36));
+        }
+        track.buffer = buffer;
+        track.loop = true;
+        this.trackSource = track;
+        this.trackGain = this.context.createGain();
+        this.trackGain.gain.value = 0;
+        this.trackFilter = this.context.createBiquadFilter();
+        this.trackFilter.type = "bandpass";
+        this.trackFilter.frequency.value = 380;
+        track.connect(this.trackFilter).connect(this.trackGain).connect(this.field);
+        track.start();
+      }
+      if (this.context.state === "suspended") {
+        void this.context.resume().catch((error) => {
+          if (error instanceof DOMException) {
+            if (!this.failureReported) console.warn("\u700F\u89BD\u5668\u672A\u555F\u7528\u904A\u6232\u97F3\u6548\uFF1B\u4E0B\u6B21\u9EDE\u64CA\u5F8C\u6703\u518D\u5617\u8A66\u3002");
+            this.failureReported = true;
+            return;
+          }
+          throw error;
+        });
+      }
+    }
+    setVolume(value) {
+      this.volume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+      if (this.context && this.master) this.master.gain.setTargetAtTime(this.volume * (this.night ? 0.65 : 1), this.context.currentTime, 0.05);
+    }
+    setNightMode(enabled) {
+      this.night = enabled;
+      if (this.context && this.limiter) {
+        this.limiter.threshold.setTargetAtTime(enabled ? -24 : -10, this.context.currentTime, 0.05);
+        this.limiter.ratio.setTargetAtTime(enabled ? 12 : 8, this.context.currentTime, 0.05);
+        this.output?.gain.setTargetAtTime(enabled ? 0.55 : REALISM_SAMPLE ? 0.8 : 1, this.context.currentTime, 0.05);
+      }
+      this.setVolume(this.volume);
+    }
+    setMusicVolume(value) {
+      this.musicVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+      this.soundtrack?.setVolume(this.musicVolume);
+    }
+    setMix(effects, engine, alerts) {
+      const level = (value) => Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+      this.effectsVolume = level(effects);
+      this.engineVolume = level(engine);
+      this.alertsVolume = level(alerts);
+      if (this.context && this.battleGain) this.battleGain.gain.setTargetAtTime(this.effectsVolume, this.context.currentTime, 0.05);
+    }
+    atmosphere(threat, dt) {
+      this.soundtrack?.update(threat, dt);
+    }
+    engine(speed) {
+      if (!this.context || !this.engineOscillator || !this.engineGain) return;
+      const power = Math.min(1, Math.abs(Number.isFinite(speed) ? speed : 0) / 20);
+      const now = this.context.currentTime;
+      if (!this.fieldActive) {
+        this.field?.gain.setTargetAtTime(1, now, 0.025);
+        this.fieldActive = true;
+      }
+      this.engineOscillator.frequency.setTargetAtTime(34 + power * 48, now, 0.16);
+      this.engineGain.gain.setTargetAtTime((0.035 + power * 0.065) * this.engineVolume, now, 0.16);
+      this.trackGain?.gain.setTargetAtTime(power * 0.5 * this.engineVolume, now, 0.12);
+      this.trackFilter?.frequency.setTargetAtTime(240 + power * 1100, now, 0.12);
+    }
+    listen(position, yaw, obstacles = []) {
+      this.listener.x = position.x;
+      this.listener.z = position.z;
+      this.listenerYaw = yaw;
+      this.obstacles = obstacles;
+    }
+    mixAt(position) {
+      const mix = spatialMix(this.listener, this.listenerYaw, position);
+      const occluded = wallFraction(this.listener.x, this.listener.z, position.x - this.listener.x, position.z - this.listener.z, this.obstacles) < 1;
+      if (occluded) {
+        mix.gain *= 0.5;
+        mix.cutoff *= 0.4;
+      }
+      return mix;
+    }
+    fire(position = this.listener, calibre = 120, own = false) {
+      const distance = Math.hypot(position.x - this.listener.x, position.z - this.listener.z);
+      const mix = own ? { pan: 0, gain: 1, cutoff: 6500 } : this.mixAt(position);
+      if (REALISM_SAMPLE) this.cannonEvent(calibre, mix, own ? 0 : Math.min(0.8, distance / 343), own);
+      else this.burst(cannonSound(calibre), mix, own ? 0 : Math.min(0.8, distance / 343), own || distance < 1);
+    }
+    perspective(interior) {
+      this.interior = interior;
+    }
+    cannonEvent(calibre, mix, delay, own) {
+      if (!this.context || !this.cannonNoise || !this.battleGain || this.context.state !== "running" || this.voices + 5 > 24 || this.effectsVolume === 0) return;
+      const context = this.context, time = context.currentTime + delay, enclosed = own && this.interior;
+      const filter = context.createBiquadFilter(), panner = context.createStereoPanner();
+      filter.type = "lowpass";
+      filter.frequency.value = Math.min(mix.cutoff, enclosed ? 1400 : 8200);
+      panner.pan.value = mix.pan;
+      filter.connect(panner).connect(this.battleGain);
+      if (this.echo && !enclosed) panner.connect(this.echo);
+      const level = Math.sqrt(Math.max(90, Math.min(155, calibre)) / 120) * mix.gain;
+      let remaining = 5;
+      const release = () => {
+        if (--remaining === 0) {
+          filter.disconnect();
+          panner.disconnect();
+        }
+      };
+      const noise = (offset, duration, amplitude, frequency, type) => {
+        const source = context.createBufferSource(), gain2 = context.createGain(), band = context.createBiquadFilter();
+        source.buffer = this.cannonNoise;
+        band.type = type;
+        band.frequency.value = frequency;
+        band.Q.value = 0.6;
+        const start = time + offset;
+        gain2.gain.setValueAtTime(0, start);
+        gain2.gain.linearRampToValueAtTime(amplitude * level, start + 2e-3);
+        gain2.gain.exponentialRampToValueAtTime(1e-4, start + duration);
+        source.connect(band).connect(gain2).connect(filter);
+        this.register(source, [band, gain2], release);
+        source.start(start, offset % 0.9);
+        source.stop(start + duration);
+      };
+      noise(0, 0.075, enclosed ? 0.29 : 0.9, 2800, "highpass");
+      noise(9e-3, 0.55, enclosed ? 0.55 : 0.72, 620, "lowpass");
+      noise(0.075, 0.09, enclosed ? 0.23 : 0.11, 1600, "bandpass");
+      noise(0.53, 0.14, enclosed ? 0.2 : 0.075, 920, "bandpass");
+      const pressure = context.createOscillator(), gain = context.createGain();
+      pressure.type = "sine";
+      pressure.frequency.setValueAtTime(92, time);
+      pressure.frequency.exponentialRampToValueAtTime(43, time + 0.22);
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.48 * level, time + 7e-3);
+      gain.gain.exponentialRampToValueAtTime(1e-4, time + 0.46);
+      pressure.connect(gain).connect(filter);
+      this.register(pressure, [gain], release);
+      pressure.start(time);
+      pressure.stop(time + 0.48);
+      this.events++;
+    }
+    impact(position, destroyed, kind = "armor", calibre = 120) {
+      const profile = impactSound(kind, destroyed);
+      profile.volume *= Math.sqrt(Math.max(90, Math.min(155, calibre)) / 120);
+      this.burst(profile, this.mixAt(position), Math.min(0.8, Math.hypot(position.x - this.listener.x, position.z - this.listener.z) / 343));
+    }
+    hit(track = false) {
+      this.burst(impactSound(track ? "track" : "armor", false));
+    }
+    ready() {
+      this.tone(720, 0.07, 0.1);
+      this.tone(960, 0.09, 0.08, 0.1);
+    }
+    tone(frequency, duration, volume, delay = 0) {
+      if (!this.context || !this.master || this.context.state !== "running" || this.voices >= 16) return;
+      const oscillator = this.context.createOscillator(), gain = this.context.createGain();
+      const time = this.context.currentTime + delay;
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(volume * this.alertsVolume, time);
+      gain.gain.linearRampToValueAtTime(0, time + duration);
+      oscillator.connect(gain).connect(this.master);
+      this.register(oscillator, [gain]);
+      oscillator.start(time);
+      oscillator.stop(time + duration);
+    }
+    register(source, nodes, release) {
+      this.active.add(source);
+      this.voices = this.active.size;
+      source.onended = () => {
+        source.disconnect();
+        for (const node of nodes) node.disconnect();
+        this.active.delete(source);
+        this.voices = this.active.size;
+        release?.();
+      };
+    }
+    burst(profile, mix = { pan: 0, gain: 1, cutoff: 6500 }, delay = 0, mechanical = false) {
+      const count = mechanical ? 4 : 3;
+      if (!this.context || !this.master || !this.noise || this.context.state !== "running" || this.voices + count > 24 || this.effectsVolume === 0) return;
+      const { frequency, duration, volume } = profile;
+      const now = this.context.currentTime + delay;
+      const oscillator = this.context.createOscillator();
+      const boomGain = this.context.createGain();
+      const panner = this.context.createStereoPanner(), filter = this.context.createBiquadFilter();
+      panner.pan.value = mix.pan;
+      filter.type = "lowpass";
+      filter.frequency.value = Math.min(mix.cutoff, profile.cutoff);
+      filter.connect(panner).connect(this.battleGain ?? this.field ?? this.master);
+      if (this.echo) panner.connect(this.echo);
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(frequency, now);
+      oscillator.frequency.exponentialRampToValueAtTime(24, now + duration);
+      boomGain.gain.setValueAtTime(1e-4, now);
+      boomGain.gain.linearRampToValueAtTime(volume * mix.gain, now + 4e-3);
+      boomGain.gain.exponentialRampToValueAtTime(1e-3, now + duration);
+      oscillator.connect(boomGain).connect(filter);
+      oscillator.start(now);
+      oscillator.stop(now + duration);
+      let remaining = count;
+      const release = () => {
+        if (--remaining === 0) {
+          filter.disconnect();
+          panner.disconnect();
+        }
+      };
+      this.register(oscillator, [boomGain], release);
+      const noiseLayer = (offset, length, level, frequency2) => {
+        if (!this.context) return;
+        const source = this.context.createBufferSource(), gain = this.context.createGain(), band = this.context.createBiquadFilter();
+        source.buffer = this.noise;
+        band.type = "bandpass";
+        band.frequency.value = frequency2;
+        band.Q.value = 0.6;
+        const start = now + offset;
+        gain.gain.setValueAtTime(1e-4, start);
+        gain.gain.linearRampToValueAtTime(level * mix.gain, start + 2e-3);
+        gain.gain.exponentialRampToValueAtTime(1e-4, start + length);
+        source.connect(band).connect(gain).connect(filter);
+        this.register(source, [gain, band], release);
+        source.start(start);
+        source.stop(start + length);
+      };
+      noiseLayer(0, 0.085, profile.crack, 2400);
+      noiseLayer(0.09, Math.min(0.58, duration * 0.7), profile.tail, 480);
+      if (mechanical) noiseLayer(0.065, 0.13, 0.07, 1100);
+      this.events++;
+    }
+    idle() {
+      if (this.fieldActive) this.stop();
+    }
+    stop() {
+      if (this.context && this.active.size) {
+        for (const source of this.active) {
+          source.stop(this.context.currentTime);
+          this.cancelled++;
+        }
+        this.active.clear();
+        this.voices = 0;
+      }
+      if (this.context && this.engineGain) this.engineGain.gain.setTargetAtTime(0, this.context.currentTime, 0.03);
+      if (this.context && this.field && this.fieldActive) this.field.gain.setTargetAtTime(0, this.context.currentTime, 0.015);
+      this.fieldActive = false;
+      this.soundtrack?.stop();
+    }
+    stats() {
+      return { voices: this.voices, maxVoices: 24, events: this.events, cancelled: this.cancelled, disposed: this.disposed };
+    }
+    dispose() {
+      if (this.disposed) return;
+      this.stop();
+      this.disposed = true;
+      this.engineOscillator?.stop();
+      this.engineOscillator?.disconnect();
+      this.trackSource?.stop();
+      this.trackSource?.disconnect();
+      this.master?.disconnect();
+      this.output?.disconnect();
+      this.field?.disconnect();
+      this.echo?.disconnect();
+      this.battleGain?.disconnect();
+      if (this.context && typeof this.context.close === "function") void this.context.close();
+      this.noise = null;
+      this.cannonNoise = null;
+      this.context = null;
+    }
+  };
+
+  // <stdin>
+  window.audioReview = { GameAudio, REALISM_SAMPLE };
+})();
+</script>

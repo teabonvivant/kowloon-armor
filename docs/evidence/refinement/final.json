@@ -1,0 +1,45 @@
+{
+  "firing": {
+    "shots": 1,
+    "effects": {
+      "active": 12,
+      "smoke": 5,
+      "dust": 4,
+      "flash": 2,
+      "sparks": 0,
+      "debris": 0,
+      "marks": 0,
+      "capacity": {
+        "smoke": 88,
+        "sparks": 72,
+        "debris": 40,
+        "marks": 32,
+        "flash": 20,
+        "dust": 64
+      },
+      "resources": 14,
+      "anchors": 0,
+      "markX": 0,
+      "minDebrisY": 1000,
+      "radiance": 1.5,
+      "projectiles": 1
+    },
+    "recoil": 0.05845270240322748
+  },
+  "dusk": 6450822,
+  "links": 3,
+  "layouts": [
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "artifactSha256": "2b558d3aed90347e1563d725666a357356c05159158a2d58e243fec4ecf99987",
+  "bytes": 1198158,
+  "errors": [],
+  "method": "Firing/dusk images are full rendering of the source harness at a known event time, not real-time FPS evidence. Review links are opened as local files; production artifact hash matches frozen offline-browser verification."
+}

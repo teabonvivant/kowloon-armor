@@ -7,6 +7,9 @@ import { createAsphaltMaterial, GeometryBatch } from './materials';
 import { createStreetProps } from './street-props';
 import { createDistrictLandmarks } from './districts';
 import { createHongKong, isLandmarkBlock, landmarkObstacles } from './hong-kong';
+import type { Destructible } from '../game-events-v19';
+import { ACTIVE_CAP, addStreetFurniture, addWetStreet, HkContext } from './hk-street';
+import type { HkAnchorInfo, SignInfo, SignLayer } from './hk-street';
 
 export interface Obstacle {
   readonly x: number;
@@ -17,16 +20,41 @@ export interface Obstacle {
   readonly height?: number;
 }
 
+/** v1.9 scene description for tests and the integrator (never used by gameplay rules). */
+export interface HkWorldInfo {
+  readonly signs: readonly SignInfo[];
+  readonly anchors: readonly HkAnchorInfo[];
+  readonly activeCap: number;
+  readonly flickerChannels: number;
+  readonly wet: { readonly stripes: number; readonly puddles: number };
+  /** Number of breakables currently animating (<= activeCap). */
+  active(): number;
+  layer(): SignLayer | null;
+}
+
 export interface WorldData {
   readonly obstacles: readonly Obstacle[];
   readonly size: number;
   readonly group: THREE.Group;
+  /** v1.9: breakable street furniture. Break only changes visuals; `obstacles` is never mutated at run time. */
+  readonly destructibles?: Destructible[];
+  /** Advance break animations (call once per frame with the frame delta, also while paused with dt = 0). */
+  updateDestructibles?(dt: number): void;
+  /** Restore every breakable to its intact state (call when a sortie starts). */
+  resetDestructibles?(): void;
+  readonly hk?: HkWorldInfo;
+}
+
+export interface WorldOptions {
+  /** `false` builds the v1.8 collision footprint (no new props); signage and materials are unchanged. Default true. */
+  readonly hkExtras?: boolean;
 }
 
 const roadCenters = [-168, -84, 0, 84, 168] as const;
 const blockCenters = [-210, -126, -42, 42, 126, 210] as const;
 
-export function createWorld(): WorldData {
+export function createWorld(options: WorldOptions = {}): WorldData {
+  const ctx = new HkContext(options.hkExtras !== false);
   const group = new THREE.Group();
   group.name = '九龍 · Kowloon';
   const paving = new GeometryBatch();
@@ -38,6 +66,7 @@ export function createWorld(): WorldData {
   group.add(ground);
   const blocks: CityBlock[] = [];
   const obstacles: Obstacle[] = [];
+  ctx.setExisting(obstacles);
   for (const x of blockCenters) for (const z of blockCenters) {
     const width = Math.abs(x) > 180 ? 37 : 58;
     const depth = Math.abs(z) > 180 ? 37 : 58;
@@ -78,12 +107,19 @@ export function createWorld(): WorldData {
   paving.finish(group);
   markings.finish(group, false, 84);
   const ordinary = blocks.filter(block => !isLandmarkBlock(block));
-  group.add(createBuildings(ordinary), createCityDetails(ordinary), createBackdrop(), createDistrictLandmarks(), createHongKong(blocks));
-  obstacles.push(...createParkedVehicles(group));
-  const props = createStreetProps(); group.add(props.group); obstacles.push(...props.obstacles);
+  group.add(createBuildings(ordinary), createCityDetails(ordinary, ctx), createBackdrop(), createDistrictLandmarks(), createHongKong(blocks));
+  obstacles.push(...createParkedVehicles(group, ctx));
+  const props = createStreetProps(ctx); group.add(props.group); obstacles.push(...props.obstacles);
+  if (ctx.extras) { addStreetFurniture(ctx, ordinary); obstacles.push(...ctx.obstacles); }
+  const wet = addWetStreet(ctx, group);
+  ctx.finish(group);
   group.updateMatrixWorld(true);
   group.traverse(object => { object.matrixAutoUpdate = false; object.matrixWorldAutoUpdate = false; });
-  return { group, obstacles, size: 460 };
+  return {
+    group, obstacles, size: 460, destructibles: ctx.destructibles,
+    updateDestructibles: dt => ctx.update(dt), resetDestructibles: () => ctx.manager.reset(),
+    hk: { signs: ctx.signs, anchors: ctx.anchorInfo, activeCap: ACTIVE_CAP, flickerChannels: 3, wet, active: () => ctx.activeCount, layer: () => ctx.layer },
+  };
 }
 
 function createBackdrop(): THREE.Group {

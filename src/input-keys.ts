@@ -6,7 +6,7 @@ export type LocalInput = {
   readonly throttle: number; readonly steer: number;
   readonly aimX: number; readonly aimY: number;
   readonly fire: boolean; readonly brake: boolean; readonly scope: boolean;
-  readonly toggleCamera: boolean; readonly pause: boolean;
+  readonly toggleCamera: boolean; readonly pause: boolean; readonly strike?: boolean;
   readonly pointerX?: number; readonly pointerY?: number; readonly observe?: boolean;
 };
 
@@ -118,7 +118,7 @@ export class LocalControls {
       fire: !!held('fire') || this.mouseFire,
       brake: !!held('brake'),
       scope: this.scopeMode === 'toggle' ? this.scopeLatched : !!held('scope'),
-      toggleCamera: pressed('camera'), pause: this.edges.has('Escape'),
+      toggleCamera: pressed('camera'), pause: this.edges.has('Escape'), strike: pressed('strike'),
     };
     this.mouseX = 0;
     this.mouseY = 0;

@@ -1,7 +1,7 @@
 import { CanvasTexture, Group, MeshStandardMaterial, SRGBColorSpace, DataTexture, RGBAFormat, RepeatWrapping, LinearFilter, LinearMipmapLinearFilter, FrontSide } from 'three';
 import type { CityBlock } from './geo-buildings';
 import type { Obstacle } from './world';
-import { createSignMaterial, facadeMaterial, GeometryBatch, glowMaterial, metalMaterial, plasterMaterial, unitPlane } from './materials';
+import { createSignMaterial, facadeMaterial, GeometryBatch, glowMaterial, metalMaterial, plasterMaterial, registerGlow, unitPlane } from './materials';
 
 export const LANDMARKS = [
   { x: 126, z: 210, name: '尖沙咀鐘樓', english: 'TSIM SHA TSUI CLOCK TOWER', kind: 'clock' },
@@ -27,6 +27,11 @@ export function landmarkObstacles(block: CityBlock): Obstacle[] | undefined {
   }
   return obstacles;
 }
+
+/** Far-shore window bands: faint by day, lit at dusk (fog off so the glow survives the ~500 m haze). */
+const windowBandMaterial = new MeshStandardMaterial({ roughness: .6, emissive: 0xffffff, emissiveIntensity: .12, fog: false });
+registerGlow(windowBandMaterial, .12, 1);
+const bandColours = [0xffd58a, 0xffb86b, 0xbfe6ff, 0xffe9b0] as const;
 
 const brickPixels = new Uint8Array(128 * 128 * 4);
 for (let row = 0; row < 128; row++) for (let column = 0; column < 128; column++) {
@@ -191,6 +196,13 @@ export function createHongKong(blocks: readonly CityBlock[]): Group {
     const height = 20 + tower * 19 % 70;
     detail.box({ position: [-430 + tower * 26, height / 2, 610], scale: [19, height, 23] }, 0x778d91);
   }
-  water.finish(harbour, false); detail.finish(harbour, false); city.add(harbour);
+  const bands = new GeometryBatch(windowBandMaterial);
+  for (let tower = 0; tower < 35; tower++) {
+    const height = 20 + tower * 19 % 70, x = -430 + tower * 26;
+    for (let y = 5 + tower % 3; y < height - 1.5; y += 6 + tower % 4) {
+      bands.add(unitPlane, { position: [x, y, 598.3], scale: [16.5, .9, 1], rotation: [0, Math.PI, 0] }, bandColours[(tower + Math.floor(y / 6)) % bandColours.length]!);
+    }
+  }
+  water.finish(harbour, false); detail.finish(harbour, false); bands.finish(harbour, false); city.add(harbour);
   return city;
 }

@@ -17,6 +17,7 @@ export type InputFrame = {
   readonly scope: boolean;
   readonly toggleCamera: boolean;
   readonly pause: boolean;
+  readonly strike?: boolean;
   readonly pointerX?: number;
   readonly pointerY?: number;
   readonly observe?: boolean;
@@ -85,7 +86,7 @@ export class Input {
       fire: keyboard.fire || gamepad.fire || touch.fire, brake: keyboard.brake || gamepad.brake || touch.brake && keyboard.throttle === 0 && gamepad.throttle === 0,
       scope: keyboard.scope || gamepad.scope || touch.scope,
       toggleCamera: keyboard.toggleCamera || gamepad.toggleCamera,
-      pause: keyboard.pause || gamepad.pause,
+      pause: keyboard.pause || gamepad.pause, strike: keyboard.strike || gamepad.strike || false,
       pointerX: (touch.pointerX ?? 0) + (keyboard.pointerX ?? 0) * ((keyboard.scope || gamepad.scope) && !keyboard.observe ? this.scopeSensitivity : 1),
       pointerY: (touch.pointerY ?? 0) + (keyboard.pointerY ?? 0) * ((keyboard.scope || gamepad.scope) && !keyboard.observe ? this.scopeSensitivity : 1), observe: keyboard.observe || touch.observe || false,
     };

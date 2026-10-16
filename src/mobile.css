@@ -66,7 +66,8 @@
 #touch-fire{grid-column:1;grid-row:1 / 3;border-radius:34px!important;background:linear-gradient(#192226e8,#192226e8) padding-box,conic-gradient(var(--accent) var(--loaded,100%),#465452 var(--loaded,100%)) border-box!important;border:3px solid transparent!important}
 #touch-fire strong{display:block;font-size:17px}#touch-fire small{font:12px var(--display);display:block;margin-top:6px;color:var(--accent-hover)}
 #touch-fire.pressed{filter:brightness(1.35)}#touch-fire.loading strong{color:var(--secondary)}
-#touch-scope{grid-column:2;grid-row:1}#touch-observe{grid-column:2;grid-row:2}#touch-recentre{grid-column:1 / 3;grid-row:3;min-height:44px!important}
+#touch-scope{grid-column:2;grid-row:1}#touch-observe{grid-column:2;grid-row:2}#touch-recentre{grid-column:1;grid-row:3;min-height:44px!important}#touch-strike{grid-column:2;grid-row:3;min-height:44px!important;border-color:#ffd18b!important;color:#ffd18b!important}#touch-strike.ready{background:#7a2a1ee0!important;color:#fff!important}
+body.touch-enabled #arcade-hud .strike{display:none}
 .touch-left .touch-drive{left:auto;right:calc(20px + env(safe-area-inset-right));flex-direction:row-reverse}
 .touch-left .touch-actions{right:auto;left:calc(20px + env(safe-area-inset-left))}
 .touch-enabled.in-battle #world{touch-action:none;user-select:none;-webkit-user-select:none}

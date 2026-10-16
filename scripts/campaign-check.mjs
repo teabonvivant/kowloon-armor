@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { build } from 'esbuild';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const bundle = await build({ stdin: { resolveDir: resolve('.'), contents: `
@@ -34,3 +34,11 @@ game.garage();
 await mkdir('.omo/evidence', { recursive: true });
 await writeFile('.omo/evidence/campaign-check.json', JSON.stringify({ results, method: 'All six missions in full city obstacles, training difficulty, fixed 60 Hz, Leopard 2 A8 input-only pilot. Final defence patrols four points with 5-second orders. Every step checks real building clearance. No health, cooldown, position or outcome overrides.' }, null, 2));
 assert.ok(results.every(result => result.phase === 'victory'), 'Every campaign must be completable through movement and fire inputs');
+// v1.9 balance guard (AC-OPEN-3): compare against the v1.8 baseline (commit 80e4ac5, same pilot, same seed).
+const baseline = JSON.parse(await readFile('docs/evidence/v1.9/baseline/campaign-v18-base.json', 'utf8')).results;
+for (const [index, result] of results.entries()) {
+  const base = baseline[index], maxHp = game.player.maxHp;
+  assert.equal(result.phase, base.phase, `mission ${result.mission}: outcome matches v1.8`);
+  assert.ok(Math.abs(result.elapsed - base.elapsed) <= base.elapsed * .2, `mission ${result.mission}: clear time ${result.elapsed.toFixed(1)} s vs v1.8 ${base.elapsed.toFixed(1)} s within 20%`);
+  assert.ok(Math.abs(result.hp - base.hp) <= maxHp * .2, `mission ${result.mission}: remaining hull ${result.hp} vs v1.8 ${base.hp} within 20% of max`);
+}

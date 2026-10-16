@@ -1,0 +1,1183 @@
+{
+  "timestamp": "2026-10-15T06:02:18.982Z",
+  "passed": true,
+  "files": [
+    {
+      "path": "/home/workspace/kowloon-armor-review/docs/evidence/finish-pass/before-harness.html",
+      "bytes": 2260022,
+      "sha256": "022851be835f950bc40c58b18976775048ac02885e7daed06eb442def9ac8fca"
+    },
+    {
+      "path": "/home/workspace/kowloon-armor-review/docs/evidence/finish-pass/sample-harness.html",
+      "bytes": 2274589,
+      "sha256": "48f900e7d04adeac110cd19e492b750fd08352899a55be04f141b673170a2bba"
+    },
+    {
+      "path": "/home/workspace/kowloon-armor-review/九龍裝甲行動-寫實樣板.html",
+      "bytes": 1204969,
+      "sha256": "e97aae251edcb8a693b57b0f66a4e26245dc0be4b689614e034187b5a0e9af39"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "after-muzzle-020ms",
+      "sha256": "928af75d9b5a9d6973cc8d7d2344e2c229b76b21e98b94a9cad75f25a9bb0390",
+      "camera": {
+        "position": [
+          9,
+          4.6,
+          90
+        ],
+        "quaternion": [
+          -0.050809740407782314,
+          0.8655603205465109,
+          0.08973967466614065,
+          0.4900719259108099
+        ],
+        "fov": 48,
+        "near": 0.2,
+        "far": 1000
+      },
+      "player": [
+        0,
+        0,
+        100
+      ],
+      "turret": [
+        0,
+        2.0164590679750534,
+        99.90791338671406
+      ],
+      "aim": [
+        0,
+        2.7318694051706727,
+        -6.1401270581908705
+      ],
+      "bounds": {
+        "min": [
+          -2.8499999046325684,
+          0.034999999999999025,
+          93.85086678347872
+        ],
+        "max": [
+          2.8499999046325684,
+          4.379928805906737,
+          104.40000009536743
+        ]
+      },
+      "worldSize": 280,
+      "draw": {
+        "frame": 36,
+        "calls": 72,
+        "triangles": 112052,
+        "points": 0,
+        "lines": 0
+      },
+      "resources": {
+        "geometries": 19,
+        "textures": 30,
+        "programs": 26
+      },
+      "pixel": [
+        121,
+        118,
+        91,
+        255
+      ],
+      "glError": 0,
+      "drawingBuffer": [
+        1280,
+        800
+      ]
+    },
+    {
+      "name": "after-muzzle-080ms",
+      "sha256": "d4a80c526aaab605f32acc6af18b20f041a8050a28c2fc4e72d382f6b5c498f5",
+      "camera": {
+        "position": [
+          9,
+          4.6,
+          90
+        ],
+        "quaternion": [
+          -0.050809740407782314,
+          0.8655603205465109,
+          0.08973967466614065,
+          0.4900719259108099
+        ],
+        "fov": 48,
+        "near": 0.2,
+        "far": 1000
+      },
+      "player": [
+        0,
+        0,
+        100
+      ],
+      "turret": [
+        0,
+        2.0130177855529308,
+        99.91553986957813
+      ],
+      "aim": [
+        0,
+        3.1275697225280528,
+        -5.982489538668602
+      ],
+      "bounds": {
+        "min": [
+          -2.8499999046325684,
+          0.034999999999999025,
+          94.00608340792728
+        ],
+        "max": [
+          2.8499999046325684,
+          4.370970257864945,
+          104.40000009536743
+        ]
+      },
+      "worldSize": 280,
+      "draw": {
+        "frame": 37,
+        "calls": 72,
+        "triangles": 107836,
+        "points": 152,
+        "lines": 0
+      },
+      "resources": {
+        "geometries": 23,
+        "textures": 30,
+        "programs": 28
+      },
+      "pixel": [
+        106,
+        105,
+        81,
+        255
+      ],
+      "glError": 0,
+      "drawingBuffer": [
+        1280,
+        800
+      ]
+    },
+    {
+      "name": "after-muzzle-200ms",
+      "sha256": "a9bb787f8118b72985874f2eb962e653b3ced912249be4c662d226abe1aba2f1",
+      "camera": {
+        "position": [
+          9,
+          4.6,
+          90
+        ],
+        "quaternion": [
+          -0.050809740407782314,
+          0.8655603205465109,
+          0.08973967466614065,
+          0.4900719259108099
+        ],
+        "fov": 48,
+        "near": 0.2,
+        "far": 1000
+      },
+      "player": [
+        0,
+        0,
+        100
+      ],
+      "turret": [
+        0,
+        2.0181590459774004,
+        99.89662465905693
+      ],
+      "aim": [
+        0,
+        2.141097247231396,
+        -6.0631561199172666
+      ],
+      "bounds": {
+        "min": [
+          -2.8499999046325684,
+          0.034999999999999025,
+          93.92860226859582
+        ],
+        "max": [
+          2.8499999046325684,
+          4.389875702911155,
+          104.40000009536743
+        ]
+      },
+      "worldSize": 280,
+      "draw": {
+        "frame": 38,
+        "calls": 72,
+        "triangles": 107836,
+        "points": 152,
+        "lines": 0
+      },
+      "resources": {
+        "geometries": 23,
+        "textures": 30,
+        "programs": 28
+      },
+      "pixel": [
+        80,
+        80,
+        65,
+        255
+      ],
+      "glError": 0,
+      "drawingBuffer": [
+        1280,
+        800
+      ]
+    },
+    {
+      "name": "after-muzzle-450ms",
+      "sha256": "1be0b87c40fcde513ab6bf7322abe0978a3c10896d5aac4f648a47f504c16f54",
+      "camera": {
+        "position": [
+          9,
+          4.6,
+          90
+        ],
+        "quaternion": [
+          -0.050809740407782314,
+          0.8655603205465109,
+          0.08973967466614065,
+          0.4900719259108099
+        ],
+        "fov": 48,
+        "near": 0.2,
+        "far": 1000
+      },
+      "player": [
+        0,
+        0,
+        100
+      ],
+      "turret": [
+        0,
+        2.0192638396925644,
+        99.90165079021133
+      ],
+      "aim": [
+        0,
+        2.4060372840502566,
+        -6.2812191494505925
+      ],
+      "bounds": {
+        "min": [
+          -2.8499999046325684,
+          0.034999999999999025,
+          93.71069753964758
+        ],
+        "max": [
+          2.8499999046325684,
+          4.387239686692241,
+          104.40000009536743
+        ]
+      },
+      "worldSize": 280,
+      "draw": {
+        "frame": 39,
+        "calls": 72,
+        "triangles": 107836,
+        "points": 152,
+        "lines": 0
+      },
+      "resources": {
+        "geometries": 23,
+        "textures": 30,
+        "programs": 28
+      },
+      "pixel": [
+        124,
+        120,
+        91,
+        255
+      ],
+      "glError": 0,
+      "drawingBuffer": [
+        1280,
+        800
+      ]
+    }
+  ],
+  "benchmarks": [],
+  "cameraProbes": [],
+  "muzzle": [
+    {
+      "seconds": 0.02,
+      "shots": 1,
+      "phase": "playing",
+      "effects": {
+        "active": 12,
+        "smoke": 5,
+        "dust": 4,
+        "flash": 2,
+        "sparks": 0,
+        "debris": 0,
+        "marks": 0,
+        "capacity": {
+          "smoke": 88,
+          "sparks": 72,
+          "debris": 40,
+          "marks": 32,
+          "flash": 20,
+          "dust": 64
+        },
+        "resources": 14,
+        "anchors": 0,
+        "markX": 0,
+        "minDebrisY": 1000,
+        "radiance": 1.34,
+        "projectiles": 1
+      },
+      "recoil": 0.2699707960683465,
+      "shotAge": 0.02,
+      "snapshot": {
+        "camera": {
+          "position": [
+            9,
+            4.6,
+            90
+          ],
+          "quaternion": [
+            -0.050809740407782314,
+            0.8655603205465109,
+            0.08973967466614065,
+            0.4900719259108099
+          ],
+          "fov": 48,
+          "near": 0.2,
+          "far": 1000
+        },
+        "player": [
+          0,
+          0,
+          100
+        ],
+        "turret": [
+          0,
+          2.0164590679750534,
+          99.90791338671406
+        ],
+        "aim": [
+          0,
+          2.7318694051706727,
+          -6.1401270581908705
+        ],
+        "bounds": {
+          "min": [
+            -2.8499999046325684,
+            0.034999999999999025,
+            93.85086678347872
+          ],
+          "max": [
+            2.8499999046325684,
+            4.379928805906737,
+            104.40000009536743
+          ]
+        },
+        "worldSize": 280,
+        "obstacles": [
+          {
+            "x": -24.5,
+            "z": 59,
+            "halfX": 11.500000000000002,
+            "halfZ": 10.000000000000002,
+            "height": 17.7
+          },
+          {
+            "x": 24,
+            "z": 58.900000000000006,
+            "halfX": 11.000000000000002,
+            "halfZ": 9.500000000000002,
+            "height": 28
+          },
+          {
+            "x": -21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 30.5
+          },
+          {
+            "x": 21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 33.5
+          },
+          {
+            "x": -23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 19
+          },
+          {
+            "x": 23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 22
+          },
+          {
+            "x": -21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 32.5
+          },
+          {
+            "x": 21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 35.5
+          },
+          {
+            "x": -23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 18
+          },
+          {
+            "x": 23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 21
+          },
+          {
+            "x": -44,
+            "z": 109,
+            "halfX": 10,
+            "halfZ": 11,
+            "height": 34
+          },
+          {
+            "x": 47,
+            "z": 108,
+            "halfX": 12,
+            "halfZ": 11,
+            "height": 23
+          },
+          {
+            "x": 1.000000000000001,
+            "z": -48,
+            "halfX": 14.500000000000002,
+            "halfZ": 9.000000000000002,
+            "height": 21
+          },
+          {
+            "x": -8.5,
+            "z": 60,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          },
+          {
+            "x": 8.8,
+            "z": 14,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          }
+        ],
+        "draw": {
+          "frame": 36,
+          "calls": 72,
+          "triangles": 112052,
+          "points": 0,
+          "lines": 0
+        },
+        "resources": {
+          "geometries": 19,
+          "textures": 30,
+          "programs": 26
+        },
+        "pixel": [
+          121,
+          118,
+          91,
+          255
+        ],
+        "glError": 0,
+        "drawingBuffer": [
+          1280,
+          800
+        ]
+      }
+    },
+    {
+      "seconds": 0.08,
+      "shots": 1,
+      "phase": "playing",
+      "effects": {
+        "active": 20,
+        "smoke": 9,
+        "dust": 4,
+        "flash": 0,
+        "sparks": 0,
+        "debris": 6,
+        "marks": 1,
+        "capacity": {
+          "smoke": 88,
+          "sparks": 72,
+          "debris": 40,
+          "marks": 32,
+          "flash": 20,
+          "dust": 64
+        },
+        "resources": 14,
+        "anchors": 0,
+        "markX": 0,
+        "minDebrisY": 2.3093104459460028,
+        "radiance": 0,
+        "projectiles": 0
+      },
+      "recoil": 0.4165304696295657,
+      "shotAge": 0.08,
+      "snapshot": {
+        "camera": {
+          "position": [
+            9,
+            4.6,
+            90
+          ],
+          "quaternion": [
+            -0.050809740407782314,
+            0.8655603205465109,
+            0.08973967466614065,
+            0.4900719259108099
+          ],
+          "fov": 48,
+          "near": 0.2,
+          "far": 1000
+        },
+        "player": [
+          0,
+          0,
+          100
+        ],
+        "turret": [
+          0,
+          2.0130177855529308,
+          99.91553986957813
+        ],
+        "aim": [
+          0,
+          3.1275697225280528,
+          -5.982489538668602
+        ],
+        "bounds": {
+          "min": [
+            -2.8499999046325684,
+            0.034999999999999025,
+            94.00608340792728
+          ],
+          "max": [
+            2.8499999046325684,
+            4.370970257864945,
+            104.40000009536743
+          ]
+        },
+        "worldSize": 280,
+        "obstacles": [
+          {
+            "x": -24.5,
+            "z": 59,
+            "halfX": 11.500000000000002,
+            "halfZ": 10.000000000000002,
+            "height": 17.7
+          },
+          {
+            "x": 24,
+            "z": 58.900000000000006,
+            "halfX": 11.000000000000002,
+            "halfZ": 9.500000000000002,
+            "height": 28
+          },
+          {
+            "x": -21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 30.5
+          },
+          {
+            "x": 21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 33.5
+          },
+          {
+            "x": -23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 19
+          },
+          {
+            "x": 23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 22
+          },
+          {
+            "x": -21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 32.5
+          },
+          {
+            "x": 21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 35.5
+          },
+          {
+            "x": -23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 18
+          },
+          {
+            "x": 23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 21
+          },
+          {
+            "x": -44,
+            "z": 109,
+            "halfX": 10,
+            "halfZ": 11,
+            "height": 34
+          },
+          {
+            "x": 47,
+            "z": 108,
+            "halfX": 12,
+            "halfZ": 11,
+            "height": 23
+          },
+          {
+            "x": 1.000000000000001,
+            "z": -48,
+            "halfX": 14.500000000000002,
+            "halfZ": 9.000000000000002,
+            "height": 21
+          },
+          {
+            "x": -8.5,
+            "z": 60,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          },
+          {
+            "x": 8.8,
+            "z": 14,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          }
+        ],
+        "draw": {
+          "frame": 37,
+          "calls": 72,
+          "triangles": 107836,
+          "points": 152,
+          "lines": 0
+        },
+        "resources": {
+          "geometries": 23,
+          "textures": 30,
+          "programs": 28
+        },
+        "pixel": [
+          106,
+          105,
+          81,
+          255
+        ],
+        "glError": 0,
+        "drawingBuffer": [
+          1280,
+          800
+        ]
+      }
+    },
+    {
+      "seconds": 0.2,
+      "shots": 1,
+      "phase": "playing",
+      "effects": {
+        "active": 20,
+        "smoke": 9,
+        "dust": 4,
+        "flash": 0,
+        "sparks": 0,
+        "debris": 6,
+        "marks": 1,
+        "capacity": {
+          "smoke": 88,
+          "sparks": 72,
+          "debris": 40,
+          "marks": 32,
+          "flash": 20,
+          "dust": 64
+        },
+        "resources": 14,
+        "anchors": 0,
+        "markX": 0,
+        "minDebrisY": 2.5881750530202723,
+        "radiance": 0,
+        "projectiles": 0
+      },
+      "recoil": 0.36057259247957485,
+      "shotAge": 0.2,
+      "snapshot": {
+        "camera": {
+          "position": [
+            9,
+            4.6,
+            90
+          ],
+          "quaternion": [
+            -0.050809740407782314,
+            0.8655603205465109,
+            0.08973967466614065,
+            0.4900719259108099
+          ],
+          "fov": 48,
+          "near": 0.2,
+          "far": 1000
+        },
+        "player": [
+          0,
+          0,
+          100
+        ],
+        "turret": [
+          0,
+          2.0181590459774004,
+          99.89662465905693
+        ],
+        "aim": [
+          0,
+          2.141097247231396,
+          -6.0631561199172666
+        ],
+        "bounds": {
+          "min": [
+            -2.8499999046325684,
+            0.034999999999999025,
+            93.92860226859582
+          ],
+          "max": [
+            2.8499999046325684,
+            4.389875702911155,
+            104.40000009536743
+          ]
+        },
+        "worldSize": 280,
+        "obstacles": [
+          {
+            "x": -24.5,
+            "z": 59,
+            "halfX": 11.500000000000002,
+            "halfZ": 10.000000000000002,
+            "height": 17.7
+          },
+          {
+            "x": 24,
+            "z": 58.900000000000006,
+            "halfX": 11.000000000000002,
+            "halfZ": 9.500000000000002,
+            "height": 28
+          },
+          {
+            "x": -21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 30.5
+          },
+          {
+            "x": 21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 33.5
+          },
+          {
+            "x": -23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 19
+          },
+          {
+            "x": 23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 22
+          },
+          {
+            "x": -21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 32.5
+          },
+          {
+            "x": 21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 35.5
+          },
+          {
+            "x": -23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 18
+          },
+          {
+            "x": 23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 21
+          },
+          {
+            "x": -44,
+            "z": 109,
+            "halfX": 10,
+            "halfZ": 11,
+            "height": 34
+          },
+          {
+            "x": 47,
+            "z": 108,
+            "halfX": 12,
+            "halfZ": 11,
+            "height": 23
+          },
+          {
+            "x": 1.000000000000001,
+            "z": -48,
+            "halfX": 14.500000000000002,
+            "halfZ": 9.000000000000002,
+            "height": 21
+          },
+          {
+            "x": -8.5,
+            "z": 60,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          },
+          {
+            "x": 8.8,
+            "z": 14,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          }
+        ],
+        "draw": {
+          "frame": 38,
+          "calls": 72,
+          "triangles": 107836,
+          "points": 152,
+          "lines": 0
+        },
+        "resources": {
+          "geometries": 23,
+          "textures": 30,
+          "programs": 28
+        },
+        "pixel": [
+          80,
+          80,
+          65,
+          255
+        ],
+        "glError": 0,
+        "drawingBuffer": [
+          1280,
+          800
+        ]
+      }
+    },
+    {
+      "seconds": 0.44999999999999946,
+      "shots": 1,
+      "phase": "playing",
+      "effects": {
+        "active": 20,
+        "smoke": 9,
+        "dust": 4,
+        "flash": 0,
+        "sparks": 0,
+        "debris": 6,
+        "marks": 1,
+        "capacity": {
+          "smoke": 88,
+          "sparks": 72,
+          "debris": 40,
+          "marks": 32,
+          "flash": 20,
+          "dust": 64
+        },
+        "resources": 14,
+        "anchors": 0,
+        "markX": 0,
+        "minDebrisY": 2.590134159002553,
+        "radiance": 0,
+        "projectiles": 0
+      },
+      "recoil": 0.13684944248253347,
+      "shotAge": 0.44999999999999946,
+      "snapshot": {
+        "camera": {
+          "position": [
+            9,
+            4.6,
+            90
+          ],
+          "quaternion": [
+            -0.050809740407782314,
+            0.8655603205465109,
+            0.08973967466614065,
+            0.4900719259108099
+          ],
+          "fov": 48,
+          "near": 0.2,
+          "far": 1000
+        },
+        "player": [
+          0,
+          0,
+          100
+        ],
+        "turret": [
+          0,
+          2.0192638396925644,
+          99.90165079021133
+        ],
+        "aim": [
+          0,
+          2.4060372840502566,
+          -6.2812191494505925
+        ],
+        "bounds": {
+          "min": [
+            -2.8499999046325684,
+            0.034999999999999025,
+            93.71069753964758
+          ],
+          "max": [
+            2.8499999046325684,
+            4.387239686692241,
+            104.40000009536743
+          ]
+        },
+        "worldSize": 280,
+        "obstacles": [
+          {
+            "x": -24.5,
+            "z": 59,
+            "halfX": 11.500000000000002,
+            "halfZ": 10.000000000000002,
+            "height": 17.7
+          },
+          {
+            "x": 24,
+            "z": 58.900000000000006,
+            "halfX": 11.000000000000002,
+            "halfZ": 9.500000000000002,
+            "height": 28
+          },
+          {
+            "x": -21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 30.5
+          },
+          {
+            "x": 21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 33.5
+          },
+          {
+            "x": -23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 19
+          },
+          {
+            "x": 23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 22
+          },
+          {
+            "x": -21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 32.5
+          },
+          {
+            "x": 21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 35.5
+          },
+          {
+            "x": -23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 18
+          },
+          {
+            "x": 23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 21
+          },
+          {
+            "x": -44,
+            "z": 109,
+            "halfX": 10,
+            "halfZ": 11,
+            "height": 34
+          },
+          {
+            "x": 47,
+            "z": 108,
+            "halfX": 12,
+            "halfZ": 11,
+            "height": 23
+          },
+          {
+            "x": 1.000000000000001,
+            "z": -48,
+            "halfX": 14.500000000000002,
+            "halfZ": 9.000000000000002,
+            "height": 21
+          },
+          {
+            "x": -8.5,
+            "z": 60,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          },
+          {
+            "x": 8.8,
+            "z": 14,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          }
+        ],
+        "draw": {
+          "frame": 39,
+          "calls": 72,
+          "triangles": 107836,
+          "points": 152,
+          "lines": 0
+        },
+        "resources": {
+          "geometries": 23,
+          "textures": 30,
+          "programs": 28
+        },
+        "pixel": [
+          124,
+          120,
+          91,
+          255
+        ],
+        "glError": 0,
+        "drawingBuffer": [
+          1280,
+          800
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "scope": "Targeted muzzle checks only",
+  "timingStatus": "Incomplete: prior full run exited 143 during current-sample timing. Existing chase screenshots and visual.log are retained; no completed before/after timing comparison.",
+  "method": {
+    "comparison": "Offline before/current source harnesses, identical day lighting, medium quality, DPR 1, 15 m chase distance, 50 degree FOV, fixed seed and neutral controls. Clean screenshots hide UI. Default chase height intentionally follows each version. These are source-harness images, not standalone-artifact input verification.",
+    "timing": "Sequential same-host 1280x800 complete Three.js scene renders with gl.finish and blocking readPixels; two warmups and five measured samples. Both versions use the exact first before-camera world transform. No intercepted/skipped draw calls. Static render plus synchronization only; excludes simulation, UI, input latency and display refresh. Other browser workloads were observed on this shared host, so timing cannot attribute a difference to this version. Small software-rendering samples are not FPS or hardware-performance claims.",
+    "camera": "Ten complete 640x400 source renders exercise the actual View camera at two distance extremes, four bearings and two near-wall cases. Captured camera transforms and actual mesh bounds are then projected mathematically at each target viewport without extra rendering. Conservative mesh boxes and turret pivot checks do not prove all geometry is unobscured.",
+    "muzzle": "One shot issued through Game.update with a fire input at simulation time zero, then neutral input steps no larger than 1/240 s to 0.02, 0.08, 0.2 and 0.45 s. Each selected event time is fully rendered from the same front-side observation camera. No HP, damage, cooldown or effect-pool mutations; not real-time footage."
+  },
+  "phase": "complete",
+  "updatedAt": "2026-10-15T06:02:56.291Z",
+  "browser": "141.0.7390.37",
+  "shot": {
+    "origin": [
+      0,
+      2.32,
+      93.58
+    ],
+    "shots": 1,
+    "events": [
+      {
+        "time": 0,
+        "kind": "cannon",
+        "listener": {
+          "x": 0,
+          "z": 100,
+          "yaw": 0
+        },
+        "interior": false,
+        "position": {
+          "x": 0,
+          "y": 2.32,
+          "z": 93.58
+        },
+        "enemy": false,
+        "calibre": 120
+      }
+    ]
+  }
+}

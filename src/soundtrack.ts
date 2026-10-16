@@ -1,3 +1,31 @@
+/** Bus ducker: gain node in series plus a JS-side model of the envelope so overlapping ducks continue smoothly. */
+export class Duck {
+  readonly node: GainNode;
+  private t0 = 0; private v0 = 1; private t1 = 0; private v1 = 1; private t2 = 0; private t3 = 0;
+  constructor(private readonly context: BaseAudioContext, destination: AudioNode) {
+    this.node = context.createGain(); this.node.gain.value = 1; this.node.connect(destination);
+  }
+  /** Modelled linear gain at time t (1 = untouched). */
+  valueAt(t: number): number {
+    if (t <= this.t0) return this.v0 === 1 ? 1 : this.v0;
+    if (t < this.t1) return this.v0 + (this.v1 - this.v0) * (t - this.t0) / Math.max(1e-6, this.t1 - this.t0);
+    if (t < this.t2) return this.v1;
+    if (t < this.t3) return this.v1 + (1 - this.v1) * (t - this.t2) / Math.max(1e-6, this.t3 - this.t2);
+    return 1;
+  }
+  /** Pull the bus down by depthDb within `attack`, hold, then glide back. */
+  apply(depthDb: number, at = this.context.currentTime, attack = .03, hold = .3, release = .75): void {
+    if (!(depthDb > 0)) return;
+    const start = Math.max(at, this.context.currentTime), from = this.valueAt(start);
+    const target = Math.min(from, Math.pow(10, -depthDb / 20));
+    const param = this.node.gain;
+    param.cancelScheduledValues(start); param.setValueAtTime(from, start);
+    param.linearRampToValueAtTime(target, start + attack);
+    param.setValueAtTime(target, start + attack + hold);
+    param.linearRampToValueAtTime(1, start + attack + hold + release);
+    this.t0 = start; this.v0 = from; this.t1 = start + attack; this.v1 = target; this.t2 = start + attack + hold; this.t3 = start + attack + hold + release;
+  }
+}
 export class Soundtrack {
   private nextBeat = 0;
   private beat = 0;
@@ -5,9 +33,16 @@ export class Soundtrack {
   private intensity = 0;
   private volume = .35;
   private readonly gain: GainNode;
+  private readonly ducker: Duck;
   constructor(private readonly context: AudioContext, destination: AudioNode) {
-    this.gain = context.createGain(); this.gain.gain.value = 0; this.gain.connect(destination);
+    this.ducker = new Duck(context, destination);
+    this.gain = context.createGain(); this.gain.gain.value = 0; this.gain.connect(this.ducker.node);
   }
+  /** v1.9: temporary level reduction of the music bus (explosion ducking). */
+  duck(depthDb: number, at?: number): void { this.ducker.apply(depthDb, at); }
+  /** Current modelled duck gain (diagnostics/tests). */
+  duckGain(at = this.context.currentTime): number { return this.ducker.valueAt(at); }
+  get duckNode(): GainNode { return this.ducker.node; }
   setVolume(volume: number): void { this.volume = Math.max(0, Math.min(1, volume)); }
   update(threat: number, dt: number): void {
     this.intensity += (Math.max(0, Math.min(1, threat)) - this.intensity) * Math.min(1, dt * 1.5);

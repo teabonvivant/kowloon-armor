@@ -1,0 +1,3872 @@
+{
+  "createdAt": "2026-10-15T02:44:49.557Z",
+  "browser": "141.0.7390.37",
+  "passed": true,
+  "failures": [],
+  "sourceHashes": {
+    "src/audio.ts": "f3e573c1d3dc6fde1cf88bbfe9533a1ca231156f1b0107109c2168de8085543b",
+    "src/effect-audio.ts": "c3a462b46b3fc7b97cb8b28133b2b46a06a539cb7becbf544aea370c8183c929",
+    "src/spatial-audio.ts": "9c72efe87f64173f12534559abafec062e22fffeb0418bae9600957947c90823",
+    "src/realism.ts": "6702754f1c723747382d400692261dc54384502aad8361de00da5f567634c921"
+  },
+  "methodology": {
+    "renderer": "Chromium OfflineAudioContext; sample production GameAudio with __REALISM_SAMPLE__=true",
+    "sampleRate": 48000,
+    "channels": 2,
+    "encoding": "16-bit PCM WAV; floating-point measurements are taken before quantization",
+    "scheduling": "Render suspends at the 128-frame quantum immediately before each event. Sources are created only at that event, with exact event time exposed as currentTime. Rendering resumes between events, allowing onended to reclaim voices. No whole-timeline upfront source scheduling.",
+    "clockAdapter": "Offline context state is exposed as running while invoking gameplay APIs, as in the real application. All native audio methods remain bound to the actual OfflineAudioContext.",
+    "controls": "Comparison: 120 mm, master volume 0.7, effects 1, engine/alerts/music 0; shot at 0.5 seconds, stop at 3 seconds; no normalization or post-processing.",
+    "randomness": "Current sample renders seed Math.random=123 for shared procedural buffers; cannon-specific noise uses the production fixed seed. Preserved baseline uses its original capture randomness.",
+    "limitations": "Numerical signal and lifecycle evidence only. No human listening, loudness preference, physical speakers/headphones, hardware latency or real-time performance acceptance.",
+    "comparison": {
+      "file": "audio-before-after.wav",
+      "baselineFile": "before-cannon.wav",
+      "baselineSha256": "8e28200b3bbc983a510f32fa7f8a855c702197ec968fb0fcf3788531c042dab4",
+      "baselineSeconds": 5,
+      "baselinePcmPeak": 0.30010986328125,
+      "baselinePcmRms": 0.019266237133941037,
+      "silenceSeconds": 1,
+      "afterStartsAt": 6,
+      "labels": "Preserved v1.8 baseline first, then sample exterior. Equal settings; no loudness matching."
+    }
+  },
+  "checks": [
+    {
+      "name": "after-exterior: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.5189437866210938,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "after-exterior: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "after-exterior: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "after-interior: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.35414186120033264,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "after-interior: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "after-interior: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "nearby: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.44715529680252075,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "nearby: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "nearby: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "distant: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.12462475150823593,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "distant: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "distant: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "occluded: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.18653927743434906,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "occluded: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "occluded: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "night: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.23191387951374054,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "night: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "night: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "effects-muted: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "effects-muted: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 0,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "effects-muted: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "master-muted: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "master-muted: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "master-muted: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "engine-alone: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.09730113297700882,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "engine-alone: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 0,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "engine-alone: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "effects-muted-engine: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.09730113297700882,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "effects-muted-engine: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 0,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "effects-muted-engine: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "alerts-alone: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.08883114904165268,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "alerts-alone: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 2,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "alerts-alone: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "effects-muted-alerts: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.08883114904165268,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "effects-muted-alerts: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 2,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "effects-muted-alerts: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "alerts-muted: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "alerts-muted: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 2,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 0,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "alerts-muted: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "pause: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.5189437866210938,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "pause: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "pause: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "pending-cancel: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "pending-cancel: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "pending-cancel: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "resume-tail: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.5189437866210938,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "resume-tail: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 5,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 1,
+          "cancelled": 5,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "resume-tail: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "full-mix: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.8233593106269836,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "full-mix: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 21,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 4,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 4,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "full-mix: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "voice-lifecycle: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.7908645868301392,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "voice-lifecycle: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 20,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 12,
+          "cancelled": 0,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 12,
+          "cancelled": 0,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "voice-lifecycle: quiet final tail",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "sample exterior and interior are audible and different",
+      "passed": true,
+      "actual": {
+        "exterior": 0.017937821553862587,
+        "interior": 0.01679341249517965
+      },
+      "expected": "both > .001; different PCM"
+    },
+    {
+      "name": "distance attenuates and delays cannon",
+      "passed": true,
+      "actual": {
+        "nearby": 0.01274806377663146,
+        "distant": 0.005039247630479996,
+        "delayDifference": 0.29156250000000006
+      },
+      "expected": "distant quieter; extra onset delay > .28 s for extra 100 m"
+    },
+    {
+      "name": "right-side cannon pans right",
+      "passed": true,
+      "actual": {
+        "left": 2.9247678987418648e-31,
+        "right": 78.00630242547031
+      },
+      "expected": "right energy > 2 × left"
+    },
+    {
+      "name": "wall occlusion attenuates cannon",
+      "passed": true,
+      "actual": {
+        "clear": 0.01274806377663146,
+        "occluded": 0.006410736589386274
+      },
+      "expected": "occluded quieter"
+    },
+    {
+      "name": "night mode lowers output",
+      "passed": true,
+      "actual": {
+        "normal": 0.017937821553862587,
+        "night": 0.010419896986134975
+      },
+      "expected": "night quieter"
+    },
+    {
+      "name": "effects-muted: silence",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "master-muted: silence",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "alerts-muted: silence",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "pending-cancel: silence",
+      "passed": true,
+      "actual": 0,
+      "expected": "< .0001"
+    },
+    {
+      "name": "effects-muted-engine: independent controls",
+      "passed": true,
+      "actual": {
+        "reference": 0.023168906128553046,
+        "withCannon": 0.023168906128553046,
+        "identical": true
+      },
+      "expected": "nonzero engine/alert; muted cannon changes no samples"
+    },
+    {
+      "name": "effects-muted-alerts: independent controls",
+      "passed": true,
+      "actual": {
+        "reference": 0.005825658704466921,
+        "withCannon": 0.005825658704466921,
+        "identical": true
+      },
+      "expected": "nonzero engine/alert; muted cannon changes no samples"
+    },
+    {
+      "name": "pause silence after fade",
+      "passed": true,
+      "actual": {
+        "range": [
+          0.85,
+          2
+        ],
+        "peak": 0,
+        "energy": 0,
+        "samples": 110400,
+        "rms": 0
+      },
+      "expected": "peak < .0001 from 0.85 s"
+    },
+    {
+      "name": "pause/resume does not revive old cannon tail",
+      "passed": true,
+      "actual": {
+        "range": [
+          0.72,
+          2
+        ],
+        "peak": 0,
+        "energy": 0,
+        "samples": 122880,
+        "rms": 0
+      },
+      "expected": "peak < .0001 from 0.72 s after resume at 0.62 s"
+    },
+    {
+      "name": "voice cap does not drop later separated shots",
+      "passed": true,
+      "actual": {
+        "events": 12,
+        "checkpoints": [
+          {
+            "requestedTime": 1.3,
+            "renderTime": 1.2986666666666666,
+            "kind": "checkpoint",
+            "label": "salvo-cleanup",
+            "before": {
+              "voices": 0,
+              "maxVoices": 24,
+              "events": 4,
+              "cancelled": 0,
+              "disposed": false
+            },
+            "after": {
+              "voices": 0,
+              "maxVoices": 24,
+              "events": 4,
+              "cancelled": 0,
+              "disposed": false
+            }
+          },
+          {
+            "requestedTime": 9.5,
+            "renderTime": 9.498666666666667,
+            "kind": "checkpoint",
+            "label": "natural-cleanup",
+            "before": {
+              "voices": 0,
+              "maxVoices": 24,
+              "events": 12,
+              "cancelled": 0,
+              "disposed": false
+            },
+            "after": {
+              "voices": 0,
+              "maxVoices": 24,
+              "events": 12,
+              "cancelled": 0,
+              "disposed": false
+            }
+          }
+        ]
+      },
+      "expected": "4 accepted simultaneous shots + 8 later shots; natural cleanup between salvos"
+    },
+    {
+      "name": "preserved baseline PCM has no saturated samples",
+      "passed": true,
+      "actual": {
+        "peak": 0.30010986328125,
+        "saturatedSamples": 0
+      },
+      "expected": "zero saturated 16-bit PCM samples; original floating-point signal unavailable"
+    },
+    {
+      "name": "no browser errors",
+      "passed": true,
+      "actual": [],
+      "expected": "[]"
+    }
+  ],
+  "cases": [
+    {
+      "name": "after-exterior",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.5189437866210938,
+      "clippedSamples": 0,
+      "rms": 0.017937821553862587,
+      "leftEnergy": 77.22370610357213,
+      "rightEnergy": 77.22370610357213,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "after-exterior",
+        "save": true,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "6147a7ed8bf895f1726e1ee7558eaf486d7b6d7542763fb61b6cd206d84e4366",
+      "file": "docs/evidence/realism/audio-after-exterior.wav"
+    },
+    {
+      "name": "after-interior",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.35414186120033264,
+      "clippedSamples": 0,
+      "rms": 0.01679341249517965,
+      "leftEnergy": 67.68448877598144,
+      "rightEnergy": 67.68448877598144,
+      "firstAudible": 0.5060416666666666,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "after-interior",
+        "save": true,
+        "interior": true,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "081c70bd72e51332494003b76deddc03cd42479db695eaa37fbf6b7a20d7e370",
+      "file": "docs/evidence/realism/audio-after-interior.wav"
+    },
+    {
+      "name": "nearby",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.44715529680252075,
+      "clippedSamples": 0,
+      "rms": 0.01274806377663146,
+      "leftEnergy": 2.9247678987418648e-31,
+      "rightEnergy": 78.00630242547031,
+      "firstAudible": 0.5643125,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "nearby",
+        "save": true,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 20,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": true
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "7c22ab62a8592532a55efd368a042daf4af2babd4dc937089647f6b191e43fee",
+      "file": "docs/evidence/realism/audio-nearby.wav"
+    },
+    {
+      "name": "distant",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.12462475150823593,
+      "clippedSamples": 0,
+      "rms": 0.005039247630479996,
+      "leftEnergy": 4.5701909922359977e-32,
+      "rightEnergy": 12.18912800702316,
+      "firstAudible": 0.855875,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "distant",
+        "save": true,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 120,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": true
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "9cbf24e8c934ec51c43f107279d0118868d6fe123295c18837ab344d4db0ba7d",
+      "file": "docs/evidence/realism/audio-distant.wav"
+    },
+    {
+      "name": "occluded",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.18653927743434906,
+      "clippedSamples": 0,
+      "rms": 0.006410736589386274,
+      "leftEnergy": 7.396373204155692e-32,
+      "rightEnergy": 19.72682093687806,
+      "firstAudible": 0.5643333333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "occluded",
+        "save": true,
+        "obstacles": [
+          {
+            "x": 10,
+            "z": 0,
+            "halfX": 1,
+            "halfZ": 10
+          }
+        ],
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 20,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": true
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "e812409ed67bdf3062aa69f89963bfe27194917c3c8d5679f25963b2052cdd65",
+      "file": "docs/evidence/realism/audio-occluded.wav"
+    },
+    {
+      "name": "night",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.23191387951374054,
+      "clippedSamples": 0,
+      "rms": 0.010419896986134975,
+      "leftEnergy": 26.05782076839954,
+      "rightEnergy": 26.05782076839954,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "night",
+        "night": true,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "ca6802e171eec10dd84a003e7d60525be25bd101494f1bcc44f4f1e6d090af11"
+    },
+    {
+      "name": "effects-muted",
+      "duration": 5,
+      "finite": true,
+      "peak": 0,
+      "clippedSamples": 0,
+      "rms": 0,
+      "leftEnergy": 0,
+      "rightEnergy": 0,
+      "firstAudible": null,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 0,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "effects-muted",
+        "mix": [
+          0,
+          0,
+          0
+        ],
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b9163d03c43083a18e6101539b555cb5e363eed61fa4b3a3b54f50ae60eb5b52"
+    },
+    {
+      "name": "master-muted",
+      "duration": 5,
+      "finite": true,
+      "peak": 0,
+      "clippedSamples": 0,
+      "rms": 0,
+      "leftEnergy": 0,
+      "rightEnergy": 0,
+      "firstAudible": null,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "master-muted",
+        "volume": 0,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b9163d03c43083a18e6101539b555cb5e363eed61fa4b3a3b54f50ae60eb5b52"
+    },
+    {
+      "name": "engine-alone",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.09730113297700882,
+      "clippedSamples": 0,
+      "rms": 0.023168906128553046,
+      "leftEnergy": 128.8315706864887,
+      "rightEnergy": 128.8315706864887,
+      "firstAudible": 0.009208333333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 0,
+      "snapshots": [
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "engine-alone",
+        "mix": [
+          0,
+          1,
+          0
+        ],
+        "speed": 10,
+        "events": [
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b53d20c448aee7007078df5c05515376cf7b20d03f1d6ee74350733bdee62371"
+    },
+    {
+      "name": "effects-muted-engine",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.09730113297700882,
+      "clippedSamples": 0,
+      "rms": 0.023168906128553046,
+      "leftEnergy": 128.8315706864887,
+      "rightEnergy": 128.8315706864887,
+      "firstAudible": 0.009208333333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 0,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "effects-muted-engine",
+        "mix": [
+          0,
+          1,
+          0
+        ],
+        "speed": 10,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b53d20c448aee7007078df5c05515376cf7b20d03f1d6ee74350733bdee62371"
+    },
+    {
+      "name": "alerts-alone",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.08883114904165268,
+      "clippedSamples": 0,
+      "rms": 0.005825658704466921,
+      "leftEnergy": 8.145191841823488,
+      "rightEnergy": 8.145191841823488,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 2,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "alerts-alone",
+        "mix": [
+          0,
+          0,
+          1
+        ],
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "ready"
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "509afbcc1556304b75d9f5a5b5aa0afffaaa0d2352a3a1f323889c3e8d64eff4"
+    },
+    {
+      "name": "effects-muted-alerts",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.08883114904165268,
+      "clippedSamples": 0,
+      "rms": 0.005825658704466921,
+      "leftEnergy": 8.145191841823488,
+      "rightEnergy": 8.145191841823488,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 2,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "effects-muted-alerts",
+        "mix": [
+          0,
+          0,
+          1
+        ],
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 0.5,
+            "kind": "ready"
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "509afbcc1556304b75d9f5a5b5aa0afffaaa0d2352a3a1f323889c3e8d64eff4"
+    },
+    {
+      "name": "alerts-muted",
+      "duration": 5,
+      "finite": true,
+      "peak": 0,
+      "clippedSamples": 0,
+      "rms": 0,
+      "leftEnergy": 0,
+      "rightEnergy": 0,
+      "firstAudible": null,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 2,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 0,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "alerts-muted",
+        "mix": [
+          0,
+          0,
+          0
+        ],
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "ready"
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b9163d03c43083a18e6101539b555cb5e363eed61fa4b3a3b54f50ae60eb5b52"
+    },
+    {
+      "name": "pause",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.5189437866210938,
+      "clippedSamples": 0,
+      "rms": 0.01654953627845679,
+      "leftEnergy": 65.73291624766976,
+      "rightEnergy": 65.73291624766976,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        },
+        "paused": {
+          "range": [
+            0.85,
+            2
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 110400,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.56,
+          "renderTime": 0.56,
+          "kind": "stop",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "pause",
+        "save": true,
+        "windows": {
+          "paused": [
+            0.85,
+            2
+          ]
+        },
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 0.56,
+            "kind": "stop"
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "197186767554f269c35ca40fabc50e81bca1dd165015457d9b63bb3e1a62628a",
+      "file": "docs/evidence/realism/audio-pause.wav"
+    },
+    {
+      "name": "pending-cancel",
+      "duration": 5,
+      "finite": true,
+      "peak": 0,
+      "clippedSamples": 0,
+      "rms": 0,
+      "leftEnergy": 0,
+      "rightEnergy": 0,
+      "firstAudible": null,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        },
+        "resumed": {
+          "range": [
+            0.3,
+            2
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 163200,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.2,
+          "renderTime": 0.2,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.21,
+          "renderTime": 0.208,
+          "kind": "stop",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.25,
+          "renderTime": 0.248,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "pending-cancel",
+        "windows": {
+          "resumed": [
+            0.3,
+            2
+          ]
+        },
+        "events": [
+          {
+            "time": 0.2,
+            "kind": "cannon",
+            "position": {
+              "x": 120,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": true
+          },
+          {
+            "time": 0.21,
+            "kind": "stop"
+          },
+          {
+            "time": 0.25,
+            "kind": "engine",
+            "speed": 0
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "b9163d03c43083a18e6101539b555cb5e363eed61fa4b3a3b54f50ae60eb5b52"
+    },
+    {
+      "name": "resume-tail",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.5189437866210938,
+      "clippedSamples": 0,
+      "rms": 0.016549536280120434,
+      "leftEnergy": 65.73291626088539,
+      "rightEnergy": 65.73291626088539,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        },
+        "resumed": {
+          "range": [
+            0.72,
+            2
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 122880,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 5,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.56,
+          "renderTime": 0.56,
+          "kind": "stop",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.62,
+          "renderTime": 0.6186666666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 5,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 1,
+        "cancelled": 5,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "resume-tail",
+        "save": true,
+        "windows": {
+          "resumed": [
+            0.72,
+            2
+          ]
+        },
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 0.56,
+            "kind": "stop"
+          },
+          {
+            "time": 0.62,
+            "kind": "engine",
+            "speed": 0
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "197186767554f269c35ca40fabc50e81bca1dd165015457d9b63bb3e1a62628a",
+      "file": "docs/evidence/realism/audio-resume-tail.wav"
+    },
+    {
+      "name": "full-mix",
+      "duration": 5,
+      "finite": true,
+      "peak": 0.8233593106269836,
+      "clippedSamples": 0,
+      "rms": 0.06186920470490399,
+      "leftEnergy": 918.6716377961554,
+      "rightEnergy": 918.6716377961554,
+      "firstAudible": 0.008958333333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            4.5,
+            5
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 21,
+      "snapshots": [
+        {
+          "requestedTime": 0,
+          "renderTime": 0,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.25,
+          "renderTime": 0.248,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.4,
+          "renderTime": 0.4,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 21,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.75,
+          "renderTime": 0.7493333333333333,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1,
+          "renderTime": 1,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.25,
+          "renderTime": 1.248,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.5,
+          "renderTime": 1.4986666666666666,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.75,
+          "renderTime": 1.7493333333333334,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2,
+          "renderTime": 2,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2.25,
+          "renderTime": 2.248,
+          "kind": "atmosphere",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3,
+          "renderTime": 3,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 4,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 4,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "full-mix",
+        "save": true,
+        "volume": 1,
+        "mix": [
+          1,
+          1,
+          1
+        ],
+        "musicVolume": 1,
+        "speed": 20,
+        "events": [
+          {
+            "time": 0,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 0.25,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 0.5,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 0.75,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 1,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 1.25,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 1.5,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 1.75,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 2,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 2.25,
+            "kind": "atmosphere",
+            "threat": 1,
+            "dt": 0.25
+          },
+          {
+            "time": 0.4,
+            "kind": "ready"
+          },
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false,
+            "repeat": 20
+          },
+          {
+            "time": 2,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 3,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "0876af975bfd9be08293d427b06d96adf83c56acf505fde9b08c47d416ebf244",
+      "file": "docs/evidence/realism/audio-full-mix.wav"
+    },
+    {
+      "name": "voice-lifecycle",
+      "duration": 12,
+      "finite": true,
+      "peak": 0.7908645868301392,
+      "clippedSamples": 0,
+      "rms": 0.04773951326122983,
+      "leftEnergy": 1312.7392088174238,
+      "rightEnergy": 1312.7392088174238,
+      "firstAudible": 0.5060208333333334,
+      "windows": {
+        "tail": {
+          "range": [
+            11.5,
+            12
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 20,
+      "snapshots": [
+        {
+          "requestedTime": 0.5,
+          "renderTime": 0.49866666666666665,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 20,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.3,
+          "renderTime": 1.2986666666666666,
+          "kind": "checkpoint",
+          "label": "salvo-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.5,
+          "renderTime": 1.4986666666666666,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 5,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2.5,
+          "renderTime": 2.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 5,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.5,
+          "renderTime": 3.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 7,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.5,
+          "renderTime": 4.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 7,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 5.5,
+          "renderTime": 5.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 9,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 6.5,
+          "renderTime": 6.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 9,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 10,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 7.5,
+          "renderTime": 7.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 10,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 11,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 8.5,
+          "renderTime": 8.498666666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 11,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.5,
+          "renderTime": 9.498666666666667,
+          "kind": "checkpoint",
+          "label": "natural-cleanup",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 10.5,
+          "renderTime": 10.498666666666667,
+          "kind": "stop",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 12,
+        "cancelled": 0,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 12,
+        "cancelled": 0,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "voice-lifecycle",
+        "save": true,
+        "volume": 1,
+        "duration": 12,
+        "events": [
+          {
+            "time": 0.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false,
+            "repeat": 20
+          },
+          {
+            "time": 1.3,
+            "kind": "checkpoint",
+            "label": "salvo-cleanup"
+          },
+          {
+            "time": 1.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 2.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 3.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 4.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 5.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 6.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 7.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 8.5,
+            "kind": "cannon",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "calibre": 120,
+            "enemy": false
+          },
+          {
+            "time": 9.5,
+            "kind": "checkpoint",
+            "label": "natural-cleanup"
+          },
+          {
+            "time": 10.5,
+            "kind": "stop"
+          }
+        ]
+      },
+      "pcmSha256": "add9fd4d43677627c9b1338796d23281a55869bde7cff140bc439f17b117a669",
+      "file": "docs/evidence/realism/audio-voice-lifecycle.wav"
+    }
+  ],
+  "errors": []
+}

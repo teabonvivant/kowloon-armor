@@ -1,0 +1,199 @@
+{
+  "browser": "141.0.7390.37",
+  "artifactBytes": 1204969,
+  "artifactSha256": "e97aae251edcb8a693b57b0f66a4e26245dc0be4b689614e034187b5a0e9af39",
+  "checks": [
+    {
+      "name": "full street encounter through input frames",
+      "detail": {
+        "phase": "victory",
+        "kills": 2,
+        "shots": 8,
+        "hits": 6,
+        "hp": 751,
+        "seconds": 42.18333333333222,
+        "metres": 12.490733183086178,
+        "obstacles": 15
+      }
+    },
+    {
+      "name": "restart GPU resource counts remain bounded",
+      "detail": [
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        },
+        {
+          "geometries": 21,
+          "textures": 26,
+          "effects": {
+            "active": 0,
+            "smoke": 0,
+            "dust": 0,
+            "flash": 0,
+            "sparks": 0,
+            "debris": 0,
+            "marks": 0,
+            "capacity": {
+              "smoke": 88,
+              "sparks": 72,
+              "debris": 40,
+              "marks": 32,
+              "flash": 20,
+              "dust": 64
+            },
+            "resources": 14,
+            "anchors": 0,
+            "markX": 0,
+            "minDebrisY": 1000,
+            "radiance": 0,
+            "projectiles": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "simulated HOTAS calibration, throttle and trigger",
+      "detail": {
+        "speed": 8.462686567164187,
+        "shots": 1,
+        "devices": 1
+      }
+    }
+  ],
+  "layouts": [],
+  "errors": [],
+  "requests": [],
+  "method": "Standalone file:// artifact uses real DOM keyboard and CDP touch inputs with manually clocked rAF at 100 ms, drawing the final frame of each accelerated input batch. Every screenshot renders the full WebGL scene. This functional test is not the separately frame-rendered normal-speed recording. The separate source harness completes the encounter with input-only aiming, tests repeated restarts and synthetic Gamepad API. This is not physical HOTAS, Safari or real-device performance evidence."
+}

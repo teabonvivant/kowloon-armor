@@ -72,7 +72,7 @@ test('new presentation options migrate and persist without replacing old control
   const data = new Map([['kowloon-armor-settings', JSON.stringify({ sensitivity: 1.7 })]]);
   globalThis.localStorage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
   const preferences = api.loadPreferences();
-  assert.equal(preferences.lighting, 'day'); assert.equal(preferences.adaptiveResolution, false);
+  assert.equal(preferences.lighting, 'dusk'); assert.equal(preferences.adaptiveResolution, false); // v1.9 C08: new installs default to dusk
   assert.equal(preferences.nightAudio, false); assert.equal(preferences.highContrast, false);
   assert.equal(api.savePreferences({ ...preferences, lighting: 'dusk', adaptiveResolution: true, nightAudio: true, highContrast: true }), true);
   assert.equal(api.loadPreferences().lighting, 'dusk'); assert.equal(api.loadPreferences().sensitivity, 1.7);

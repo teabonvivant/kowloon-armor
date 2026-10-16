@@ -15,6 +15,7 @@ import type { View } from './view';
 import { FACE_NAMES, ZONE_NAMES } from './armor';
 import type { Impact } from './armor';
 import { mountKeyboardSettings } from './keyboard-settings';
+import type { KeyBindings } from './key-bindings';
 import { mountSettings } from './settings';
 import type { SettingsTab } from './settings';
 import { comparison, preparationMarkup, tacticalMarkup, mountTactical } from './operations-ui';
@@ -31,6 +32,8 @@ export class Interface {
   private noticeTimer = 0; private returnFocus: HTMLElement | null = null;
   private hitTimer = 0;
   private preferences = loadPreferences();
+  /** Current keyboard bindings, read by the arcade HUD for key labels. */
+  get keyBindings(): KeyBindings { return this.preferences.bindings; }
   private sortieSeed: number | undefined;
   private sortieChallenge: Game['challenge'] = 'none';
   constructor(private readonly game: Game, private readonly input: Input, private readonly view: View, private readonly audio: GameAudio) {

@@ -1,12 +1,15 @@
-import { Group } from 'three';
-import { createSignMaterial, GeometryBatch, metalMaterial, unitPlane, windowMaterial } from './materials';
+import { Group, Matrix4, Object3D } from 'three';
+import { addLightbox, HkContext } from './hk-street';
 import type { Obstacle } from './world';
 
-export function createStreetProps(): { group: Group; obstacles: Obstacle[] } {
+/** Bus-stop shelters, cabinets and road wear. All batches are the shared HK context batches (v1.9: one call per geometry). */
+export function createStreetProps(context?: HkContext): { group: Group; obstacles: Obstacle[] } {
   const group = new Group(); group.name = 'Shelters, street cabinets and road wear';
-  const structure = new GeometryBatch(metalMaterial), surfaces = new GeometryBatch();
-  const glass = new GeometryBatch(windowMaterial), wear = new GeometryBatch();
-  const signs = new GeometryBatch(createSignMaterial({ text: '九龍演習區', subtitle: 'KOWLOON · TRAINING AREA', background: '#384a43', foreground: '#e9c58b' }));
+  const ctx = context ?? new HkContext(false);
+  const structure = ctx.metal, surfaces = ctx.solid, glass = ctx.glass, wear = ctx.solid;
+  ctx.atlas.define('shelter', { text: '九龍演習區', subtitle: 'KOWLOON · TRAINING AREA', background: '#384a43', foreground: '#e9c58b' }, 512, 128);
+  const signMatrix = new Matrix4(), signTransform = new Object3D();
+  let shelters = 0;
   const obstacles: Obstacle[] = [];
   for (const road of [-84, 0, 84]) for (const row of [-126, 42, 126]) for (const side of [-1, 1]) {
     const x = road + side * 11.9, z = row - 8;
@@ -17,7 +20,10 @@ export function createStreetProps(): { group: Group; obstacles: Obstacle[] } {
     }
     structure.box({ position: [x, .92, z], scale: [.7, .12, 5.6] }, 0x898579);
     glass.box({ position: [x + side * .66, 1.8, z], scale: [.045, 2.35, 6.6] }, 0x566e65);
-    signs.add(unitPlane, { position: [x - side * 1.08, 2.82, z], scale: [4.6, .6, 1], rotation: [0, -side * Math.PI / 2, 0] }, 0xffffff);
+    signTransform.position.set(x - side * 1.08, 2.82, z); signTransform.rotation.set(0, -side * Math.PI / 2, 0); signTransform.scale.set(4.6, .6, 1); signTransform.updateMatrix();
+    ctx.atlas.add('shelter', signMatrix.copy(signTransform.matrix));
+    if (ctx.extras && shelters % 3 === 0) addLightbox(ctx, x, z, side, shelters);
+    shelters++;
     surfaces.box({ position: [x, .65, z + 5], scale: [.64, 1.22, .7] }, 0x3b735a);
     structure.box({ position: [x - side * .34, .98, z + 5], scale: [.025, .17, .44] }, 0x202d29);
     obstacles.push({ x, z, halfX: 1, halfZ: 3.7, surface: 'metal' }, { x, z: z + 5, halfX: .35, halfZ: .4, surface: 'metal' });
@@ -36,7 +42,6 @@ export function createStreetProps(): { group: Group; obstacles: Obstacle[] } {
     }
     wear.box({ position: [road - 4, .024, row - 4], scale: [1.8, .012, 3.3] }, 0x51534d);
   }
-  structure.finish(group); surfaces.finish(group);
-  glass.finish(group, false); wear.finish(group, false); signs.finish(group, false);
+  if (!context) ctx.finish(group);
   return { group, obstacles };
 }

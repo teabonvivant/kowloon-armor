@@ -16,7 +16,8 @@ import { Effects } from './effects';
 import type { InputFrame } from './input';
 import { angleDelta, blocked, wallFraction } from './math';
 import type { WorldData } from './render/world';
-import { disposeTank, showTankDamage } from './render/tank';
+import { disposeTank, showTankDamage, launchTurret, updateTurretFlight, isTurretLaunched } from './render/tank';
+import { shouldCookOff } from './effect-math';
 import type { Impact } from './armor';
 import { createObjectiveState, updateObjective } from './objectives';
 import { createTraining, updateTraining } from './training';
@@ -26,6 +27,16 @@ import { intercept, launchPose } from './ballistics';
 import { REALISM_SAMPLE } from './realism';
 import { Arcade, STRIKE_COOLDOWN, STRIKE_SHELLS, comboMultiplier } from './arcade';
 import type { Prop } from './arcade';
+import { PROP_TABLE } from './game-events-v19';
+import type { BreakKind, ExplosionEvent, ExplosionKind } from './game-events-v19';
+import { HITSTOP_LIMITS, HitStopBudget } from './camera-fx';
+
+/**
+ * Campaign balance guard: v1.8 had no explosive props, so in the campaign they must not change difficulty.
+ * Prop/strike damage to enemies is halved and capped per sortie, props never hurt the player, repair packs are
+ * smaller and capped, and at most three pickups appear. Other modes keep the full arcade values.
+ */
+export const CAMPAIGN_GUARD = { propDamageScale: .5, propDamageCap: .15, repairFraction: .15, repairCap: .3, pickups: 3 } as const;
 
 export type GameMode = 'drive' | 'battle' | 'campaign' | 'survival';
 export type GamePhase = 'garage' | 'playing' | 'paused' | 'victory' | 'defeat';
@@ -36,6 +47,9 @@ export interface GameEvents {
   readonly contact?: (contact: Contact) => void;
   readonly trained?: () => void;
   readonly shake?: (amount: number) => void; readonly popup?: (text: string, kind: 'kill' | 'prop' | 'pickup' | 'strike') => void;
+  readonly explosion?: (event: ExplosionEvent) => void; readonly flyby?: (position: Vector3, speed: number, calibre: number) => void;
+  readonly killcam?: (position: Vector3) => void; readonly propBreak?: (kind: BreakKind, position: Vector3) => void;
+  readonly pulse?: (strength: number, seconds: number) => void; readonly lowFlash?: (enabled: boolean) => void;
   readonly finish: (victory: boolean) => void; readonly notify: (message: string) => void;
 }
 function firstTank(): TankSpec {
@@ -57,7 +71,10 @@ export class Game {
   readonly journal: { time: number; message: string }[] = [];
   readonly arcade: Arcade;
   hitStop = 0;
-  private readonly blasts: { t: number; x: number; z: number; radius: number; damage: number; friendly: boolean; prop: Prop | undefined }[] = [];
+  /** Campaign guard counters (see CAMPAIGN_GUARD). */
+  propDamage = 0; propDamageCap = 0; repairGiven = 0; pickupsDropped = 0;
+  private readonly stopBudget = new HitStopBudget();
+  private readonly blasts: { t: number; x: number; z: number; radius: number; damage: number; friendly: boolean; prop: Prop | undefined; kind?: ExplosionKind; power?: number }[] = [];
   private rng = 1;
   private readonly objectivePosition = new Vector3();
   private dustTimer = 0;
@@ -68,14 +85,16 @@ export class Game {
   constructor(private readonly scene: Scene, readonly world: WorldData, private readonly events: GameEvents) {
     this.player = createActor(firstTank(), 0, 100); scene.add(this.player.visual.root);
     this.effects = new Effects(scene); this.arcade = new Arcade(scene);
+    this.effects.lightPulse = (strength, seconds) => events.pulse?.(strength, seconds);
     this.combat = new Combat(scene, this.effects, { shot: () => { this.shots++; this.log('主炮發射'); events.shot(); },
       cannon: (position, enemy, calibre) => events.cannon?.(position, enemy, calibre),
       contact: contact => events.contact?.(contact),
+      flyby: (position, speed, calibre) => events.flyby?.(position, speed, calibre),
       prop: (id, position, byPlayer) => { const prop = this.arcade.prop(id); if (prop) this.blastProp(prop, byPlayer, position); },
       hit: (damage, killed, enemy, impact) => { if (enemy) { this.hits++; if (killed) this.kills++;
           this.report.dealt += damage; if (impact.face !== 'front') this.report.flankingHits++; }
         else { this.damageBearing = impact.bearing; this.damageTimer = 2.5; this.report.received += damage; }
-        if (enemy && killed) this.onKill(impact.position.x, impact.position.z);
+        if (enemy && killed) { this.onKill(impact.position.x, impact.position.z); this.cookOff(impact); }
         else if (!enemy) events.shake?.(Math.min(1, .35 + damage / 120));
         this.log(`${enemy ? killed ? '擊破敵車' : '命中敵車' : '裝甲受擊'} · ${damage}`);
         events.hit(damage, killed, enemy, impact); } });
@@ -103,7 +122,12 @@ export class Game {
       : mission?.targets ?? [];
     if (mode !== 'drive') this.spawnEnemies(spots, mode === 'campaign' ? missionIndex + 4 : this.seed % TANKS.length);
     this.blasts.length = 0; this.hitStop = 0; this.rng = (this.seed ^ 0x51ed270b) >>> 0 || 1;
-    this.arcade.populate(this.seed, this.player.visual.root.position, this.world.obstacles, REALISM_SAMPLE ? 7 : 12, REALISM_SAMPLE ? 4 : 7);
+    this.stopBudget.reset(); this.repairGiven = 0; this.pickupsDropped = 0; this.propDamage = 0;
+    this.propDamageCap = Math.round(this.enemies.reduce((sum, enemy) => sum + enemy.maxHp, 0) * CAMPAIGN_GUARD.propDamageCap);
+    const spawn = this.player.visual.root.position;
+    const lanes = this.enemies.map(enemy => [enemy.visual.root.position.x, enemy.visual.root.position.z] as const);
+    this.arcade.populate(this.seed, spawn, this.world.obstacles, REALISM_SAMPLE ? 7 : 12, REALISM_SAMPLE ? 4 : 7,
+      { lanes, opening: !REALISM_SAMPLE, near: spawn.z < 60 ? [25, 38] : [28, 48] });
     this.phase = 'playing';
     this.events.notify(REALISM_SAMPLE ? mode === 'drive' ? '自由試車 · 茶餐廳前方街口可練習駕駛與射擊' : '街口接敵 · 清除前方兩輛敵車，裝填時留意掩護' : mode === 'drive' ? '自由駕駛開始 · 無限彈藥，探索九龍街道' : '演習開始 · 紅色標記為敵方坦克');
   }
@@ -158,6 +182,7 @@ export class Game {
       if (visited) this.events.notify(`已到訪 ${visited} · ${this.tour.visited.size} / 6${this.tour.visited.size === 6 ? ' · 九龍巡遊完成！' : ''}`);
     }
     if (previousCooldown > 0 && this.player.cooldown === 0) this.events.ready?.();
+    if (input.strike) this.callStrike();
     if (input.fire) this.combat.fire(this.player, this.world.obstacles);
     if (this.training && updateTraining(this.training, this.player, this.shots, dt)) {
       if (this.training.step === 4) this.events.trained?.();
@@ -185,6 +210,10 @@ export class Game {
     if (this.dustTimer >= .15) {
       this.dustTimer = 0;
       for (const actor of actors) if (actor.alive && Math.abs(actor.speed) > 3) this.effects.dust(actor.visual.root.position, actor.yaw, actor.speed, actor.leftTrack <= 0, actor.rightTrack <= 0);
+      for (const prop of this.arcade.props) {
+        const burning = prop.alive ? prop.fuse === true : (prop.burn ?? 0) > 0;
+        if (burning) this.effects.damage(this.exhaust.set(prop.x, 1.4 + (prop.flight ? prop.root.position.y : 0), prop.z), 0, prop.alive ? 0 : (prop.burnTotal ?? 10) - (prop.burn ?? 0));
+      }
       for (const actor of actors) {
         showTankDamage(actor.visual, actor.hp / actor.maxHp);
         if (actor.hp < actor.maxHp * .65) {
@@ -193,6 +222,7 @@ export class Game {
         }
       }
     }
+    for (const enemy of this.enemies) if (!enemy.alive && isTurretLaunched(enemy.visual)) updateTurretFlight(enemy.visual, dt);
     this.effects.update(dt);
     if (goal) updateObjective(this.objective, goal, this.player, this.enemies, dt);
     if (!this.player.alive) this.finish(false);
@@ -204,36 +234,68 @@ export class Game {
   }
   private random(): number { this.rng = (Math.imul(this.rng, 1664525) + 1013904223) >>> 0; return this.rng / 4294967296; }
   tickRealtime(dt: number): void { this.hitStop = Math.max(0, this.hitStop - dt); }
-  get timeScale(): number { return this.hitStop > 0 && !this.effectOptions.reducedMotion ? .22 : 1; }
+  get timeScale(): number { return this.hitStop > 0 && !this.effectOptions.reducedMotion ? HITSTOP_LIMITS.scale : 1; }
+  /** Ammo-rack cook-off: a turret-ring / rear kill (deterministic, ~50%) blows the rack and throws the turret. */
+  private cookOff(impact: Impact): void {
+    let index = -1, best = 12;
+    for (const [i, enemy] of this.enemies.entries()) {
+      if (enemy.alive || enemy.visual.wreckAge > .05 || isTurretLaunched(enemy.visual)) continue;
+      const d = enemy.visual.root.position.distanceTo(impact.position);
+      if (d < best) { best = d; index = i; }
+    }
+    const victim = this.enemies[index];
+    if (!victim || !shouldCookOff(this.seed, index, impact.zone, impact.face)) return;
+    const at = victim.visual.root.position;
+    launchTurret(victim.visual, (this.seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0);
+    this.explode(at.x, at.z, 9, 60, false, true, 'ammo', 1.3);
+  }
   private onKill(x: number, z: number): void {
     const result = this.arcade.kill(150), multiplier = comboMultiplier(result.combo);
     this.events.popup?.(`擊破 +${result.points}${multiplier > 1 ? ` · 連殺 ×${multiplier}` : ''}`, 'kill');
-    this.arcade.dropPickup(this.kills % 2 === 0 || this.player.hp < this.player.maxHp * .6 ? 'repair' : 'rapid', x, z);
-    this.hitStop = Math.max(this.hitStop, .14); this.events.shake?.(.7);
+    if (this.mode !== 'campaign' || this.pickupsDropped < CAMPAIGN_GUARD.pickups) {
+      this.pickupsDropped++;
+      this.arcade.dropPickup(this.kills % 2 === 0 || this.player.hp < this.player.maxHp * .6 ? 'repair' : 'rapid', x, z);
+    }
+    this.hitStop = Math.max(this.hitStop, this.stopBudget.grant(this.elapsed, 'kill'));
+    this.events.shake?.(.7); this.events.killcam?.(new Vector3(x, 1.5, z));
   }
-  private blastProp(prop: Prop, byPlayer: boolean, at?: Vector3): void {
+  private blastProp(prop: Prop, byPlayer: boolean, at?: Vector3, forced = false): void {
     if (!prop.alive) return;
+    const spec = PROP_TABLE[prop.kind];
+    if (prop.kind === 'tanker' && !forced) {
+      if (prop.fuse) return;
+      prop.fuse = true; // visible leak and fire first, then the big blast 2-3 s later
+      this.blasts.push({ t: 2 + (prop.id % 3) * .4, x: prop.x, z: prop.z, radius: 0, damage: 0, friendly: false, prop });
+      this.events.popup?.('油罐車起火 · 即將爆炸', 'prop');
+      return;
+    }
     this.arcade.detonate(prop);
-    const result = byPlayer ? this.arcade.kill(prop.kind === 'car' ? 120 : 80) : undefined;
-    if (result) this.events.popup?.(`${prop.kind === 'car' ? '引爆車輛' : '引爆油桶'} +${result.points}`, 'prop');
-    this.explode(at?.x ?? prop.x, at?.z ?? prop.z, prop.kind === 'car' ? 14 : 11, prop.kind === 'car' ? 120 : 90, false, byPlayer);
+    const result = byPlayer ? this.arcade.kill(spec.score) : undefined;
+    if (result) this.events.popup?.(`${spec.label} +${result.points}`, 'prop');
+    const x = at?.x ?? prop.x, z = at?.z ?? prop.z;
+    this.explode(x, z, spec.radius, spec.damage, false, byPlayer, spec.explosion, spec.power);
+    if (prop.kind === 'lpg') this.blasts.push({ t: .6 + (prop.id % 5) * .1, x: prop.x, z: prop.z, radius: 7, damage: 40, friendly: false, prop: undefined, kind: 'lpg', power: .7 });
     for (const other of this.arcade.props) {
-      if (!other.alive || Math.hypot(other.x - prop.x, other.z - prop.z) > 12) continue;
+      if (!other.alive || Math.hypot(other.x - prop.x, other.z - prop.z) > (prop.kind === 'tanker' ? 14 : 12)) continue;
       this.blasts.push({ t: .12 + this.blasts.length % 6 * .1, x: other.x, z: other.z, radius: 0, damage: 0, friendly: false, prop: other });
     }
   }
-  private explode(x: number, z: number, radius: number, damage: number, friendly: boolean, byPlayer: boolean): void {
+  private explode(x: number, z: number, radius: number, damage: number, friendly: boolean, byPlayer: boolean, kind: ExplosionKind = 'barrel', power = 1): void {
     const at = new Vector3(x, 0, z);
-    this.effects.destroy(at.clone().setY(1.2), 155);
-    this.events.contact?.({ position: at.clone().setY(1), normal: new Vector3(0, 1, 0), kind: 'armor', destroyed: true, calibre: 155 });
-    const distance = Math.hypot(x - this.player.visual.root.position.x, z - this.player.visual.root.position.z);
-    this.events.shake?.(Math.max(0, 1 - distance / 70) * 1.1);
-    this.hitStop = Math.max(this.hitStop, .09);
+    this.effects.explosion(kind, at, power);
+    this.events.explosion?.({ kind, position: at.clone().setY(1), power, byPlayer });
+    this.hitStop = Math.max(this.hitStop, this.stopBudget.grant(this.elapsed, 'explosion'));
+    const guarded = this.mode === 'campaign';
     for (const actor of [this.player, ...this.enemies]) {
-      if (!actor.alive || (friendly && !actor.enemy)) continue;
+      if (!actor.alive || (friendly && !actor.enemy) || (guarded && !actor.enemy)) continue;
       const p = actor.visual.root.position, d = Math.hypot(p.x - x, p.z - z);
       if (d >= radius) continue;
-      const dealt = Math.max(1, Math.min(actor.hp, Math.round(damage * (1 - d / radius * .7) * (actor.enemy ? 1 : .45) * (actor.enemy ? 1 : DIFFICULTIES[this.difficulty].damage))));
+      let dealt = Math.max(1, Math.min(actor.hp, Math.round(damage * (1 - d / radius * .7) * (actor.enemy ? 1 : .45) * (actor.enemy ? 1 : DIFFICULTIES[this.difficulty].damage))));
+      if (guarded) {
+        dealt = Math.min(dealt, Math.floor((this.propDamageCap - this.propDamage) / 1), Math.max(1, Math.round(dealt * CAMPAIGN_GUARD.propDamageScale)));
+        if (dealt < 1) continue;
+        this.propDamage += dealt;
+      }
       actor.hp -= dealt;
       const killed = actor.hp <= 0;
       if (killed) { actor.hp = 0; actor.alive = false; actor.speed = 0; actor.visual.wreckAge = 0;
@@ -248,7 +310,6 @@ export class Game {
         this.events.hit(dealt, false, false, { zone: 'hull', face: 'side', bearing: this.damageBearing, position: p.clone() });
       }
     }
-    void byPlayer;
   }
   /** Calls a covering barrage onto the nearest enemy ahead of the turret (or empty ground ahead). */
   callStrike(): boolean {
@@ -265,7 +326,7 @@ export class Game {
     this.arcade.strikeCooldown = STRIKE_COOLDOWN; this.arcade.strikesCalled++;
     for (let i = 0; i < STRIKE_SHELLS; i++) {
       const angle = this.random() * Math.PI * 2, spread = i === 0 ? 0 : 3 + this.random() * 7;
-      this.blasts.push({ t: 1.6 + i * .27, x: target.x + Math.sin(angle) * spread, z: target.z + Math.cos(angle) * spread, radius: 9, damage: 95, friendly: true, prop: undefined });
+      this.blasts.push({ t: 1.6 + i * .27, x: target.x + Math.sin(angle) * spread, z: target.z + Math.cos(angle) * spread, radius: 9, damage: 95, friendly: true, prop: undefined, kind: 'strike', power: 1 });
     }
     this.effects.burst(new Vector3(target.x, 0, target.z), false);
     this.events.popup?.('炮擊支援已呼叫 · 2 秒後落彈', 'strike');
@@ -276,9 +337,9 @@ export class Game {
       const blast = this.blasts[i]; if (!blast) continue;
       blast.t -= dt; if (blast.t > 0) continue;
       this.blasts.splice(i, 1);
-      if (blast.prop) this.blastProp(blast.prop, true);
+      if (blast.prop) this.blastProp(blast.prop, true, undefined, true);
       else {
-        this.explode(blast.x, blast.z, blast.radius, blast.damage, blast.friendly, true);
+        this.explode(blast.x, blast.z, blast.radius, blast.damage, blast.friendly, true, blast.kind ?? 'strike', blast.power ?? 1);
         for (const prop of this.arcade.props) if (prop.alive && Math.hypot(prop.x - blast.x, prop.z - blast.z) < blast.radius) this.blastProp(prop, true);
       }
     }
@@ -288,9 +349,13 @@ export class Game {
     }
     for (const kind of this.arcade.update(dt, p, this.player.alive)) {
       if (kind === 'repair') {
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.round(this.player.maxHp * .3));
+        const guarded = this.mode === 'campaign';
+        const heal = guarded ? Math.max(0, Math.min(Math.round(this.player.maxHp * CAMPAIGN_GUARD.repairFraction),
+          Math.round(this.player.maxHp * CAMPAIGN_GUARD.repairCap) - this.repairGiven)) : Math.round(this.player.maxHp * .3);
+        this.repairGiven += heal;
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + heal);
         this.player.leftTrack = 0; this.player.rightTrack = 0;
-        this.events.popup?.('修復包 · 車體 +30% · 履帶修好', 'pickup');
+        this.events.popup?.(`修復包 · 車體 +${guarded ? Math.round(heal / this.player.maxHp * 100) : 30}% · 履帶修好`, 'pickup');
       } else { this.player.rapidShots = Math.max(this.player.rapidShots, 4); this.player.cooldown = Math.min(this.player.cooldown, .4);
         this.events.popup?.('快裝彈藥 · 四發快速裝填', 'pickup'); }
     }
@@ -330,7 +395,7 @@ export class Game {
     this.supply = choice; return true;
   }
   private clearEnemies(): void { for (const enemy of this.enemies) { this.scene.remove(enemy.visual.root); disposeTank(enemy.visual); } this.enemies.length = 0; }
-  configureEffects(options: EffectOptions): void { this.effectOptions = { ...options }; this.effects.configure(options); this.combat.lowFlash(options.lowFlash); }
+  configureEffects(options: EffectOptions): void { this.effectOptions = { ...options }; this.effects.configure(options); this.combat.lowFlash(options.lowFlash); this.events.lowFlash?.(options.lowFlash); }
   touchEffects(mobile: boolean): void { if (this.effectOptions.mobile !== mobile) this.configureEffects({ ...this.effectOptions, mobile }); }
   prepareEffects(camera: PerspectiveCamera, height: number): void { this.effects.prepare(camera, height, !this.observing && (this.scope || this.cameraMode !== 'chase')); }
   effectStats(): ReturnType<Effects['stats']> & { projectiles: number } { return { ...this.effects.stats(), projectiles: this.combat.stats().active }; }

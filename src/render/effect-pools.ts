@@ -4,6 +4,8 @@ import { AdditiveBlending, BoxGeometry, BufferGeometry, Color, DynamicDrawUsage,
 import type { Scene } from 'three';
 import { flashEnvelope, particleEnvelope } from '../effect-math';
 
+const EMBER = new Color(0x4a1206), HOT = new Color();
+
 export interface Particle {
   age: number; life: number; delay: number; size: number; opacity: number; growth: number; gravity: number; drag: number;
   readonly position: Vector3; readonly velocity: Vector3; readonly color: Color; readonly scale: Vector3;
@@ -26,7 +28,7 @@ export class EffectPool {
   private readonly axis = new Vector3(0, 0, 1);
   limit: number;
   brightness = 1; ownVisibility = 1;
-  constructor(scene: Scene, readonly capacity: number, readonly kind: 'smoke' | 'dust' | 'flash' | 'spark' | 'debris' | 'mark' | 'glow', name: string) {
+  constructor(scene: Scene, readonly capacity: number, readonly kind: 'smoke' | 'dust' | 'flash' | 'spark' | 'debris' | 'mark' | 'glow' | 'fire', name: string) {
     this.limit = capacity; this.slots = Array.from({ length: capacity }, slot);
     const points = kind === 'smoke' || kind === 'dust';
     this.opacity = points ? new Float32BufferAttribute(new Float32Array(capacity), 1) : new InstancedBufferAttribute(new Float32Array(capacity), 1);
@@ -63,7 +65,7 @@ export class EffectPool {
       const geometry = plane ? new PlaneGeometry(1, 1) : kind === 'debris' ? new BoxGeometry(1, 1, 1) : new SphereGeometry(1, 8, 5);
       geometry.setAttribute('alpha', this.opacity);
       const material = new MeshBasicMaterial({ transparent: true, depthWrite: false, color: 0xffffff,
-        ...(kind === 'flash' || kind === 'spark' || kind === 'glow' ? { blending: AdditiveBlending } : {}),
+        ...(kind === 'flash' || kind === 'spark' || kind === 'glow' || kind === 'fire' ? { blending: AdditiveBlending } : {}),
         polygonOffset: plane, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
       material.onBeforeCompile = shader => {
         shader.vertexShader = `attribute float alpha; varying float vAlpha; varying vec2 vEffectUV; varying vec3 vEffectNormal;\n${shader.vertexShader}`
@@ -71,9 +73,9 @@ export class EffectPool {
             mat3 im=mat3(instanceMatrix); vec3 ns=max(vec3(dot(im[0],im[0]),dot(im[1],im[1]),dot(im[2],im[2])),vec3(.000001));
             vEffectNormal=normalMatrix*im*(normal/ns);`);
         shader.fragmentShader = `varying float vAlpha; varying vec2 vEffectUV; varying vec3 vEffectNormal;\n${shader.fragmentShader}`
-          .replace('#include <color_fragment>', `#include <color_fragment>\ndiffuseColor.a*=vAlpha;${plane ? 'diffuseColor.a*=pow(max(0.,1.-length(vEffectUV*2.-1.)),1.4);' : kind === 'flash' ? 'diffuseColor.a*=pow(abs(normalize(vEffectNormal).z),.85)*(.72+.28*sin(vEffectUV.y*31.+vEffectUV.x*19.));' : ''}`);
+          .replace('#include <color_fragment>', `#include <color_fragment>\ndiffuseColor.a*=vAlpha;${plane ? 'diffuseColor.a*=pow(max(0.,1.-length(vEffectUV*2.-1.)),1.4);' : kind === 'flash' ? 'diffuseColor.a*=pow(abs(normalize(vEffectNormal).z),.85)*(.72+.28*sin(vEffectUV.y*31.+vEffectUV.x*19.));' : kind === 'fire' ? 'diffuseColor.a*=pow(abs(normalize(vEffectNormal).z),1.15)*(.84+.16*sin(vEffectUV.y*13.+vEffectUV.x*9.));' : ''}`);
       };
-      material.customProgramCacheKey = () => `effect-${plane ? 'plane' : kind === 'flash' ? 'flame' : 'solid'}-v2`;
+      material.customProgramCacheKey = () => `effect-${plane ? 'plane' : kind === 'flash' ? 'flame' : kind === 'fire' ? 'fire' : 'solid'}-v2`;
       this.object = new InstancedMesh(geometry, material, capacity);
       this.object.instanceMatrix.setUsage(DynamicDrawUsage);
     }
@@ -124,7 +126,7 @@ export class EffectPool {
       const envelope = this.kind === 'flash' || this.kind === 'glow' ? flashEnvelope(age * .14 / Math.max(.001, p.life)) : this.kind === 'mark' ? Math.min(1, (p.life - age) / 4) : particleEnvelope(age, p.life);
       const alpha = alive ? Math.max(0, p.opacity * envelope * (p.own ? this.ownVisibility : 1)) : 0;
       visible ||= alpha > .001;
-      this.opacity.setX(i, alpha * (this.kind === 'flash' || this.kind === 'spark' || this.kind === 'glow' ? this.brightness : 1));
+      this.opacity.setX(i, alpha * (this.kind === 'flash' || this.kind === 'spark' || this.kind === 'glow' || this.kind === 'fire' ? this.brightness : 1));
       if (this.object instanceof Points) {
         positions.setXYZ(i, p.position.x, p.position.y, p.position.z);
         const cool = this.kind === 'smoke' ? Math.min(.12, Math.max(0, age) * .04) : 0;
@@ -133,10 +135,13 @@ export class EffectPool {
       } else {
         this.pose.position.copy(p.position); this.pose.rotation.set(0, 0, 0);
         this.pose.quaternion.setFromUnitVectors(this.axis, p.normal);
-        this.pose.scale.copy(p.scale).multiplyScalar(alpha > .001 ? p.size : 0);
+        const grown = this.kind === 'fire' || this.kind === 'glow' ? p.size + Math.max(0, age) * p.growth : p.size;
+        this.pose.scale.copy(p.scale).multiplyScalar(alpha > .001 ? grown : 0);
         if (this.kind === 'flash') this.pose.scale.multiplyScalar(.75 + Math.max(0, age) * 4);
         if (this.kind === 'debris') { this.pose.rotation.x += age * 4; this.pose.rotation.z += age * 3; }
-        this.pose.updateMatrix(); this.object.setMatrixAt(i, this.pose.matrix); this.object.setColorAt(i, p.color);
+        this.pose.updateMatrix(); this.object.setMatrixAt(i, this.pose.matrix);
+        if (this.kind === 'fire') this.object.setColorAt(i, HOT.copy(p.color).lerp(EMBER, Math.min(1, Math.max(0, age) / Math.max(.001, p.life)) ** .8));
+        else this.object.setColorAt(i, p.color);
       }
     }
     this.opacity.needsUpdate = true; this.object.visible = visible;

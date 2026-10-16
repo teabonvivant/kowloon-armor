@@ -302,3 +302,21 @@ test('C10 pooled shells preserve newest-first resolution for simultaneous lethal
   for(let i=0;i<20;i++)c.update(1/60,[first,last,target],[],1);
   assert.equal(contacts[0][0].destroyed,true);assert.equal(contacts[0][0].calibre,140);c.dispose();fx.dispose();
 });
+test('V19-01 explosion is a dedicated effect (fire ball pool, smoke column, scorch) and not the old destroy stub',()=>{
+  const fx=effects();fx.explosion('vehicle',v(0,1,-12),1.2);const s=fx.stats();
+  assert.ok(s.fire>=6&&s.smoke>=12&&s.debris>=12&&s.marks>=1&&s.glow>=1&&s.dust>=12);
+  for(const key of ['smoke','sparks','debris','marks','flash','dust','fire','glow'])assert.ok(s[key]<=s.capacity[key],key);
+  fx.clear();assert.equal(fx.stats().active,0);fx.dispose();
+});
+test('V19-02 quality budgets: touch/low unchanged from v1.8, medium/high raised and still monotonic',()=>{
+  const b=requireFunction('effectBudget');
+  assert.deepEqual([b('low',false).smoke,b('low',false).debris,b('low',false).flash],[48,16,12]);
+  assert.ok(b('medium',false).smoke>88&&b('high',false).smoke>b('medium',false).smoke);
+  assert.deepEqual(b('high',true),b('low',false));
+});
+test('V19-03 combat contacts carry a grade without changing the damage formula',()=>{
+  const {c,actor,hits,contacts}=combat(),target=api.createActor(api.TANKS[0],0,-30,true);
+  target.visual.root.rotation.y=target.yaw;c.fire(actor,[]);for(let i=0;i<20;i++)c.update(1/60,[actor,target],[],1);
+  assert.equal(hits[0][0],Math.round(actor.spec.damage*.85*.95*(1.35-target.spec.armor/200)*1.9));
+  assert.ok(['penetrate','ricochet','blocked'].includes(contacts[0][0].grade));c.dispose();
+});

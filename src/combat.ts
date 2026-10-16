@@ -1,20 +1,20 @@
-import { AdditiveBlending, BoxGeometry, CylinderGeometry, ConeGeometry, DynamicDrawUsage, InstancedMesh, MeshBasicMaterial, Object3D, SphereGeometry, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, Color, CylinderGeometry, ConeGeometry, DynamicDrawUsage, InstancedMesh, MeshBasicMaterial, Object3D, SphereGeometry, Vector3 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { BufferGeometry, Scene } from 'three';
 import type { Actor } from './actors';
 import type { Effects } from './effects';
 import { impactArmor, intersectTank } from './armor';
-import type { HitZone, Impact } from './armor';
+import type { ArmorFace, HitZone, Impact } from './armor';
 import { wallFraction } from './math';
 import type { Obstacle } from './render/world';
 import { kickTank, muzzleDirection, muzzlePosition } from './render/tank';
-import { armorNormal, groundContact, gunProfile, tracerLength, wallKind, wallNormal } from './effect-math';
+import { armorNormal, groundContact, gunProfile, impactGrade, tracerLength, tracerLengthV19, wallKind, wallNormal } from './effect-math';
 import type { ImpactKind } from './effect-math';
 import { launchPose, weaponProfile, obstacleFraction } from './ballistics';
 import { REALISM_SAMPLE } from './realism';
 import type { ImpactGrade } from './game-events-v19';
 
-interface Shell { source: Actor | null; readonly position: Vector3; readonly velocity: Vector3; readonly offset: Vector3; readonly breech: Vector3; age: number; trailAge: number; gravity: number; initial: boolean }
+interface Shell { source: Actor | null; readonly position: Vector3; readonly velocity: Vector3; readonly offset: Vector3; readonly breech: Vector3; age: number; trailAge: number; gravity: number; initial: boolean; flown: number; near: number; flyDone: boolean }
 export interface Contact { readonly position: Vector3; readonly normal: Vector3; readonly kind: ImpactKind; readonly destroyed: boolean; readonly calibre: number; readonly grade?: ImpactGrade }
 export interface CombatEvents {
   readonly flyby?: (position: Vector3, speed: number, calibre: number) => void;
@@ -34,18 +34,20 @@ function projectileGeometry(): BufferGeometry {
   return geometry.rotateX(Math.PI / 2);
 }
 export class Combat {
-  private readonly shells: Shell[] = Array.from({ length: 32 }, () => ({ source: null, position: new Vector3(), velocity: new Vector3(), offset: new Vector3(), breech: new Vector3(), age: 0, trailAge: 0, gravity: 1.2, initial: false }));
+  private readonly shells: Shell[] = Array.from({ length: 32 }, () => ({ source: null, position: new Vector3(), velocity: new Vector3(), offset: new Vector3(), breech: new Vector3(), age: 0, trailAge: 0, gravity: 1.2, initial: false, flown: 0, near: Infinity, flyDone: false }));
   private readonly inFlight: Shell[] = [];
   private readonly bodies = new InstancedMesh(projectileGeometry(), new MeshBasicMaterial({ color: 0xc4b68e }), 32);
-  private readonly tracers = new InstancedMesh(new SphereGeometry(1, 6, 4), new MeshBasicMaterial({ color: 0xffce75, transparent: true, opacity: .55, blending: AdditiveBlending, depthWrite: false }), 32);
+  private readonly tracers = new InstancedMesh(new SphereGeometry(1, 6, 4), new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .55, blending: AdditiveBlending, depthWrite: false }), 64);
   private readonly step = new Vector3();
   private readonly pose = new Object3D();
   private readonly axis = new Vector3(0, 0, 1);
   private readonly direction = new Vector3();
+  private readonly closest = new Vector3();
   private cursor = 0; private disposed = false;
   constructor(scene: Scene, private readonly effects: Effects, private readonly events: CombatEvents) {
     this.bodies.name = 'projectile-bodies'; this.tracers.name = 'projectile-tracers';
     for (const batch of [this.bodies, this.tracers]) { batch.frustumCulled = false; batch.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(batch); }
+    for (let i = 0; i < 32; i++) { this.tracers.setColorAt(i, new Color(0xfff1c4)); this.tracers.setColorAt(i + 32, new Color(0xff8f30)); }
     this.sync();
   }
   fire(actor: Actor, obstacles: readonly Obstacle[]): boolean {
@@ -76,7 +78,7 @@ export class Combat {
       const slot = this.shells.find(shell => shell.source === null) ?? this.shells[this.cursor++ % this.shells.length];
       if (slot) { const previous = this.inFlight.indexOf(slot); if (previous >= 0) this.inFlight.splice(previous, 1);
         this.inFlight.push(slot); slot.source = actor; slot.position.copy(position); slot.velocity.copy(direction).multiplyScalar(profile.velocity);
-        slot.offset.copy(muzzle).sub(position); slot.age = 0; slot.trailAge = 0; slot.gravity = profile.gravity; slot.breech.copy(pose.breech); slot.initial = REALISM_SAMPLE; }
+        slot.offset.copy(muzzle).sub(position); slot.age = 0; slot.trailAge = 0; slot.gravity = profile.gravity; slot.breech.copy(pose.breech); slot.initial = REALISM_SAMPLE; slot.flown = 0; slot.near = Infinity; slot.flyDone = false; }
     }
     this.sync();
     if (!actor.enemy) this.events.shot();
@@ -106,18 +108,21 @@ export class Combat {
         const hit = intersectTank(actor, p, step);
         if (hit !== null && hit.fraction < fraction) { fraction = hit.fraction; target = actor; zone = hit.zone; ground = false; }
       }
-      let propId = -1;
+      let propId = -1; let gradeFactor = 1; let gradeFace: ArmorFace | undefined;
       if (props && !target) {
         const strike = props.test(p, step);
         if (strike && strike.fraction < fraction) { fraction = strike.fraction; propId = strike.id; ground = false; }
       }
       p.addScaledVector(step, fraction);
+      shell.flown += step.length() * fraction;
       shell.velocity.y -= shell.gravity * dt * fraction;
+      if (source.enemy && !shell.flyDone && fraction === 1) this.flybyCheck(shell, source, actors);
       if (fraction < 1 || ground) {
         let kind: ImpactKind = ground ? 'road' : wallKind(p, obstacles);
         let normal = ground ? new Vector3(0, 1, 0) : wallNormal(p, obstacles, shell.velocity);
         if (target) {
           const { face, factor, bearing } = impactArmor(target, zone, shell.velocity);
+          gradeFactor = factor; gradeFace = face;
           const damage = Math.min(target.hp, Math.round(source.spec.damage * factor * (1.35 - target.spec.armor / 200) * (source.enemy ? damageScale : 1.9)));
           target.hp = Math.max(0, target.hp - damage);
           if (zone === 'leftTrack') target.leftTrack = 6;
@@ -129,7 +134,9 @@ export class Combat {
           this.events.hit(damage, !target.alive, target.enemy, { zone, face, bearing, position: p.clone() });
         }
         if (propId >= 0) { this.events.prop?.(propId, p.clone(), !source.enemy); kind = 'armor'; normal = new Vector3(0, 1, 0); }
-        this.contact(p, normal, shell.velocity, kind, source.spec.gun, target);
+        const grade = impactGrade({ target: !!target && propId < 0, cosIncidence: -shell.velocity.clone().normalize().dot(normal),
+          factor: target ? gradeFactor : undefined, face: gradeFace, destroyed: !!target && !target.alive });
+        this.contact(p, normal, shell.velocity, kind, source.spec.gun, target, grade);
         shell.source = null; this.inFlight.splice(index, 1);
       } else if (shell.age > 3) { shell.source = null; this.inFlight.splice(index, 1); }
       else {
@@ -139,9 +146,20 @@ export class Combat {
     }
     if (changed) this.sync();
   }
-  private contact(position: Vector3, normal: Vector3, incoming: Vector3, kind: ImpactKind, calibre: number, target?: Actor): void {
-    this.effects.impact(position, normal, incoming, kind, calibre, target?.visual.root ?? null);
-    this.events.contact?.({ position: position.clone(), normal, kind, calibre, destroyed: target ? !target.alive : false });
+  private contact(position: Vector3, normal: Vector3, incoming: Vector3, kind: ImpactKind, calibre: number, target?: Actor, grade?: ImpactGrade): void {
+    this.effects.impact(position, normal, incoming, kind, calibre, target?.visual.root ?? null, grade);
+    this.events.contact?.({ position: position.clone(), normal, kind, calibre, destroyed: target ? !target.alive : false, ...(grade ? { grade } : {}) });
+  }
+  /** One `flyby` per enemy shell: closest approach to the player < 20 m and now receding. Never touches hit resolution. */
+  private flybyCheck(shell: Shell, source: Actor, actors: readonly Actor[]): void {
+    const player = actors.find(actor => !actor.enemy && actor.alive); if (!player) return;
+    const target = player.visual.root.position, p = shell.position;
+    const distance = Math.hypot(p.x - target.x, p.y - target.y - 1.6, p.z - target.z);
+    if (distance < shell.near) { shell.near = distance; this.closest.copy(p); return; }
+    if (shell.near < 20) {
+      shell.flyDone = true;
+      this.events.flyby?.(this.closest.clone(), shell.velocity.length(), source.spec.gun);
+    }
   }
   private sync(): void {
     let count = 0;
@@ -155,16 +173,26 @@ export class Combat {
       }
       this.pose.updateMatrix(); this.bodies.setMatrixAt(i, this.pose.matrix);
       if (source) {
-        const length = Math.min(REALISM_SAMPLE ? 2 : 4,tracerLength(shell.velocity.length(), shell.age));
+        const speed = shell.velocity.length();
+        const length = REALISM_SAMPLE ? Math.min(2, tracerLength(speed, shell.age)) : tracerLengthV19(speed, shell.flown);
         this.pose.position.addScaledVector(this.direction, -length / 2);
         const width = (REALISM_SAMPLE ? .018 : .035) * source.spec.gun / 120;
-        this.pose.scale.set(width,width,length / 2);
+        this.pose.scale.set(width, width, length / 2);
+        if (!REALISM_SAMPLE) {
+          // bright narrow core + wider warm halo (second instance block)
+          this.pose.scale.set(width * .55, width * .55, length / 2);
+          this.pose.updateMatrix(); this.tracers.setMatrixAt(i, this.pose.matrix);
+          this.pose.scale.set(width * 1.9, width * 1.9, length / 2 * 1.08);
+          this.pose.updateMatrix(); this.tracers.setMatrixAt(i + 32, this.pose.matrix);
+          continue;
+        }
       }
       this.pose.updateMatrix(); this.tracers.setMatrixAt(i, this.pose.matrix);
+      if (!source) { this.tracers.setMatrixAt(i + 32, this.pose.matrix); }
     }
     for (const batch of [this.bodies, this.tracers]) { batch.visible = count > 0; batch.instanceMatrix.needsUpdate = true; }
   }
-  lowFlash(enabled: boolean): void { this.tracers.material.opacity = enabled ? .15 : .55; }
+  lowFlash(enabled: boolean): void { this.tracers.material.opacity = enabled ? .1 : .55; }
   stats(): { active: number; capacity: number } { return { active: this.shells.filter(shell => shell.source).length, capacity: this.shells.length }; }
   projectileSnapshot(): { position: number[]; velocity: number[]; age: number }[] {
     return this.inFlight.map(shell => ({ position: shell.position.toArray(), velocity: shell.velocity.toArray(), age: shell.age }));

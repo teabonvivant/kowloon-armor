@@ -1,0 +1,11 @@
+{
+  "browser": "141.0.7390.37",
+  "resolution": "1440x900",
+  "dpr": 1,
+  "quality": "medium",
+  "hudHidden": [
+    "before-garage-clean.png",
+    "before-drive-clean.png"
+  ],
+  "releaseBytes": 1136831
+}

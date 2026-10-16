@@ -15,7 +15,7 @@ const schema = z.object({
   quality: z.enum(['low', 'medium', 'high']).default('medium'),
   volume: z.number().min(0).max(1).default(.4),
   musicVolume: z.number().min(0).max(1).default(.35),
-  lighting: z.enum(['day', 'dusk']).default('day').catch('day'),
+  lighting: z.enum(['day', 'dusk']).default('dusk').catch('dusk'),
   adaptiveResolution: z.boolean().default(false).catch(false),
   nightAudio: z.boolean().default(false).catch(false),
   highContrast: z.boolean().default(false).catch(false),

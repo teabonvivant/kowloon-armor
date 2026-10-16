@@ -91,6 +91,7 @@ try {
   });
   check('pause-freezes-clock-actors-health-and-live-projectiles', () => {
     const { game, scene, shots, hits } = fixture(); game.start('campaign', 0);
+    game.arcade.clear(); // the pause semantic is tested in isolation; explosive props intercept this shell otherwise (arcade layer has its own checks)
     game.update(dt, { ...rest, fire: true, throttle: 1 }); game.pause();
     const before = snapshot(game, scene), count = { shots: shots.length, hits: hits.length };
     assert.ok(before.sceneNodes.filter(node => node.type === 'Mesh').length >= 2, 'Pause fixture must contain a fired shell and burst');

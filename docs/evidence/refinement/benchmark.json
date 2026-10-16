@@ -1,0 +1,74 @@
+{
+  "browser": "141.0.7390.37",
+  "viewport": [
+    1280,
+    800
+  ],
+  "quality": "medium",
+  "method": "Sequential same-host offline source harnesses, four warmups + twelve full simulation/render/gl.finish/readPixels samples. No skipped draw calls. Software rendering; not hardware FPS. Different geometry is intentional.",
+  "results": [
+    {
+      "label": "before",
+      "frames": [
+        1703.199999999255,
+        1648.9000000022352,
+        1722.5999999977648,
+        1757,
+        1705,
+        1670.800000000745,
+        1705.699999999255,
+        1666,
+        1690.300000000745,
+        1720.800000000745,
+        1693.199999999255,
+        1657.2000000029802
+      ],
+      "medianMs": 1703.199999999255,
+      "p95Ms": 1757,
+      "draw": {
+        "frame": 51,
+        "calls": 129,
+        "triangles": 157688,
+        "points": 0,
+        "lines": 54
+      },
+      "memory": {
+        "geometries": 12,
+        "textures": 24
+      },
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+      "label": "sample",
+      "frames": [
+        1133.6000000014901,
+        1251.3999999985099,
+        1097.5,
+        1088.300000000745,
+        1170,
+        1094.0999999977648,
+        1160.2000000029802,
+        1109.9000000022352,
+        1134,
+        1151.9000000022352,
+        1134.0999999977648,
+        1167.800000000745
+      ],
+      "medianMs": 1134.0999999977648,
+      "p95Ms": 1251.3999999985099,
+      "draw": {
+        "frame": 51,
+        "calls": 150,
+        "triangles": 204720,
+        "points": 0,
+        "lines": 54
+      },
+      "memory": {
+        "geometries": 14,
+        "textures": 29
+      },
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    }
+  ],
+  "errors": []
+}

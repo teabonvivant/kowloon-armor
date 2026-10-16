@@ -4,13 +4,15 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { Game } from './game';
 import { wallFraction } from './math';
 import { createWorld } from './render/world';
+import { applyWorldLighting } from './render/lighting';
 import { AdaptiveResolution } from './resolution';
 import { FrameDiagnostics } from './operations';
 import { cameraKick } from './effect-math';
 import { REALISM_SAMPLE } from './realism';
 import { createRealismWorld } from './render/realism-world';
 import { createRealismSky } from './render/realism-sky';
-import { chaseHeight } from './camera-framing';
+import { chaseHeight, lowChaseHeight } from './camera-framing';
+import { blastImpulse, killcamPush, lightPulseGain, viewFactor } from './camera-fx';
 
 export class View {
   readonly scene = new Scene(); readonly camera = new PerspectiveCamera(50, 1, 0.2, 1000);
@@ -94,9 +96,31 @@ export class View {
   shake(amount: number): void { if (!this.reducedMotion) this.shakeEnergy = Math.min(1.6, Math.max(this.shakeEnergy, amount * this.shakeStrength)); }
   punch(degrees: number): void { if (!this.reducedMotion) this.fovPunch = Math.max(this.fovPunch, degrees); }
   /** v1.9: directional blast shake / roll and light pulse at an explosion (camera-fx owns the maths). */
-  blast(at: Vector3, power: number): void { void at; this.shake(Math.min(1, .35 * power)); }
-  /** v1.9: short push-in toward a destroyed enemy; interruptible. */
-  killcam(at: Vector3): void { void at; }
+  blast(at: Vector3, power: number): void {
+    if (this.reducedMotion) return;
+    const slot = this.blasts.find(b => b.age >= .5) ?? this.blasts.reduce((a, b) => a.age > b.age ? a : b);
+    const dx = this.camera.position.x - at.x, dz = this.camera.position.z - at.z, d = Math.hypot(dx, dz) || 1;
+    slot.age = 0; slot.power = power; slot.distance = Math.hypot(dx, dz, this.camera.position.y - at.y);
+    slot.dx = dx / d; slot.dz = dz / d;
+    this.shake(Math.min(.6, .2 * power)); this.pulse(Math.min(1, .5 * power));
+  }
+  /** v1.9: bounded light pulse (strength 0-1 -> up to +15 % on the existing sun/ambient, <= 90 ms). No new lights. */
+  pulse(strength: number, seconds = .09): void {
+    if (this.reducedMotion) return;
+    if (strength >= this.pulseStrength || this.pulseAge >= this.pulseSeconds) { this.pulseStrength = strength; this.pulseSeconds = seconds; this.pulseAge = 0; }
+  }
+  /** Low-flash comfort mode: light pulse scaled to 0.18x. */
+  lowFlash(enabled: boolean): void { this.lowFlashOn = enabled; }
+  /** v1.9: short push-in toward a destroyed enemy (0.5 s, FOV -6 deg); reduced motion = none. */
+  killcam(at: Vector3): void {
+    if (this.reducedMotion) return;
+    this.killAt.copy(at); this.killAge = 0; this.killCancel = Infinity;
+  }
+  /** Any player input should call this: the push-in releases within 80 ms. */
+  cancelKillcam(): void { if (this.killAge < .5 && this.killCancel === Infinity) this.killCancel = this.killAge; }
+  private readonly blasts = Array.from({ length: 3 }, () => ({ age: 9, power: 0, distance: 0, dx: 0, dz: 0 }));
+  private pulseAge = 9; private pulseStrength = 0; private pulseSeconds = .09; private lowFlashOn = false;
+  private killAge = 9; private killCancel = Infinity; private readonly killAt = new Vector3();
   lighting(preset: 'day' | 'dusk'): void {
     if (REALISM_SAMPLE) {
       const dusk = preset === 'dusk', sky = dusk ? 0x9c9790 : 0xb7beb9;
@@ -112,8 +136,9 @@ export class View {
     }
     const dusk = preset === 'dusk', sky = dusk ? 0x666a85 : 0x8cabb8;
     this.scene.background = new Color(sky); this.scene.fog = new FogExp2(sky, dusk ? .0038 : .0033);
-    this.sun.color.setHex(dusk ? 0xffac72 : 0xffdfb0); this.sun.intensity = dusk ? 2.6 : 4.1;
-    this.ambient.color.setHex(dusk ? 0x9bace2 : 0xb7d3df); this.ambient.intensity = dusk ? 2.1 : 2.6;
+    this.sun.color.setHex(dusk ? 0xffbb82 : 0xffdfb0); this.sun.intensity = dusk ? 5 : 4.1;
+    this.ambient.color.setHex(dusk ? 0x9bace2 : 0xb7d3df); this.ambient.intensity = dusk ? 2.4 : 2.6;
+    applyWorldLighting(preset);
   }
   adaptive(enabled: boolean): void {
     this.adaptiveEnabled = enabled; this.resolution.reset(); this.renderer.setPixelRatio(this.baseRatio);
@@ -165,7 +190,7 @@ export class View {
       const yaw = game.observing ? game.observationYaw : actor.aim;
       desired.set(Math.sin(yaw) * this.chaseDistance, 8.2, Math.cos(yaw) * this.chaseDistance).add(p);
       const distance = wallFraction(p.x, p.z, desired.x - p.x, desired.z - p.z, game.world.obstacles);
-      desired.y = p.y + chaseHeight(this.chaseDistance,distance,REALISM_SAMPLE);
+      desired.y = p.y + (REALISM_SAMPLE ? chaseHeight(this.chaseDistance,distance,true) : lowChaseHeight(this.chaseDistance,distance));
       if (distance < 1) { desired.x = p.x + (desired.x - p.x) * Math.max(0.15, distance - 0.07);
         desired.z = p.z + (desired.z - p.z) * Math.max(0.15, distance - 0.07); }
       if (game.observing) look.set(-Math.sin(yaw) * 100, 3, -Math.cos(yaw) * 100).add(p);
@@ -196,15 +221,39 @@ export class View {
       this.camera.position.z += Math.cos(t * 1.1) * .35 * e;
       this.shakeEnergy *= Math.exp(-dt * 5.5);
     } else this.shakeEnergy = 0;
+    let roll = 0;
+    const viewScale = viewFactor(game.cameraMode, game.scope, this.scopeZoom);
+    for (const b of this.blasts) {
+      if (b.age >= .5) continue;
+      b.age += dt;
+      const k = blastImpulse(b.age, b.power, b.distance, this.reducedMotion, viewScale);
+      this.camera.position.x += b.dx * k.offset; this.camera.position.z += b.dz * k.offset; this.camera.position.y += Math.abs(k.offset) * .35;
+      roll += k.roll;
+    }
+    let killFov = 0;
+    if (this.killAge < .5 + .08) {
+      this.killAge += dt;
+      const push = killcamPush(this.killAge, this.reducedMotion, this.killCancel);
+      killFov = push.fov; if (push.bias > 0) look.lerp(this.killAt, push.bias);
+    }
     this.fovPunch *= Math.exp(-dt * 9); if (this.fovPunch < .02) this.fovPunch = 0;
     this.camera.lookAt(look);
+    if (roll !== 0) this.camera.rotateZ(roll);
     this.sky?.position.copy(this.camera.position);
     fov -= this.fovPunch;
+    if (killFov !== 0 && !game.scope) fov += killFov;
     if (Math.abs(fov - this.camera.fov) > .01) {
-      this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * (this.fovPunch > 0 ? 40 : 10)); this.camera.updateProjectionMatrix();
+      this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * (this.fovPunch > 0 || killFov !== 0 ? 40 : 10)); this.camera.updateProjectionMatrix();
     }
     this.sun.position.set(p.x - 45, REALISM_SAMPLE ? 58 : 85, p.z + 65); this.sun.target.position.copy(p);
     game.prepareEffects(this.camera, this.renderer.domElement.height);
-    this.renderer.render(this.scene, this.camera);
+    this.pulseAge += dt;
+    const gain = lightPulseGain(this.pulseAge, this.pulseStrength, this.reducedMotion, this.lowFlashOn, this.pulseSeconds);
+    if (gain !== 1) {
+      const sun = this.sun.intensity, ambient = this.ambient.intensity;
+      this.sun.intensity = sun * gain; this.ambient.intensity = ambient * gain;
+      this.renderer.render(this.scene, this.camera);
+      this.sun.intensity = sun; this.ambient.intensity = ambient;
+    } else this.renderer.render(this.scene, this.camera);
   }
 }

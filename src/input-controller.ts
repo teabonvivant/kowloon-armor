@@ -107,7 +107,7 @@ export class ControllerPoller {
     const edge = (index: number): boolean => held(index) && !this.previousButtons.has(index);
     const buttons = {
       fire: held(config.buttonFire), brake: held(config.buttonBrake), scope: held(config.buttonScope),
-      toggleCamera: edge(config.buttonCamera), pause: edge(config.buttonPause),
+      toggleCamera: edge(config.buttonCamera), pause: edge(config.buttonPause), strike: edge(config.buttonStrike),
     };
     this.previousButtons = pressed;
     if (!this.calibrated) {

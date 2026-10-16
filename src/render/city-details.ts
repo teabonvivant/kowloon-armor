@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import type { CityBlock } from './geo-buildings';
-import { createSignMaterial, GeometryBatch, glowMaterial, metalMaterial, unitPlane, windowMaterial } from './materials';
+import { GeometryBatch, glowMaterial, metalMaterial, windowMaterial } from './materials';
+import { addProjectingSigns, HkContext } from './hk-street';
 import type { SignStyle } from './materials';
 
-const shopSigns: readonly SignStyle[] = [
+export const shopSigns: readonly SignStyle[] = [
   { text: '龍城茶餐廳', subtitle: 'LUNG SHING CAFE', background: '#1d4b40', foreground: '#e8dab0' },
   { text: '九龍大藥房', subtitle: 'KOWLOON DISPENSARY', background: '#7b392f', foreground: '#ece0c3' },
   { text: '永發五金', subtitle: 'WING FAT HARDWARE', background: '#d1bb87', foreground: '#273f38' },
@@ -13,13 +14,7 @@ const shopSigns: readonly SignStyle[] = [
   { text: '美都餅家', subtitle: 'MEI TO BAKERY', background: '#aa9476', foreground: '#4a302c' },
   { text: '福興找換', subtitle: 'FOOK HING EXCHANGE', background: '#343d3b', foreground: '#d9bc77' },
 ];
-const projectingSigns: readonly SignStyle[] = [
-  { text: '龍城酒家', subtitle: '', background: '#3e2826', foreground: '#e98b62', vertical: true },
-  { text: '九龍賓館', subtitle: '', background: '#253d3a', foreground: '#a5d6b6', vertical: true },
-  { text: '華星押', subtitle: '', background: '#562b25', foreground: '#ead59b', vertical: true },
-  { text: '金都戲院', subtitle: '', background: '#263741', foreground: '#bad1cd', vertical: true },
-];
-const streetSigns: readonly SignStyle[] = [
+export const streetSigns: readonly SignStyle[] = [
   { text: '彌敦道', subtitle: 'NATHAN ROAD', background: '#244c65', foreground: '#eeeade' },
   { text: '亞皆老街', subtitle: 'ARGYLE STREET', background: '#244c65', foreground: '#eeeade' },
   { text: '窩打老道', subtitle: 'WATERLOO ROAD', background: '#244c65', foreground: '#eeeade' },
@@ -34,16 +29,21 @@ interface ShopPlacement {
   readonly width: number;
 }
 
-export function createCityDetails(blocks: readonly CityBlock[]): THREE.Group {
+export function createCityDetails(blocks: readonly CityBlock[], ctx: HkContext = new HkContext(false)): THREE.Group {
   const group = new THREE.Group();
   group.name = 'Bilingual shopfronts and street furniture';
   const surfaces = new GeometryBatch();
   const glass = new GeometryBatch(windowMaterial);
   const metal = new GeometryBatch(metalMaterial);
   const lights = new GeometryBatch(glowMaterial);
-  const signBatches = shopSigns.map((style) => new GeometryBatch(createSignMaterial(style)));
-  const verticalBatches = projectingSigns.map((style) => new GeometryBatch(createSignMaterial(style)));
-  const roadBatches = streetSigns.map((style) => new GeometryBatch(createSignMaterial(style)));
+  // v1.9: all shop / street / projecting signs share one atlas (one draw call); see hk-street.ts
+  const signMatrix = new THREE.Matrix4(), signTransform = new THREE.Object3D();
+  const addSign = (slot: string, x: number, y: number, z: number, width: number, height: number, yaw: number, group = 0): void => {
+    signTransform.position.set(x, y, z); signTransform.rotation.set(0, yaw, 0); signTransform.scale.set(width, height, 1); signTransform.updateMatrix();
+    ctx.atlas.add(slot, signMatrix.copy(signTransform.matrix), group);
+  };
+  shopSigns.forEach((style, index) => ctx.atlas.define(`shop-${index}`, style, 512, 128));
+  streetSigns.forEach((style, index) => ctx.atlas.define(`street-${index}`, style, 512, 128));
   for (const block of blocks) {
     const placements: ShopPlacement[] = [
       { x: block.x, z: block.z - block.depth / 2 - 0.04, yaw: Math.PI, index: block.index, width: block.width },
@@ -63,15 +63,9 @@ export function createCityDetails(blocks: readonly CityBlock[]): THREE.Group {
         surfaces.box({ position: [x, 0.47, z], scale: [7.9, 0.66, 0.14], rotation: [0, placement.yaw, 0] }, 0x777d70);
         surfaces.box({ position: [x, 3.55, z], scale: [7.92, 0.18, 0.14], rotation: [0, placement.yaw, 0] }, 0x7e8777);
         surfaces.box({ position: [x + sin * 0.74, 3.43, z + cos * 0.74], scale: [8, 0.13, 1.6], rotation: [-0.13, placement.yaw, 0] }, (placement.index + shop) % 2 === 0 ? 0x3d6554 : 0x885849);
-        const sign = signBatches[(placement.index + shop + 16) % signBatches.length];
-        sign?.add(unitPlane, { position: [x + sin * 0.16, 4.68, z + cos * 0.16], scale: [7.88, 1.77, 1], rotation: [0, placement.yaw, 0] }, 0xffffff);
+        const slot = (placement.index + shop + 16) % shopSigns.length;
+        addSign(`shop-${slot}`, x + sin * 0.16, 4.68, z + cos * 0.16, 7.88, 1.77, placement.yaw, slot);
         for (const edge of [-1, 0, 1]) metal.box({ position: [x + cos * edge * 3.88, 2.1, z - sin * edge * 3.88], scale: [0.1, 3.8, 0.11], rotation: [0, placement.yaw, 0] }, 0x7e8778);
-      }
-      if (Math.abs(block.x) < 170 && Math.abs(block.z) < 170) {
-        const sign = verticalBatches[placement.index % verticalBatches.length];
-        sign?.add(unitPlane, { position: [placement.x + sin * 2.1, 8.2, placement.z + cos * 2.1], scale: [1.8, 7.2, 1], rotation: [0, placement.yaw + Math.PI / 2, 0] }, 0xffffff);
-        metal.box({ position: [placement.x + sin, 11.45, placement.z + cos], scale: [0.12, 0.13, 3], rotation: [0, placement.yaw, 0] }, 0x38453c);
-        metal.box({ position: [placement.x + sin, 4.84, placement.z + cos], scale: [0.12, 0.13, 3], rotation: [0, placement.yaw, 0] }, 0x38453c);
       }
     }
   }
@@ -84,18 +78,18 @@ export function createCityDetails(blocks: readonly CityBlock[]): THREE.Group {
       metal.box({ position: [poleX - side * 1.35, 8.06, poleZ], scale: [2.88, 0.14, 0.17] }, 0x717a6c);
       lights.box({ position: [poleX - side * 2.55, 7.97, poleZ], scale: [0.92, 0.11, 0.48] }, 0xf1d39e);
       metal.box({ position: [poleX, 3.64, poleZ], scale: [0.3, 0.87, 0.35] }, 0x303a32);
-      lights.sphere({ position: [poleX, 3.82, poleZ - side * 0.19], scale: [0.073, 0.073, 0.025] }, 0xab553b);
-      lights.sphere({ position: [poleX, 3.47, poleZ - side * 0.19], scale: [0.073, 0.073, 0.025] }, 0x84b490);
+      lights.box({ position: [poleX, 3.82, poleZ - side * 0.19], scale: [0.13, 0.13, 0.03] }, 0xab553b); // v1.9: box lamp (12 tris) instead of a 288-tri sphere
+      lights.box({ position: [poleX, 3.47, poleZ - side * 0.19], scale: [0.13, 0.13, 0.03] }, 0x84b490);
     }
-    const roadIndex = Math.abs(Math.floor(x / 84)) % roadBatches.length;
-    const sign = roadBatches[roadIndex];
-    sign?.add(unitPlane, { position: [x + 10.65, 3.1, z - 14.5], scale: [3.6, 0.91, 1], rotation: [0, -Math.PI / 2, 0] }, 0xffffff);
+    const roadIndex = Math.abs(Math.floor(x / 84)) % streetSigns.length;
+    addSign(`street-${roadIndex}`, x + 10.65, 3.1, z - 14.5, 3.6, 0.91, -Math.PI / 2, roadIndex);
+    addSign(`street-${roadIndex}`, x + 10.69, 3.1, z - 14.5, 3.6, 0.91, Math.PI / 2, roadIndex);
     metal.cylinder({ position: [x + 10.67, 1.67, z - 14.5], scale: [0.067, 3.34, 0.067] }, 0x7b8174);
   }
   surfaces.finish(group);
   glass.finish(group, false);
-  metal.finish(group, true, 168);
+  metal.finish(group, false, 168);
   lights.finish(group, false);
-  for (const batch of [...signBatches, ...verticalBatches, ...roadBatches]) batch.finish(group, false);
+  addProjectingSigns(ctx, blocks);
   return group;
 }

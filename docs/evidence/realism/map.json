@@ -1,0 +1,9 @@
+{
+  "artifactSha256": "7ba496cdf6a01259615649a9ca410be3c75be0a4b73514be1f01da59e6be5e18",
+  "sampleScopeLabel": true,
+  "absentCityLandmarks": true,
+  "absentLandmarkShortcuts": true,
+  "obstacleRectangles": 16,
+  "errors": [],
+  "method": "Actual standalone file, offline. Start then tactical modal through DOM clicks. Manually rendered initial background; this is map/UI evidence, not a frame-rate test."
+}

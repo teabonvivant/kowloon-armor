@@ -1,0 +1,3508 @@
+{
+  "createdAt": "2026-10-15T02:54:32.992Z",
+  "browser": "141.0.7390.37",
+  "passed": true,
+  "failures": [],
+  "sourceHashes": {
+    "src/audio.ts": "f3e573c1d3dc6fde1cf88bbfe9533a1ca231156f1b0107109c2168de8085543b",
+    "src/effect-audio.ts": "c3a462b46b3fc7b97cb8b28133b2b46a06a539cb7becbf544aea370c8183c929",
+    "src/spatial-audio.ts": "9c72efe87f64173f12534559abafec062e22fffeb0418bae9600957947c90823",
+    "src/realism.ts": "6702754f1c723747382d400692261dc54384502aad8361de00da5f567634c921"
+  },
+  "methodology": {
+    "renderer": "Chromium OfflineAudioContext; sample production GameAudio with __REALISM_SAMPLE__=true",
+    "sampleRate": 48000,
+    "channels": 2,
+    "encoding": "16-bit PCM WAV; floating-point measurements are taken before quantization",
+    "scheduling": "Render suspends at the 128-frame quantum immediately before each event. Sources are created only at that event, with exact event time exposed as currentTime. Rendering resumes between events, allowing onended to reclaim voices. No whole-timeline upfront source scheduling.",
+    "clockAdapter": "Offline context state is exposed as running while invoking gameplay APIs, as in the real application. All native audio methods remain bound to the actual OfflineAudioContext.",
+    "controls": "Comparison: 120 mm, master volume 0.7, effects 1, engine/alerts/music 0; shot at 0.5 seconds, stop at 3 seconds; no normalization or post-processing.",
+    "randomness": "Current sample renders seed Math.random=123 for shared procedural buffers; cannon-specific noise uses the production fixed seed. Preserved baseline uses its original capture randomness.",
+    "limitations": "Numerical signal and lifecycle evidence only. No human listening, loudness preference, physical speakers/headphones, hardware latency or real-time performance acceptance.",
+    "gameplay": {
+      "timeline": "docs/evidence/realism/gameplay-timeline.json",
+      "timelineSha256": "bc4c5d045efd87c16d599d48d6d280eb670987e5bd506e025087b17233a98615",
+      "events": 172,
+      "excludedEventsAtOrAfterEnd": 0,
+      "duration": 43.75,
+      "fps": 12,
+      "frames": 525,
+      "file": "docs/evidence/realism/audio-gameplay.wav",
+      "note": "Offline replay of captured game event times, listener poses and perspective. Engine/effects/alerts enabled; music disabled. Not live audio capture or real-time performance evidence."
+    }
+  },
+  "checks": [
+    {
+      "name": "gameplay: finite unclipped signal",
+      "passed": true,
+      "actual": {
+        "finite": true,
+        "peak": 0.5908477306365967,
+        "clippedSamples": 0
+      },
+      "expected": "finite; peak < .99; zero samples >= 1"
+    },
+    {
+      "name": "gameplay: bounded and reclaimed voices",
+      "passed": true,
+      "actual": {
+        "maximum": 18,
+        "natural": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 36,
+          "cancelled": 10,
+          "disposed": false
+        },
+        "disposed": {
+          "voices": 0,
+          "maxVoices": 24,
+          "events": 36,
+          "cancelled": 10,
+          "disposed": true
+        }
+      },
+      "expected": "maximum <= 24; final natural/disposed voices = 0"
+    },
+    {
+      "name": "no browser errors",
+      "passed": true,
+      "actual": [],
+      "expected": "[]"
+    }
+  ],
+  "cases": [
+    {
+      "name": "gameplay",
+      "duration": 43.75,
+      "finite": true,
+      "peak": 0.5908477306365967,
+      "clippedSamples": 0,
+      "rms": 0.027565328396387624,
+      "leftEnergy": 1520.0469120828636,
+      "rightEnergy": 1671.3118722403192,
+      "firstAudible": 0.0109375,
+      "windows": {
+        "tail": {
+          "range": [
+            43.25,
+            43.75
+          ],
+          "peak": 0,
+          "energy": 0,
+          "samples": 48000,
+          "rms": 0
+        }
+      },
+      "maximumVoices": 18,
+      "snapshots": [
+        {
+          "requestedTime": 0,
+          "renderTime": 0,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.08333333333333333,
+          "renderTime": 0.08266666666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.41666666666666663,
+          "renderTime": 0.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 0.7500000000000007,
+          "renderTime": 0.7493333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.0833333333333344,
+          "renderTime": 1.0826666666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.4166666666666665,
+          "renderTime": 1.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 1.7499999999999987,
+          "renderTime": 1.7493333333333334,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2.083333333333331,
+          "renderTime": 2.082666666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2.416666666666663,
+          "renderTime": 2.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 2.749999999999995,
+          "renderTime": 2.7493333333333334,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.0833333333333273,
+          "renderTime": 3.082666666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.4166666666666594,
+          "renderTime": 3.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.5333333333333257,
+          "renderTime": 3.533333333333333,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 0,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.5499999999999923,
+          "renderTime": 3.5493333333333332,
+          "kind": "contact",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 1,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 2,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 3.7499999999999916,
+          "renderTime": 3.7493333333333334,
+          "kind": "engine",
+          "before": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 2,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 2,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.016666666666658,
+          "renderTime": 4.016,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 2,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 3,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.016666666666658,
+          "renderTime": 4.016,
+          "kind": "cannon",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 3,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.033333333333324,
+          "renderTime": 4.032,
+          "kind": "contact",
+          "before": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 4,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 5,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.033333333333324,
+          "renderTime": 4.032,
+          "kind": "contact",
+          "before": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 5,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.083333333333324,
+          "renderTime": 4.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.416666666666656,
+          "renderTime": 4.416,
+          "kind": "engine",
+          "before": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 4.7499999999999885,
+          "renderTime": 4.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 5.083333333333321,
+          "renderTime": 5.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 5.416666666666653,
+          "renderTime": 5.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 5.749999999999985,
+          "renderTime": 5.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 6.083333333333317,
+          "renderTime": 6.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 6.416666666666649,
+          "renderTime": 6.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 6.749999999999981,
+          "renderTime": 6.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 7.0833333333333135,
+          "renderTime": 7.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 7.416666666666646,
+          "renderTime": 7.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 7.749999999999978,
+          "renderTime": 7.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 8.083333333333314,
+          "renderTime": 8.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 8.416666666666664,
+          "renderTime": 8.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 8.750000000000014,
+          "renderTime": 8.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.05000000000003,
+          "renderTime": 9.048,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.05000000000003,
+          "renderTime": 9.048,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 6,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 7,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.05000000000003,
+          "renderTime": 9.048,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 7,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.083333333333364,
+          "renderTime": 9.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.416666666666714,
+          "renderTime": 9.416,
+          "kind": "engine",
+          "before": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.533333333333387,
+          "renderTime": 9.533333333333333,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 8,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 9,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.533333333333387,
+          "renderTime": 9.533333333333333,
+          "kind": "cannon",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 9,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 10,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.533333333333387,
+          "renderTime": 9.533333333333333,
+          "kind": "contact",
+          "before": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 10,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 11,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.533333333333387,
+          "renderTime": 9.533333333333333,
+          "kind": "contact",
+          "before": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 11,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 9.750000000000064,
+          "renderTime": 9.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 10.083333333333414,
+          "renderTime": 10.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 10.416666666666764,
+          "renderTime": 10.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 10.750000000000114,
+          "renderTime": 10.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 11.083333333333464,
+          "renderTime": 11.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 11.416666666666814,
+          "renderTime": 11.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 11.750000000000163,
+          "renderTime": 11.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 12.083333333333513,
+          "renderTime": 12.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 12.416666666666863,
+          "renderTime": 12.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 12.750000000000213,
+          "renderTime": 12.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 13.083333333333563,
+          "renderTime": 13.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 13.416666666666913,
+          "renderTime": 13.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 13.750000000000263,
+          "renderTime": 13.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.083333333333613,
+          "renderTime": 14.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.416666666666963,
+          "renderTime": 14.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.56666666666697,
+          "renderTime": 14.565333333333333,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.56666666666697,
+          "renderTime": 14.565333333333333,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 12,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 13,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.56666666666697,
+          "renderTime": 14.565333333333333,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 13,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 14,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 14.750000000000313,
+          "renderTime": 14.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 14,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 6,
+            "maxVoices": 24,
+            "events": 14,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.050000000000328,
+          "renderTime": 15.048,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 14,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 15,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.050000000000328,
+          "renderTime": 15.048,
+          "kind": "cannon",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 15,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 16,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.050000000000328,
+          "renderTime": 15.048,
+          "kind": "contact",
+          "before": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 16,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 17,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.050000000000328,
+          "renderTime": 15.048,
+          "kind": "contact",
+          "before": {
+            "voices": 15,
+            "maxVoices": 24,
+            "events": 17,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.083333333333663,
+          "renderTime": 15.082666666666666,
+          "kind": "engine",
+          "before": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 18,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.416666666667012,
+          "renderTime": 15.416,
+          "kind": "engine",
+          "before": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 15.750000000000362,
+          "renderTime": 15.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 16.0833333333337,
+          "renderTime": 16.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 16.416666666667016,
+          "renderTime": 16.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 16.75000000000033,
+          "renderTime": 16.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 17.083333333333645,
+          "renderTime": 17.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 17.41666666666696,
+          "renderTime": 17.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 17.750000000000274,
+          "renderTime": 17.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 18.083333333333588,
+          "renderTime": 18.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 18.416666666666902,
+          "renderTime": 18.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 18.750000000000217,
+          "renderTime": 18.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 19.08333333333353,
+          "renderTime": 19.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 19.416666666666845,
+          "renderTime": 19.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 19.75000000000016,
+          "renderTime": 19.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.083333333333474,
+          "renderTime": 20.082666666666668,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.083333333333474,
+          "renderTime": 20.082666666666668,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 18,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 19,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.083333333333474,
+          "renderTime": 20.082666666666668,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 19,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.083333333333474,
+          "renderTime": 20.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.41666666666679,
+          "renderTime": 20.416,
+          "kind": "engine",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.56666666666678,
+          "renderTime": 20.565333333333335,
+          "kind": "cannon",
+          "before": {
+            "voices": 4,
+            "maxVoices": 24,
+            "events": 20,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 9,
+            "maxVoices": 24,
+            "events": 21,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.56666666666678,
+          "renderTime": 20.565333333333335,
+          "kind": "contact",
+          "before": {
+            "voices": 9,
+            "maxVoices": 24,
+            "events": 21,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 12,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 20.750000000000103,
+          "renderTime": 20.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 9,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 9,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 21.083333333333417,
+          "renderTime": 21.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 21.416666666666732,
+          "renderTime": 21.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 21.750000000000046,
+          "renderTime": 21.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 22.08333333333336,
+          "renderTime": 22.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 22.416666666666675,
+          "renderTime": 22.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 22.74999999999999,
+          "renderTime": 22.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 23.083333333333304,
+          "renderTime": 23.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 23.416666666666618,
+          "renderTime": 23.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 23.749999999999932,
+          "renderTime": 23.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 24.083333333333247,
+          "renderTime": 24.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 24.41666666666656,
+          "renderTime": 24.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 24.749999999999876,
+          "renderTime": 24.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.08333333333319,
+          "renderTime": 25.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.416666666666504,
+          "renderTime": 25.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.599999999999827,
+          "renderTime": 25.6,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.599999999999827,
+          "renderTime": 25.6,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 22,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 23,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.599999999999827,
+          "renderTime": 25.6,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 23,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 24,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 25.74999999999982,
+          "renderTime": 25.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 24,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 24,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 26.083333333333133,
+          "renderTime": 26.082666666666668,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 24,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 25,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 26.083333333333133,
+          "renderTime": 26.082666666666668,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 25,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 26.083333333333133,
+          "renderTime": 26.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 26.416666666666448,
+          "renderTime": 26.416,
+          "kind": "engine",
+          "before": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 26.749999999999762,
+          "renderTime": 26.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 27.083333333333076,
+          "renderTime": 27.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 27.41666666666639,
+          "renderTime": 27.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 27.749999999999705,
+          "renderTime": 27.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 28.08333333333302,
+          "renderTime": 28.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 28.416666666666334,
+          "renderTime": 28.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 28.74999999999965,
+          "renderTime": 28.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 29.083333333332963,
+          "renderTime": 29.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 29.416666666666277,
+          "renderTime": 29.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 29.74999999999959,
+          "renderTime": 29.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 30.083333333332906,
+          "renderTime": 30.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 30.41666666666622,
+          "renderTime": 30.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 30.749999999999535,
+          "renderTime": 30.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.08333333333285,
+          "renderTime": 31.082666666666668,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.11666666666618,
+          "renderTime": 31.11466666666667,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.11666666666618,
+          "renderTime": 31.11466666666667,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 26,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 27,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.133333333332846,
+          "renderTime": 31.133333333333333,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 27,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 28,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.416666666666163,
+          "renderTime": 31.416,
+          "kind": "engine",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 28,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 28,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.599999999999486,
+          "renderTime": 31.6,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 28,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 29,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.616666666666152,
+          "renderTime": 31.616,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 29,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 31.749999999999478,
+          "renderTime": 31.749333333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 32.083333333332796,
+          "renderTime": 32.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 32.41666666666611,
+          "renderTime": 32.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 32.749999999999424,
+          "renderTime": 32.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 33.08333333333274,
+          "renderTime": 33.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 33.41666666666605,
+          "renderTime": 33.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 33.74999999999937,
+          "renderTime": 33.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 34.08333333333268,
+          "renderTime": 34.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 34.416666666665996,
+          "renderTime": 34.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 34.74999999999931,
+          "renderTime": 34.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 35.083333333332625,
+          "renderTime": 35.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 35.41666666666594,
+          "renderTime": 35.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 35.749999999999254,
+          "renderTime": 35.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.08333333333257,
+          "renderTime": 36.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.41666666666588,
+          "renderTime": 36.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.63333333333254,
+          "renderTime": 36.632,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.63333333333254,
+          "renderTime": 36.632,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 30,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 31,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.63333333333254,
+          "renderTime": 36.632,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 31,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 36.7499999999992,
+          "renderTime": 36.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 37.08333333333251,
+          "renderTime": 37.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 4,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 4,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 37.416666666665826,
+          "renderTime": 37.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 37.74999999999914,
+          "renderTime": 37.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 38.083333333332455,
+          "renderTime": 38.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 38.41666666666577,
+          "renderTime": 38.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 38.61666666666576,
+          "renderTime": 38.616,
+          "kind": "cannon",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 32,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 33,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 38.64999999999909,
+          "renderTime": 38.648,
+          "kind": "contact",
+          "before": {
+            "voices": 5,
+            "maxVoices": 24,
+            "events": 33,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 8,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 38.74999999999908,
+          "renderTime": 38.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 39.0833333333324,
+          "renderTime": 39.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 3,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 39.41666666666571,
+          "renderTime": 39.416,
+          "kind": "engine",
+          "before": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 1,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 39.74999999999903,
+          "renderTime": 39.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 40.08333333333234,
+          "renderTime": 40.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 40.416666666665655,
+          "renderTime": 40.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 40.74999999999897,
+          "renderTime": 40.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 41.083333333332284,
+          "renderTime": 41.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 41.4166666666656,
+          "renderTime": 41.416,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 41.74999999999891,
+          "renderTime": 41.74933333333333,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 42.08333333333223,
+          "renderTime": 42.08266666666667,
+          "kind": "engine",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 42.14999999999889,
+          "renderTime": 42.14933333333333,
+          "kind": "ready",
+          "before": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 42.14999999999889,
+          "renderTime": 42.14933333333333,
+          "kind": "cannon",
+          "before": {
+            "voices": 2,
+            "maxVoices": 24,
+            "events": 34,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 35,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 42.18333333333222,
+          "renderTime": 42.181333333333335,
+          "kind": "contact",
+          "before": {
+            "voices": 7,
+            "maxVoices": 24,
+            "events": 35,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 36,
+            "cancelled": 0,
+            "disposed": false
+          }
+        },
+        {
+          "requestedTime": 42.18333333333222,
+          "renderTime": 42.181333333333335,
+          "kind": "stop",
+          "before": {
+            "voices": 10,
+            "maxVoices": 24,
+            "events": 36,
+            "cancelled": 0,
+            "disposed": false
+          },
+          "after": {
+            "voices": 0,
+            "maxVoices": 24,
+            "events": 36,
+            "cancelled": 10,
+            "disposed": false
+          }
+        }
+      ],
+      "natural": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 36,
+        "cancelled": 10,
+        "disposed": false
+      },
+      "disposed": {
+        "voices": 0,
+        "maxVoices": 24,
+        "events": 36,
+        "cancelled": 10,
+        "disposed": true
+      },
+      "configuration": {
+        "name": "gameplay",
+        "save": true,
+        "timeline": true,
+        "duration": 43.75,
+        "obstacles": [
+          {
+            "x": -24.5,
+            "z": 59,
+            "halfX": 11.500000000000002,
+            "halfZ": 10.000000000000002,
+            "height": 17.7
+          },
+          {
+            "x": 24,
+            "z": 58.900000000000006,
+            "halfX": 11.000000000000002,
+            "halfZ": 9.500000000000002,
+            "height": 28
+          },
+          {
+            "x": -21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 30.5
+          },
+          {
+            "x": 21,
+            "z": 36,
+            "halfX": 8,
+            "halfZ": 11,
+            "height": 33.5
+          },
+          {
+            "x": -23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 19
+          },
+          {
+            "x": 23.1,
+            "z": 13.000000000000002,
+            "halfX": 9.5,
+            "halfZ": 11.5,
+            "height": 22
+          },
+          {
+            "x": -21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 32.5
+          },
+          {
+            "x": 21,
+            "z": -9.999999999999998,
+            "halfX": 8,
+            "halfZ": 10.5,
+            "height": 35.5
+          },
+          {
+            "x": -23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 18
+          },
+          {
+            "x": 23.1,
+            "z": 117,
+            "halfX": 9.5,
+            "halfZ": 14,
+            "height": 21
+          },
+          {
+            "x": -44,
+            "z": 109,
+            "halfX": 10,
+            "halfZ": 11,
+            "height": 34
+          },
+          {
+            "x": 47,
+            "z": 108,
+            "halfX": 12,
+            "halfZ": 11,
+            "height": 23
+          },
+          {
+            "x": 1.000000000000001,
+            "z": -48,
+            "halfX": 14.500000000000002,
+            "halfZ": 9.000000000000002,
+            "height": 21
+          },
+          {
+            "x": -8.5,
+            "z": 60,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          },
+          {
+            "x": 8.8,
+            "z": 14,
+            "halfX": 1.45,
+            "halfZ": 0.5,
+            "surface": "building",
+            "height": 0.94
+          }
+        ],
+        "volume": 0.7,
+        "mix": [
+          1,
+          1,
+          1
+        ]
+      },
+      "pcmSha256": "62c894a7eb6239d9ebc47ddeda123996c4089e949e14b5f32620335c7b3fa6f9",
+      "file": "docs/evidence/realism/audio-gameplay.wav"
+    }
+  ],
+  "errors": []
+}
