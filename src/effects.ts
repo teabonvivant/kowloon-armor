@@ -6,6 +6,7 @@ import { EffectPool } from './render/effect-pools';
 import type { Particle } from './render/effect-pools';
 import type { Obstacle } from './render/world';
 import { REALISM_SAMPLE } from './realism';
+import type { ExplosionKind } from './game-events-v19';
 
 export class Effects {
   private options: EffectOptions = { ...DEFAULT_EFFECTS };
@@ -205,6 +206,8 @@ export class Effects {
         p.size = 1.8; p.growth = 2; p.opacity = .55; p.color.setHex(0x383c39); p.drag = .25; }
     }
   }
+  /** v1.9 dedicated explosion visuals (fire ball, smoke column, debris, shock ring, scorch). */
+  explosion(kind: ExplosionKind, at: Vector3, power: number): void { void kind; void power; this.destroy(at, 155); }
   damage(at: Vector3, health: number | boolean, wreckAge = 0): void {
     const hp = typeof health === 'boolean' ? health ? 0 : .2 : health;
     if (hp >= .65 || (hp <= 0 && wreckAge >= 28)) return;

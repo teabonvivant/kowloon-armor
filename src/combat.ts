@@ -12,10 +12,12 @@ import { armorNormal, groundContact, gunProfile, tracerLength, wallKind, wallNor
 import type { ImpactKind } from './effect-math';
 import { launchPose, weaponProfile, obstacleFraction } from './ballistics';
 import { REALISM_SAMPLE } from './realism';
+import type { ImpactGrade } from './game-events-v19';
 
 interface Shell { source: Actor | null; readonly position: Vector3; readonly velocity: Vector3; readonly offset: Vector3; readonly breech: Vector3; age: number; trailAge: number; gravity: number; initial: boolean }
-export interface Contact { readonly position: Vector3; readonly normal: Vector3; readonly kind: ImpactKind; readonly destroyed: boolean; readonly calibre: number }
+export interface Contact { readonly position: Vector3; readonly normal: Vector3; readonly kind: ImpactKind; readonly destroyed: boolean; readonly calibre: number; readonly grade?: ImpactGrade }
 export interface CombatEvents {
+  readonly flyby?: (position: Vector3, speed: number, calibre: number) => void;
   readonly shot: () => void;
   readonly cannon?: (position: Vector3, enemy: boolean, calibre: number) => void;
   readonly contact?: (contact: Contact) => void;

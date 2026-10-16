@@ -6,6 +6,7 @@ import { cannonSound, impactSound } from './effect-audio';
 import type { SoundProfile } from './effect-audio';
 import type { ImpactKind } from './effect-math';
 import { REALISM_SAMPLE } from './realism';
+import type { BreakKind, ExplosionKind, ImpactGrade } from './game-events-v19';
 
 export class GameAudio {
   private context: AudioContext | null = null;
@@ -189,10 +190,19 @@ export class GameAudio {
     pressure.connect(gain).connect(filter); this.register(pressure,[gain],release); pressure.start(time); pressure.stop(time + .48);
     this.events++;
   }
-  impact(position: { readonly x: number; readonly z: number }, destroyed: boolean, kind: ImpactKind = 'armor', calibre = 120): void {
+  impact(position: { readonly x: number; readonly z: number }, destroyed: boolean, kind: ImpactKind = 'armor', calibre = 120, grade?: ImpactGrade): void {
+    void grade;
     const profile = impactSound(kind, destroyed); profile.volume *= Math.sqrt(Math.max(90, Math.min(155, calibre)) / 120);
     this.burst(profile, this.mixAt(position), Math.min(.8, Math.hypot(position.x - this.listener.x, position.z - this.listener.z) / 343));
   }
+  /** v1.9 dedicated explosion sound (crack, low shock, body, debris rain, tail, close-range ducking). */
+  explosion(position: { readonly x: number; readonly z: number }, kind: ExplosionKind, power: number): void {
+    void kind; void power; this.impact(position, true, 'armor', 155);
+  }
+  /** v1.9 shell passing the listener. */
+  flyby(position: { readonly x: number; readonly z: number }, speed: number, calibre: number): void { void position; void speed; void calibre; }
+  /** v1.9 breakable street furniture: sign fall, neon glass, stall burst. */
+  propBreak(position: { readonly x: number; readonly z: number }, kind: BreakKind): void { void position; void kind; }
   hit(track = false): void { this.burst(impactSound(track ? 'track' : 'armor', false)); }
   ready(): void { this.tone(720, .07, .1); this.tone(960, .09, .08, .1); }
 

@@ -15,6 +15,9 @@ const html = template.replace('<link rel="stylesheet" href="/src/style.css">', '
   .replace('<script type="module" src="/src/main.ts"></script>', () => `<script>${script.text.replaceAll('</script', '<\\/script')}</script>`);
 const artifact = sample ? '九龍裝甲行動-寫實樣板.html' : '九龍裝甲行動.html';
 const output = sample ? 'dist/realism.html' : 'dist/index.html';
-await writeFile(output, sample ? html.replace('<title>九龍裝甲行動 | KOWLOON ARMOR</title>','<title>九龍裝甲行動 · 寫實樣板 / 街口接敵</title>') : html);
+const finalHtml = sample ? html.replace('<title>九龍裝甲行動 | KOWLOON ARMOR</title>','<title>九龍裝甲行動 · 寫實樣板 / 街口接敵</title>') : html;
+const privateOut = process.argv.find(arg => arg.startsWith('--out='))?.slice(6);
+if (privateOut) { await writeFile(privateOut, finalHtml); console.log(`Private build: ${privateOut} (${(Buffer.byteLength(html)/1048576).toFixed(2)} MB)`); process.exit(0); }
+await writeFile(output, finalHtml);
 await copyFile(output, artifact);
 console.log(`Offline game: ${artifact} (${(Buffer.byteLength(html)/1048576).toFixed(2)} MB)`);

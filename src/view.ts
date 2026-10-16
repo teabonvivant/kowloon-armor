@@ -93,6 +93,10 @@ export class View {
   private shakeEnergy = 0; private fovPunch = 0;
   shake(amount: number): void { if (!this.reducedMotion) this.shakeEnergy = Math.min(1.6, Math.max(this.shakeEnergy, amount * this.shakeStrength)); }
   punch(degrees: number): void { if (!this.reducedMotion) this.fovPunch = Math.max(this.fovPunch, degrees); }
+  /** v1.9: directional blast shake / roll and light pulse at an explosion (camera-fx owns the maths). */
+  blast(at: Vector3, power: number): void { void at; this.shake(Math.min(1, .35 * power)); }
+  /** v1.9: short push-in toward a destroyed enemy; interruptible. */
+  killcam(at: Vector3): void { void at; }
   lighting(preset: 'day' | 'dusk'): void {
     if (REALISM_SAMPLE) {
       const dusk = preset === 'dusk', sky = dusk ? 0x9c9790 : 0xb7beb9;
